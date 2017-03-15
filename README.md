@@ -4,6 +4,7 @@ A small Unity demo project using VRTK for object interaction and VR controller h
 PhotonNetwork for allowing up to 4 people to join the same scene together and DFVoice so
 those people can actually talk to each other.
 
+![Demo Scene](vrtk-pun-voice-demo.png)
 ## Configuration
 
 To be able to use this example project you'll have to set it up first:
