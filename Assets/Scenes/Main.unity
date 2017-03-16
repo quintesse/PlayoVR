@@ -531,9 +531,15 @@ MonoBehaviour:
   - PrettyName: SteamVR
     SceneToLoad: SDKSteamVRScene
     VRDeviceNameToLoad: OpenVR
+    Priority: 30
+  - PrettyName: Oculus
+    SceneToLoad: SDKOculusScene
+    VRDeviceNameToLoad: Oculus
+    Priority: 20
   - PrettyName: Simulator
     SceneToLoad: SDKSimulatorScene
     VRDeviceNameToLoad: None
+    Priority: 10
   SDKWasChosen:
     m_PersistentCalls:
       m_Calls:
