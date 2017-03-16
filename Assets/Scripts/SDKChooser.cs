@@ -20,6 +20,7 @@ public abstract class SDKChooser : MonoBehaviour
 
     private void OnEnable()
     {
+        Setups.Sort((x, y) => -x.Priority.CompareTo(y.Priority));
         MakeSelection();
     }
 
@@ -74,5 +75,6 @@ public abstract class SDKChooser : MonoBehaviour
         public string PrettyName;
         public string SceneToLoad;
         public string VRDeviceNameToLoad;
+        public int Priority;
     }
 }
