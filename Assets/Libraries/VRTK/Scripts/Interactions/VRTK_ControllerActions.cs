@@ -2,6 +2,7 @@
 namespace VRTK
 {
     using UnityEngine;
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using Highlighters;
@@ -57,8 +58,6 @@ namespace VRTK
     /// The highlighting of the controller is defaulted to use the `VRTK_MaterialColorSwapHighlighter` if no other highlighter is applied to the Object.
     /// </remarks>
     /// <example>
-    /// `VRTK/Examples/016_Controller_HapticRumble` demonstrates the ability to hide a controller model and make the controller vibrate for a given length of time at a given intensity.
-    ///
     /// `VRTK/Examples/035_Controller_OpacityAndHighlighting` demonstrates the ability to change the opacity of a controller model and to highlight specific elements of a controller such as the buttons or even the entire controller model.
     /// </example>
     public class VRTK_ControllerActions : MonoBehaviour
@@ -99,12 +98,11 @@ namespace VRTK
         /// </summary>
         public event ControllerActionsEventHandler ControllerModelInvisible;
 
-        private GameObject modelContainer;
-        private bool controllerVisible = true;
-        private bool controllerHighlighted = false;
-        private Dictionary<string, Transform> cachedElements;
-        private Dictionary<string, object> highlighterOptions;
-        private Coroutine hapticLoop;
+        protected GameObject modelContainer;
+        protected bool controllerVisible = true;
+        protected bool controllerHighlighted = false;
+        protected Dictionary<string, Transform> cachedElements;
+        protected Dictionary<string, object> highlighterOptions;
 
         public virtual void OnControllerModelVisible(ControllerActionsEventArgs e)
         {
@@ -126,7 +124,7 @@ namespace VRTK
         /// The IsControllerVisible method returns true if the controller is currently visible by whether the renderers on the controller are enabled.
         /// </summary>
         /// <returns>Is true if the controller model has the renderers that are attached to it are enabled.</returns>
-        public bool IsControllerVisible()
+        public virtual bool IsControllerVisible()
         {
             return controllerVisible;
         }
@@ -361,14 +359,10 @@ namespace VRTK
         /// The TriggerHapticPulse/1 method calls a single haptic pulse call on the controller for a single tick.
         /// </summary>
         /// <param name="strength">The intensity of the rumble of the controller motor. `0` to `1`.</param>
+        [Obsolete("`VRTK_ControllerActions.TriggerHapticPulse(strength)` has been replaced with `VRTK_SharedMethods.TriggerHapticPulse(index, strength)`. This method will be removed in a future version of VRTK.")]
         public virtual void TriggerHapticPulse(float strength)
         {
-            if (enabled)
-            {
-                CancelHapticPulse();
-                var hapticPulseStrength = Mathf.Clamp(strength, 0f, 1f);
-                VRTK_SDK_Bridge.HapticPulseOnIndex(VRTK_DeviceFinder.GetControllerIndex(gameObject), hapticPulseStrength);
-            }
+            VRTK_SharedMethods.TriggerHapticPulse(VRTK_DeviceFinder.GetControllerIndex(gameObject), strength);
         }
 
         /// <summary>
@@ -377,15 +371,10 @@ namespace VRTK
         /// <param name="strength">The intensity of the rumble of the controller motor. `0` to `1`.</param>
         /// <param name="duration">The length of time the rumble should continue for.</param>
         /// <param name="pulseInterval">The interval to wait between each haptic pulse.</param>
+        [Obsolete("`VRTK_ControllerActions.TriggerHapticPulse(strength, duration, pulseInterval)` has been replaced with `VRTK_SharedMethods.TriggerHapticPulse(index, strength, duration, pulseInterval)`. This method will be removed in a future version of VRTK.")]
         public virtual void TriggerHapticPulse(float strength, float duration, float pulseInterval)
         {
-            if (enabled)
-            {
-                CancelHapticPulse();
-                var hapticPulseStrength = Mathf.Clamp(strength, 0f, 1f);
-                var hapticModifiers = VRTK_SDK_Bridge.GetHapticModifiers();
-                hapticLoop = StartCoroutine(HapticPulse(duration * hapticModifiers.durationModifier, hapticPulseStrength, pulseInterval * hapticModifiers.intervalModifier));
-            }
+            VRTK_SharedMethods.TriggerHapticPulse(VRTK_DeviceFinder.GetControllerIndex(gameObject), strength, duration, pulseInterval);
         }
 
         /// <summary>
@@ -466,7 +455,7 @@ namespace VRTK
             StartCoroutine(WaitForModel());
         }
 
-        private IEnumerator WaitForModel()
+        protected virtual IEnumerator WaitForModel()
         {
             while (GetElementTransform(modelElementPaths.bodyModelPath) == null)
             {
@@ -476,7 +465,7 @@ namespace VRTK
             InitaliseHighlighters();
         }
 
-        private void AddHighlighterToElement(Transform element, VRTK_BaseHighlighter parentHighlighter, VRTK_BaseHighlighter overrideHighlighter)
+        protected virtual void AddHighlighterToElement(Transform element, VRTK_BaseHighlighter parentHighlighter, VRTK_BaseHighlighter overrideHighlighter)
         {
             if (element)
             {
@@ -486,30 +475,7 @@ namespace VRTK
             }
         }
 
-        private void CancelHapticPulse()
-        {
-            if (hapticLoop != null)
-            {
-                StopCoroutine(hapticLoop);
-            }
-        }
-
-        private IEnumerator HapticPulse(float duration, float hapticPulseStrength, float pulseInterval)
-        {
-            if (pulseInterval <= 0)
-            {
-                yield break;
-            }
-
-            while (duration > 0)
-            {
-                VRTK_SDK_Bridge.HapticPulseOnIndex(VRTK_DeviceFinder.GetControllerIndex(gameObject), hapticPulseStrength);
-                yield return new WaitForSeconds(pulseInterval);
-                duration -= pulseInterval;
-            }
-        }
-
-        private IEnumerator CycleColor(Material material, Color startColor, Color endColor, float duration)
+        protected virtual IEnumerator CycleColor(Material material, Color startColor, Color endColor, float duration)
         {
             var elapsedTime = 0f;
             while (elapsedTime <= duration)
@@ -523,7 +489,7 @@ namespace VRTK
             }
         }
 
-        private Transform GetElementTransform(string path)
+        protected virtual Transform GetElementTransform(string path)
         {
             if (cachedElements == null || path == null)
             {
@@ -542,7 +508,7 @@ namespace VRTK
             return cachedElements[path];
         }
 
-        private void ToggleHighlightAlias(bool state, string transformPath, Color? highlight, float duration = 0f)
+        protected virtual void ToggleHighlightAlias(bool state, string transformPath, Color? highlight, float duration = 0f)
         {
             var element = GetElementTransform(transformPath);
             if (element)
@@ -551,14 +517,14 @@ namespace VRTK
             }
         }
 
-        private ControllerActionsEventArgs SetActionEvent(uint index)
+        protected virtual ControllerActionsEventArgs SetActionEvent(uint index)
         {
             ControllerActionsEventArgs e;
             e.controllerIndex = index;
             return e;
         }
 
-        private void ToggleModelRenderers(GameObject obj, bool state, GameObject grabbedChildObject)
+        protected virtual void ToggleModelRenderers(GameObject obj, bool state, GameObject grabbedChildObject)
         {
             if (obj)
             {
@@ -572,7 +538,7 @@ namespace VRTK
             }
         }
 
-        private void SetModelOpacity(GameObject obj, float alpha)
+        protected virtual void SetModelOpacity(GameObject obj, float alpha)
         {
             if (obj)
             {

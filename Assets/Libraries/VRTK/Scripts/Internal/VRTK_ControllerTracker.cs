@@ -4,7 +4,7 @@
 
     public class VRTK_ControllerTracker : MonoBehaviour
     {
-        private VRTK_TrackedController trackedController;
+        protected VRTK_TrackedController trackedController;
 
         protected virtual void OnEnable()
         {
@@ -13,6 +13,8 @@
             {
                 trackedController = actualController.GetComponent<VRTK_TrackedController>();
             }
+
+            Update();
         }
 
         protected virtual void Update()

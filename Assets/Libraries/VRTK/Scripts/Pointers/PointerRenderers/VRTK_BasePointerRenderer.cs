@@ -113,6 +113,15 @@ namespace VRTK
         }
 
         /// <summary>
+        /// The ResetPointerObjects method is used to destroy any existing pointer objects and recreate them at runtime.
+        /// </summary>
+        public virtual void ResetPointerObjects()
+        {
+            DestroyPointerObjects();
+            CreatePointerObjects();
+        }
+
+        /// <summary>
         /// The Toggle Method is used to enable or disable the pointer renderer.
         /// </summary>
         /// <param name="pointerState">The activation state of the pointer.</param>
@@ -194,6 +203,15 @@ namespace VRTK
             return (cursorVisibility == VisibilityStates.AlwaysOn || cursorVisible);
         }
 
+        /// <summary>
+        /// The IsValidCollision method determines if the pointer is currently in it's valid collision state.
+        /// </summary>
+        /// <returns>Returns true if the pointer is in a valid collision, returns false if the pointer is in an invalid collision state.</returns>
+        public virtual bool IsValidCollision()
+        {
+            return (currentColor != invalidCollisionColor);
+        }
+
         protected abstract void CreatePointerObjects();
         protected abstract void DestroyPointerObjects();
         protected abstract void ToggleRenderer(bool pointerState, bool actualState);
@@ -270,14 +288,18 @@ namespace VRTK
 
         protected virtual void UpdatePointerOriginTransformFollow()
         {
-            pointerOriginTransformFollow.gameObjectToFollow = (controllingPointer.customOrigin == null ? transform : controllingPointer.customOrigin).gameObject;
-            pointerOriginTransformFollow.enabled = controllingPointer != null;
-            pointerOriginTransformFollowGameObject.SetActive(controllingPointer != null);
+            pointerOriginTransformFollow.gameObject.SetActive((controllingPointer != null));
+            if (controllingPointer != null)
+            {
+                pointerOriginTransformFollow.gameObjectToFollow = (controllingPointer.customOrigin == null ? transform : controllingPointer.customOrigin).gameObject;
+                pointerOriginTransformFollow.enabled = controllingPointer != null;
+                pointerOriginTransformFollowGameObject.SetActive(controllingPointer != null);
 
-            pointerOriginTransformFollow.smoothsPosition = pointerOriginSmoothingSettings.smoothsPosition;
-            pointerOriginTransformFollow.maxAllowedPerFrameDistanceDifference = pointerOriginSmoothingSettings.maxAllowedPerFrameDistanceDifference;
-            pointerOriginTransformFollow.smoothsRotation = pointerOriginSmoothingSettings.smoothsRotation;
-            pointerOriginTransformFollow.maxAllowedPerFrameAngleDifference = pointerOriginSmoothingSettings.maxAllowedPerFrameAngleDifference;
+                pointerOriginTransformFollow.smoothsPosition = pointerOriginSmoothingSettings.smoothsPosition;
+                pointerOriginTransformFollow.maxAllowedPerFrameDistanceDifference = pointerOriginSmoothingSettings.maxAllowedPerFrameDistanceDifference;
+                pointerOriginTransformFollow.smoothsRotation = pointerOriginSmoothingSettings.smoothsRotation;
+                pointerOriginTransformFollow.maxAllowedPerFrameAngleDifference = pointerOriginSmoothingSettings.maxAllowedPerFrameAngleDifference;
+            }
         }
 
         protected Transform GetOrigin(bool smoothed = true)
@@ -382,7 +404,7 @@ namespace VRTK
 
         protected virtual void ChangeColor(Color givenColor)
         {
-            if ((playareaCursor && playareaCursor.IsActive() && playareaCursor.HasCollided()) || !ValidDestination())
+            if ((playareaCursor && playareaCursor.IsActive() && playareaCursor.HasCollided()) || !ValidDestination() || (controllingPointer && !controllingPointer.CanSelect()))
             {
                 givenColor = invalidCollisionColor;
             }

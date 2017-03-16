@@ -35,41 +35,41 @@ namespace VRTK
         [Tooltip("Denotes interval betweens rumble in the controller on use.")]
         public float intervalOnUse = minInterval;
 
-        private const float minInterval = 0.05f;
+        protected const float minInterval = 0.05f;
 
         /// <summary>
         /// The HapticsOnTouch method triggers the haptic feedback on the given controller for the settings associated with touch.
         /// </summary>
-        /// <param name="controllerActions">The controller to activate the haptic feedback on.</param>
-        public virtual void HapticsOnTouch(VRTK_ControllerActions controllerActions)
+        /// <param name="controllerIndex">The controller index to activate the haptic feedback on.</param>
+        public virtual void HapticsOnTouch(uint controllerIndex)
         {
             if (strengthOnTouch > 0 && durationOnTouch > 0f)
             {
-                TriggerHapticPulse(controllerActions, strengthOnTouch, durationOnTouch, intervalOnTouch);
+                TriggerHapticPulse(controllerIndex, strengthOnTouch, durationOnTouch, intervalOnTouch);
             }
         }
 
         /// <summary>
         /// The HapticsOnGrab method triggers the haptic feedback on the given controller for the settings associated with grab.
         /// </summary>
-        /// <param name="controllerActions">The controller to activate the haptic feedback on.</param>
-        public virtual void HapticsOnGrab(VRTK_ControllerActions controllerActions)
+        /// <param name="controllerIndex">The controller index to activate the haptic feedback on.</param>
+        public virtual void HapticsOnGrab(uint controllerIndex)
         {
             if (strengthOnGrab > 0 && durationOnGrab > 0f)
             {
-                TriggerHapticPulse(controllerActions, strengthOnGrab, durationOnGrab, intervalOnGrab);
+                TriggerHapticPulse(controllerIndex, strengthOnGrab, durationOnGrab, intervalOnGrab);
             }
         }
 
         /// <summary>
         /// The HapticsOnUse method triggers the haptic feedback on the given controller for the settings associated with use.
         /// </summary>
-        /// <param name="controllerActions">The controller to activate the haptic feedback on.</param>
-        public virtual void HapticsOnUse(VRTK_ControllerActions controllerActions)
+        /// <param name="controllerIndex">The controller index to activate the haptic feedback on.</param>
+        public virtual void HapticsOnUse(uint controllerIndex)
         {
             if (strengthOnUse > 0 && durationOnUse > 0f)
             {
-                TriggerHapticPulse(controllerActions, strengthOnUse, durationOnUse, intervalOnUse);
+                TriggerHapticPulse(controllerIndex, strengthOnUse, durationOnUse, intervalOnUse);
             }
         }
 
@@ -81,12 +81,9 @@ namespace VRTK
             }
         }
 
-        private void TriggerHapticPulse(VRTK_ControllerActions controllerActions, float strength, float duration, float interval)
+        protected virtual void TriggerHapticPulse(uint controllerIndex, float strength, float duration, float interval)
         {
-            if (controllerActions)
-            {
-                controllerActions.TriggerHapticPulse(strength, duration, (interval >= minInterval ? interval : minInterval));
-            }
+            VRTK_SharedMethods.TriggerHapticPulse(controllerIndex, strength, duration, (interval >= minInterval ? interval : minInterval));
         }
     }
 }

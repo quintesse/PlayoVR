@@ -49,8 +49,13 @@ namespace VRTK
         /// <summary>
         /// Follow `gameObjectToFollow` using the current settings.
         /// </summary>
-        public void Follow()
+        public virtual void Follow()
         {
+            if (gameObjectToFollow == null)
+            {
+                return;
+            }
+
             if (followsPosition)
             {
                 FollowPosition();
@@ -69,7 +74,7 @@ namespace VRTK
 
         protected virtual void OnEnable()
         {
-            gameObjectToChange = (gameObjectToChange != null ? gameObjectToChange : gameObject);
+            gameObjectToChange = gameObjectToChange != null ? gameObjectToChange : gameObject;
         }
 
         protected virtual void OnValidate()
@@ -97,7 +102,7 @@ namespace VRTK
             gameObjectToChange.transform.localScale = newScale;
         }
 
-        private void FollowPosition()
+        protected virtual void FollowPosition()
         {
             var positionToFollow = GetPositionToFollow();
             Vector3 newPosition;
@@ -116,7 +121,7 @@ namespace VRTK
             SetPositionOnGameObject(newPosition);
         }
 
-        private void FollowRotation()
+        protected virtual void FollowRotation()
         {
             var rotationToFollow = GetRotationToFollow();
             Quaternion newRotation;
@@ -135,7 +140,7 @@ namespace VRTK
             SetRotationOnGameObject(newRotation);
         }
 
-        private void FollowScale()
+        protected virtual void FollowScale()
         {
             var scaleToFollow = GetScaleToFollow();
             Vector3 newScale;

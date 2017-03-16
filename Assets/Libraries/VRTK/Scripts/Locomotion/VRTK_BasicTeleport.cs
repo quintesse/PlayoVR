@@ -27,6 +27,8 @@ namespace VRTK
     {
         [Header("Base Options")]
 
+        [Tooltip("The colour to fade to when blinking on teleport.")]
+        public Color blinkToColor = Color.black;
         [Tooltip("The fade blink speed can be changed on the basic teleport script to provide a customised teleport experience. Setting the speed to 0 will mean no fade blink effect is present.")]
         public float blinkTransitionSpeed = 0.6f;
         [Tooltip("A range between 0 and 32 that determines how long the blink transition will stay blacked out depending on the distance being teleported. A value of 0 will not delay the teleport blink effect over any distance, a value of 32 will delay the teleport blink fade in even when the distance teleported is very close to the original position. This can be used to simulate time taking longer to pass the further a user teleports. A value of 16 provides a decent basis to simulate this to the user.")]
@@ -53,11 +55,11 @@ namespace VRTK
         protected bool adjustYForTerrain = false;
         protected bool enableTeleport = true;
 
-        private float blinkPause = 0f;
-        private float fadeInTime = 0f;
-        private float maxBlinkTransitionSpeed = 1.5f;
-        private float maxBlinkDistance = 33f;
-        private Coroutine initaliseListeners;
+        protected float blinkPause = 0f;
+        protected float fadeInTime = 0f;
+        protected float maxBlinkTransitionSpeed = 1.5f;
+        protected float maxBlinkDistance = 33f;
+        protected Coroutine initaliseListeners;
 
         /// <summary>
         /// The InitDestinationSetListener method is used to register the teleport script to listen to events from the given game object that is used to generate destination markers. Any destination set event emitted by a registered game object will initiate the teleport to the given destination location.
@@ -124,15 +126,12 @@ namespace VRTK
             return (validNavMeshLocation && target && !(VRTK_PolicyList.Check(target.gameObject, targetListPolicy)));
         }
 
-        protected virtual void Awake()
+        protected virtual void OnEnable()
         {
             VRTK_PlayerObject.SetPlayerObject(gameObject, VRTK_PlayerObject.ObjectTypes.CameraRig);
             headset = VRTK_SharedMethods.AddCameraFade();
             playArea = VRTK_DeviceFinder.PlayAreaTransform();
-        }
 
-        protected virtual void OnEnable()
-        {
             adjustYForTerrain = false;
             enableTeleport = true;
             initaliseListeners = StartCoroutine(InitListenersAtEndOfFrame());
@@ -154,7 +153,7 @@ namespace VRTK
             fadeInTime = transitionSpeed;
             if (transitionSpeed > 0f)
             {
-                VRTK_SDK_Bridge.HeadsetFade(Color.black, 0);
+                VRTK_SDK_Bridge.HeadsetFade(blinkToColor, 0);
             }
             Invoke("ReleaseBlink", blinkPause);
         }
@@ -197,12 +196,12 @@ namespace VRTK
             {
                 var checkPosition = (useHeadsetForPosition ? new Vector3(headset.position.x, position.y, headset.position.z) : position);
                 var terrainHeight = Terrain.activeTerrain.SampleHeight(checkPosition);
-                position.y = (terrainHeight > position.y ? position.y : terrainHeight);
+                position.y = (terrainHeight > position.y ? position.y : Terrain.activeTerrain.GetPosition().y + terrainHeight);
             }
             return position;
         }
 
-        protected void OnTeleporting(object sender, DestinationMarkerEventArgs e)
+        protected virtual void OnTeleporting(object sender, DestinationMarkerEventArgs e)
         {
             if (Teleporting != null)
             {
@@ -210,7 +209,7 @@ namespace VRTK
             }
         }
 
-        protected void OnTeleported(object sender, DestinationMarkerEventArgs e)
+        protected virtual void OnTeleported(object sender, DestinationMarkerEventArgs e)
         {
             if (Teleported != null)
             {
@@ -218,24 +217,25 @@ namespace VRTK
             }
         }
 
-        private void CalculateBlinkDelay(float blinkSpeed, Vector3 newPosition)
+        protected virtual void CalculateBlinkDelay(float blinkSpeed, Vector3 newPosition)
         {
             blinkPause = 0f;
             if (distanceBlinkDelay > 0f)
             {
+                float minBlink = 0.5f;
                 float distance = Vector3.Distance(playArea.position, newPosition);
-                blinkPause = Mathf.Clamp((distance * blinkTransitionSpeed) / (maxBlinkDistance - distanceBlinkDelay), 0, maxBlinkTransitionSpeed);
-                blinkPause = (blinkSpeed <= 0.25 ? 0f : blinkPause);
+                blinkPause = Mathf.Clamp((distance * blinkTransitionSpeed) / (maxBlinkDistance - distanceBlinkDelay), minBlink, maxBlinkTransitionSpeed);
+                blinkPause = (blinkSpeed <= 0.25 ? minBlink : blinkPause);
             }
         }
 
-        private void ReleaseBlink()
+        protected virtual void ReleaseBlink()
         {
             VRTK_SDK_Bridge.HeadsetFade(Color.clear, fadeInTime);
             fadeInTime = 0f;
         }
 
-        private IEnumerator InitListenersAtEndOfFrame()
+        protected virtual IEnumerator InitListenersAtEndOfFrame()
         {
             yield return new WaitForEndOfFrame();
             if (enabled)
@@ -244,7 +244,7 @@ namespace VRTK
             }
         }
 
-        private void InitDestinationMarkerListeners(bool state)
+        protected virtual void InitDestinationMarkerListeners(bool state)
         {
             var leftHand = VRTK_DeviceFinder.GetControllerLeftHand();
             var rightHand = VRTK_DeviceFinder.GetControllerRightHand();

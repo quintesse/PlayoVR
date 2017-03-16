@@ -1,16 +1,23 @@
-﻿// OculusVR Controller|SDK_OculusVR|003
+﻿// OculusVR Controller|SDK_OculusVR|004
 namespace VRTK
 {
-#if VRTK_SDK_OCULUSVR
+#if VRTK_DEFINE_SDK_OCULUSVR
     using UnityEngine;
     using System.Collections.Generic;
+#endif
 
     /// <summary>
     /// The OculusVR Controller SDK script provides a bridge to SDK methods that deal with the input devices.
     /// </summary>
-    public class SDK_OculusVRController : SDK_BaseController
+    [SDK_Description(typeof(SDK_OculusVRSystem))]
+    public class SDK_OculusVRController
+#if VRTK_DEFINE_SDK_OCULUSVR
+        : SDK_BaseController
+#else
+        : SDK_FallbackController
+#endif
     {
-        private bool floorLevelSet = false;
+#if VRTK_DEFINE_SDK_OCULUSVR
         private SDK_OculusVRBoundaries cachedBoundariesSDK;
         private VRTK_TrackedController cachedLeftController;
         private VRTK_TrackedController cachedRightController;
@@ -30,8 +37,9 @@ namespace VRTK
 
         private float[] hairTriggerLimit = new float[2];
         private float[] hairGripLimit = new float[2];
-
-        private OVRHapticsClip hapticsProceduralClip = new OVRHapticsClip();
+        
+        private OVRHapticsClip hapticsProceduralClipLeft = new OVRHapticsClip();
+        private OVRHapticsClip hapticsProceduralClipRight = new OVRHapticsClip();
 
         /// <summary>
         /// The ProcessUpdate method enables an SDK to run logic for every Unity Update
@@ -40,7 +48,6 @@ namespace VRTK
         /// <param name="options">A dictionary of generic options that can be used to within the update.</param>
         public override void ProcessUpdate(uint index, Dictionary<string, object> options)
         {
-
             if (index < uint.MaxValue)
             {
                 var device = GetTrackedObject(GetControllerByIndex(index));
@@ -119,8 +126,8 @@ namespace VRTK
         /// <returns>The index of the given controller.</returns>
         public override uint GetControllerIndex(GameObject controller)
         {
-            var trackedObject = GetTrackedObject(controller);
-            return (trackedObject ? trackedObject.index : uint.MaxValue);
+            VRTK_TrackedController trackedObject = GetTrackedObject(controller);
+            return (trackedObject != null ? trackedObject.index : uint.MaxValue);
         }
 
         /// <summary>
@@ -128,7 +135,7 @@ namespace VRTK
         /// </summary>
         /// <param name="index">The index of the controller to find.</param>
         /// <param name="actual">If true it will return the actual controller, if false it will return the script alias controller GameObject.</param>
-        /// <returns></returns>
+        /// <returns>The GameObject of the controller</returns>
         public override GameObject GetControllerByIndex(uint index, bool actual = false)
         {
             SetTrackedControllerCaches();
@@ -178,7 +185,7 @@ namespace VRTK
             var controller = GetSDKManagerControllerLeftHand(actual);
             if (!controller && actual)
             {
-                controller = GameObject.Find("OVRCameraRig/TrackingSpace/LeftHandAnchor");
+                controller = VRTK_SharedMethods.FindEvenInactiveGameObject<OVRCameraRig>("/TrackingSpace/LeftHandAnchor");
             }
             return controller;
         }
@@ -193,7 +200,7 @@ namespace VRTK
             var controller = GetSDKManagerControllerRightHand(actual);
             if (!controller && actual)
             {
-                controller = GameObject.Find("OVRCameraRig/TrackingSpace/RightHandAnchor");
+                controller = VRTK_SharedMethods.FindEvenInactiveGameObject<OVRCameraRig>("/TrackingSpace/RightHandAnchor");
             }
             return controller;
         }
@@ -257,33 +264,32 @@ namespace VRTK
         /// <returns>The GameObject that has the model alias within it.</returns>
         public override GameObject GetControllerModel(ControllerHand hand)
         {
-            var model = GetSDKManagerControllerModelForHand(hand);
-            if (!model)
+            GameObject model = GetSDKManagerControllerModelForHand(hand);
+            if (model == null)
             {
-                var avatarObject = GetAvatar();
-                var avatarName = (avatarObject ? avatarObject.name : "");
+                GameObject avatarObject = GetAvatar();
                 switch (hand)
                 {
                     case ControllerHand.Left:
-                        if (avatarName != "")
+                        if (avatarObject != null)
                         {
-                            model = GameObject.Find(avatarName + "/controller_left");
+                            model = avatarObject.transform.Find("controller_left").gameObject;
                         }
                         else
                         {
-                            model = GameObject.Find("OVRCameraRig/TrackingSpace/LeftHandAnchor");
-                            model = (model.transform.childCount > 0 ? model.transform.GetChild(0).gameObject : null);
+                            model = GetControllerLeftHand(true);
+                            model = (model != null && model.transform.childCount > 0 ? model.transform.GetChild(0).gameObject : null);
                         }
                         break;
                     case ControllerHand.Right:
-                        if (avatarName != "")
+                        if (avatarObject != null)
                         {
-                            model = GameObject.Find(avatarName + "/controller_right");
+                            model = avatarObject.transform.Find("controller_right").gameObject;
                         }
                         else
                         {
-                            model = GameObject.Find("OVRCameraRig/TrackingSpace/RightHandAnchor");
-                            model = (model.transform.childCount > 0 ? model.transform.GetChild(0).gameObject : null);
+                            model = GetControllerRightHand(true);
+                            model = (model != null && model.transform.childCount > 0 ? model.transform.GetChild(0).gameObject : null);
                         }
                         break;
                 }
@@ -321,14 +327,18 @@ namespace VRTK
             if (index < uint.MaxValue)
             {
                 var controller = GetControllerByIndex(index);
-                hapticsProceduralClip.WriteSample((byte)(strength * byte.MaxValue));
+
                 if (IsControllerLeftHand(controller))
                 {
-                    OVRHaptics.LeftChannel.Preempt(hapticsProceduralClip);
+                    hapticsProceduralClipLeft.Reset();
+                    hapticsProceduralClipLeft.WriteSample((byte)(strength * byte.MaxValue));
+                    OVRHaptics.LeftChannel.Preempt(hapticsProceduralClipLeft);
                 }
                 else if (IsControllerRightHand(controller))
                 {
-                    OVRHaptics.RightChannel.Preempt(hapticsProceduralClip);
+                    hapticsProceduralClipRight.Reset();
+                    hapticsProceduralClipRight.WriteSample((byte)(strength * byte.MaxValue));
+                    OVRHaptics.RightChannel.Preempt(hapticsProceduralClipRight);
                 }
             }
         }
@@ -899,21 +909,6 @@ namespace VRTK
                     cachedRightController.index = 1;
                 }
             }
-
-            SetFloorLevel();
-        }
-
-        private void SetFloorLevel()
-        {
-            if (!floorLevelSet)
-            {
-                floorLevelSet = true;
-                var ovrManager = FindObjectOfType<OVRManager>();
-                if (ovrManager)
-                {
-                    ovrManager.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
-                }
-            }
         }
 
         private VRTK_TrackedController GetTrackedObject(GameObject controller)
@@ -1017,7 +1012,7 @@ namespace VRTK
         private bool HasAvatar(bool controllersAreVisible = true)
         {
             GetBoundariesSDK();
-#if VRTK_SDK_OCULUSVR_AVATAR
+#if VRTK_DEFINE_SDK_OCULUSVR_AVATAR
             if (cachedBoundariesSDK)
             {
                 var avatar = cachedBoundariesSDK.GetAvatar();
@@ -1030,7 +1025,7 @@ namespace VRTK
         private GameObject GetAvatar()
         {
             GetBoundariesSDK();
-#if VRTK_SDK_OCULUSVR_AVATAR
+#if VRTK_DEFINE_SDK_OCULUSVR_AVATAR
             if (cachedBoundariesSDK)
             {
                 var avatar = cachedBoundariesSDK.GetAvatar();
@@ -1042,10 +1037,6 @@ namespace VRTK
 #endif
             return null;
         }
-    }
-#else
-    public class SDK_OculusVRController : SDK_FallbackController
-    {
-    }
 #endif
+    }
 }

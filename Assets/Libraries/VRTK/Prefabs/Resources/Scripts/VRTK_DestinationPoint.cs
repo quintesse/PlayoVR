@@ -120,7 +120,7 @@ namespace VRTK
             pointRigidbody.useGravity = false;
         }
 
-        private IEnumerator ManageDestinationMarkersAtEndOfFrame()
+        protected virtual IEnumerator ManageDestinationMarkersAtEndOfFrame()
         {
             yield return new WaitForEndOfFrame();
             if (enabled)
@@ -175,6 +175,7 @@ namespace VRTK
                 isActive = true;
                 ToggleCursor(sender, false);
                 EnablePoint();
+                OnDestinationMarkerEnter(SetDestinationMarkerEvent(0f, e.raycastHit.transform, e.raycastHit, e.raycastHit.transform.position, e.controllerIndex));
             }
         }
 
@@ -185,6 +186,7 @@ namespace VRTK
                 isActive = false;
                 ToggleCursor(sender, true);
                 ResetPoint();
+                OnDestinationMarkerExit(SetDestinationMarkerEvent(0f, e.raycastHit.transform, e.raycastHit, e.raycastHit.transform.position, e.controllerIndex));
             }
         }
 
@@ -205,7 +207,7 @@ namespace VRTK
             }
         }
 
-        private IEnumerator DoDestinationMarkerSetAtEndOfFrame(DestinationMarkerEventArgs e)
+        protected virtual IEnumerator DoDestinationMarkerSetAtEndOfFrame(DestinationMarkerEventArgs e)
         {
             yield return new WaitForEndOfFrame();
             if (enabled)
@@ -251,6 +253,7 @@ namespace VRTK
 
         protected virtual void ResetPoint()
         {
+            currentDestinationPoint = null;
             ToggleObject(hoverCursorObject, false);
             if (enableTeleport)
             {

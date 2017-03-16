@@ -3,7 +3,6 @@ namespace VRTK
 {
     using UnityEngine;
     using UnityEngine.EventSystems;
-    using System.Collections;
 
     /// <summary>
     /// Event Payload
@@ -12,12 +11,14 @@ namespace VRTK
     /// <param name="isActive">The state of whether the UI Pointer is currently active or not.</param>
     /// <param name="currentTarget">The current UI element that the pointer is colliding with.</param>
     /// <param name="previousTarget">The previous UI element that the pointer was colliding with.</param>
+    /// <param name="raycastResult">The raw raycast result of the UI ray collision.</param>
     public struct UIPointerEventArgs
     {
         public uint controllerIndex;
         public bool isActive;
         public GameObject currentTarget;
         public GameObject previousTarget;
+        public RaycastResult raycastResult;
     }
 
     /// <summary>
@@ -67,14 +68,14 @@ namespace VRTK
         [Header("Activation Settings")]
 
         [Tooltip("The button used to activate/deactivate the UI raycast for the pointer.")]
-        public VRTK_ControllerEvents.ButtonAlias activationButton = VRTK_ControllerEvents.ButtonAlias.Touchpad_Press;
+        public VRTK_ControllerEvents.ButtonAlias activationButton = VRTK_ControllerEvents.ButtonAlias.TouchpadPress;
         [Tooltip("Determines when the UI pointer should be active.")]
         public ActivationMethods activationMode = ActivationMethods.HoldButton;
 
         [Header("Selection Settings")]
 
         [Tooltip("The button used to execute the select action at the pointer's target position.")]
-        public VRTK_ControllerEvents.ButtonAlias selectionButton = VRTK_ControllerEvents.ButtonAlias.Trigger_Press;
+        public VRTK_ControllerEvents.ButtonAlias selectionButton = VRTK_ControllerEvents.ButtonAlias.TriggerPress;
         [Tooltip("Determines when the UI Click event action should happen.")]
         public ClickMethods clickMethod = ClickMethods.ClickOnButtonUp;
         [Tooltip("Determines whether the UI click action should be triggered when the pointer is deactivated. If the pointer is hovering over a clickable element then it will invoke the click action on that element. Note: Only works with `Click Method =  Click_On_Button_Up`")]
@@ -132,14 +133,14 @@ namespace VRTK
         /// </summary>
         public event UIPointerEventHandler UIPointerElementDragEnd;
 
-        private bool pointerClicked = false;
-        private bool beamEnabledState = false;
-        private bool lastPointerPressState = false;
-        private bool lastPointerClickState = false;
-        private GameObject currentTarget;
+        protected bool pointerClicked = false;
+        protected bool beamEnabledState = false;
+        protected bool lastPointerPressState = false;
+        protected bool lastPointerClickState = false;
+        protected GameObject currentTarget;
 
-        private EventSystem cachedEventSystem;
-        private VRTK_VRInputModule cachedVRInputModule;
+        protected EventSystem cachedEventSystem;
+        protected VRTK_VRInputModule cachedVRInputModule;
 
         public virtual void OnUIPointerElementEnter(UIPointerEventArgs e)
         {
@@ -207,13 +208,14 @@ namespace VRTK
             }
         }
 
-        public virtual UIPointerEventArgs SetUIPointerEvent(GameObject currentTarget, GameObject lastTarget = null)
+        public virtual UIPointerEventArgs SetUIPointerEvent(RaycastResult currentRaycastResult, GameObject currentTarget, GameObject lastTarget = null)
         {
             UIPointerEventArgs e;
-            e.controllerIndex = VRTK_DeviceFinder.GetControllerIndex(controller.gameObject);
+            e.controllerIndex = (controller != null ? VRTK_DeviceFinder.GetControllerIndex(controller.gameObject) : uint.MaxValue);
             e.isActive = PointerActive();
             e.currentTarget = currentTarget;
             e.previousTarget = lastTarget;
+            e.raycastResult = currentRaycastResult;
             return e;
         }
 
@@ -266,16 +268,16 @@ namespace VRTK
             }
             else if (activationMode == ActivationMethods.HoldButton)
             {
-                return controller.IsButtonPressed(activationButton);
+                return (controller != null ? controller.IsButtonPressed(activationButton) : false);
             }
             else
             {
                 pointerClicked = false;
-                if (controller.IsButtonPressed(activationButton) && !lastPointerPressState)
+                if (controller != null && controller.IsButtonPressed(activationButton) && !lastPointerPressState)
                 {
                     pointerClicked = true;
                 }
-                lastPointerPressState = controller.IsButtonPressed(activationButton);
+                lastPointerPressState = (controller != null ? controller.IsButtonPressed(activationButton) : false);
 
                 if (pointerClicked)
                 {
@@ -292,7 +294,7 @@ namespace VRTK
         /// <returns>Returns true if the selection button is active.</returns>
         public virtual bool SelectionButtonActive()
         {
-            return controller.IsButtonPressed(selectionButton);
+            return (controller != null ? controller.IsButtonPressed(selectionButton) : false);
         }
 
         /// <summary>
@@ -331,16 +333,17 @@ namespace VRTK
         {
             pointerOriginTransform = (pointerOriginTransform == null ? VRTK_SDK_Bridge.GenerateControllerPointerOrigin(gameObject) : pointerOriginTransform);
 
-            if (controller == null)
-            {
-                controller = GetComponent<VRTK_ControllerEvents>();
-            }
+            controller = (controller != null ? controller : GetComponent<VRTK_ControllerEvents>());
             ConfigureEventSystem();
             pointerClicked = false;
             lastPointerPressState = false;
             lastPointerClickState = false;
             beamEnabledState = false;
-            controllerRenderModel = VRTK_SDK_Bridge.GetControllerRenderModel(controller.gameObject);
+
+            if (controller != null)
+            {
+                controllerRenderModel = VRTK_SDK_Bridge.GetControllerRenderModel(controller.gameObject);
+            }
         }
 
         protected virtual void OnDisable()
@@ -351,13 +354,21 @@ namespace VRTK
             }
         }
 
-        private void ResetHoverTimer()
+        protected virtual void LateUpdate()
+        {
+            if (controller != null)
+            {
+                pointerEventData.pointerId = (int)VRTK_DeviceFinder.GetControllerIndex(controller.gameObject);
+            }
+        }
+
+        protected virtual void ResetHoverTimer()
         {
             hoverDurationTimer = 0f;
             canClickOnHover = false;
         }
 
-        private void ConfigureEventSystem()
+        protected virtual void ConfigureEventSystem()
         {
             if (!cachedEventSystem)
             {
@@ -376,24 +387,11 @@ namespace VRTK
                     pointerEventData = new PointerEventData(cachedEventSystem);
                 }
 
-                StartCoroutine(WaitForPointerId());
-
                 if (!cachedVRInputModule.pointers.Contains(this))
                 {
                     cachedVRInputModule.pointers.Add(this);
                 }
             }
-        }
-
-        private IEnumerator WaitForPointerId()
-        {
-            var index = (int)VRTK_SDK_Bridge.GetControllerIndex(controller.gameObject);
-            while (index < 0 || index == int.MaxValue)
-            {
-                index = (int)VRTK_SDK_Bridge.GetControllerIndex(controller.gameObject);
-                yield return null;
-            }
-            pointerEventData.pointerId = index;
         }
     }
 }
