@@ -2,10 +2,12 @@
     using UnityEngine;
     using System.Collections;
     using VRTK;
+    using NetVRTK;
 
     public class Gun : Photon.MonoBehaviour {
         public GameObject bulletPrefab;
         public Transform bulletSpawn;
+        public AudioClip fireGunSound;
 
         private bool fired;
 
@@ -35,8 +37,8 @@
                 bulletSpawn.rotation,
                 0);
 
-            // Add velocity to the bullet
-            bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * 12;
+            // Play sound of gun shooting
+            NetworkAudio.SendPlayClipAtPoint(fireGunSound, transform.position, 1.0f);
         }
 
         void DoFireGun(object sender, InteractableObjectEventArgs e) {
