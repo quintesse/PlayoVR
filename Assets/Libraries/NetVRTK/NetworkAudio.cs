@@ -3,42 +3,48 @@
     using System.Collections;
 
     [RequireComponent(typeof(PhotonView))]
-    public class NetworkAudio : Photon.PunBehaviour {
-        public const int CLIP_BULLET_HIT_SOLID = 1;
-        public const int CLIP_BULLET_HIT_SOFT = 2;
+    public abstract class NetworkAudio : Photon.PunBehaviour {
 
-        public AudioClip hitSolidSound; // 1
-        public AudioClip hitPlayerSound; // 2
+        private static NetworkAudio instance;
 
-        private static NetworkAudio netAudio;
-
-        // Get the component for sending sounds over the network
-        private static NetworkAudio instance() {
-            if (netAudio == null) {
-                netAudio = GameObject.Find("/Scripts").GetComponent<NetworkAudio>();
-            }
-            return netAudio;
+        void Awake() {
+            instance = this;
         }
 
         // Play a sound both locally and for all connected players
-        public static void SendPlayClipAtPoint(int clip, Vector3 position, float volume) {
-            instance().photonView.RPC("PlayClipAtPoint", PhotonTargets.All, clip, position, volume);
+        public static void SendPlayClipAtPoint(AudioClip clip, Vector3 position, float volume) {
+            if (instance != null) {
+                SendPlayClipAtPoint(instance.GetClipId(clip), position, volume);
+            }
+        }
+
+        // Play a sound both locally and for all connected players
+        public static void SendPlayClipAtPoint(string clipName, Vector3 position, float volume) {
+            if (instance != null) {
+                SendPlayClipAtPoint(instance.GetClipId(clipName), position, volume);
+            }
+        }
+
+        // Play a sound both locally and for all connected players
+        public static void SendPlayClipAtPoint(int clipId, Vector3 position, float volume) {
+            instance.photonView.RPC("PlayClipAtPoint", PhotonTargets.All, clipId, position, volume);
         }
 
         [PunRPC]
-        private void PlayClipAtPoint(int clip, Vector3 position, float volume) {
-            AudioSource.PlayClipAtPoint(getClip(clip), position, volume);
+        protected void PlayClipAtPoint(int clipId, Vector3 position, float volume) {
+            AudioClip clip = GetClip(clipId);
+            if (clip != null) {
+                AudioSource.PlayClipAtPoint(clip, position, volume);
+            }
         }
 
-        private AudioClip getClip(int clip) {
-            switch (clip) {
-                case 1:
-                    return hitSolidSound;
-                case 2:
-                    return hitPlayerSound;
-            }
-            Debug.Log("Somebody trying to play an unknown clip : " + clip);
-            return null;
-        }
+        // Needs an implementation that turns a reference to an AudioClip into an int
+        protected abstract int GetClipId(AudioClip clip);
+
+        // Needs an implementation that turns a name of an AudioClip into an int
+        protected abstract int GetClipId(string clipName);
+
+        // Needs an implementation that turns an int into a reference to an AudioClip
+        protected abstract AudioClip GetClip(int clipId);
     }
 }
