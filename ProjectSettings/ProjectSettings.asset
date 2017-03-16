@@ -247,7 +247,9 @@ PlayerSettings:
   - m_BuildTarget: Standalone
     m_Enabled: 1
     m_Devices:
+    - None
     - OpenVR
+    - Oculus
   - m_BuildTarget: Tizen
     m_Enabled: 0
     m_Devices: []
@@ -440,7 +442,19 @@ PlayerSettings:
   webGLUseWasm: 0
   webGLCompressionFormat: 1
   scriptingDefineSymbols:
-    1: VRTK_SDK_STEAMVR
+    1: VRTK_DEFINE_SDK_STEAMVR;VRTK_DEFINE_STEAMVR_PLUGIN_1_2_1_OR_NEWER
+    7: 
+    13: 
+    14: 
+    17: 
+    18: 
+    19: 
+    20: 
+    21: 
+    22: 
+    23: 
+    24: 
+    25: 
   platformArchitecture: {}
   scriptingBackend:
     Standalone: 0

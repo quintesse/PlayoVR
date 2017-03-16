@@ -7,3 +7,7 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/Main.unity
+  - enabled: 1
+    path: Assets/Scenes/SDKSimulatorScene.unity
+  - enabled: 1
+    path: Assets/Scenes/SDKSteamVRScene.unity
