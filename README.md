@@ -20,11 +20,21 @@ To be able to use this example project you'll have to set it up first:
 To test locally without another computer you can create a standalone Non-VR build:
 
  1. In the menu bar click on `File > Build Settings...`
- 2. Click `Player Settings...`
- 3. Uncheck `Other Settings -> Virtual Reality Supported`
- 4. In the `Build Settings` click the `Build` button, choose a destination folder and name your executable.
- 5. Run the executable you just built
- 6. Hit Play in the Editor!
+ 2. Click the `Build` button, choose a destination folder and name your executable.
+ 3. In the Explorer window that popped up right-click on the `.exe` and select `Create shortcut`
+ 4. Right-click on the newly created shortcut and select `Properties`
+ 5. In the `Target` field at the very end just after `.exe` type a space and `-novr`
+ 6. Click `Ok`
+ 7. Run the executable by double-clicking the shortcut
+ 8. Hit `Play` in the Unity Editor (or run the `.exe` instead of the shortcut)
+
+## Command line arguments
+
+ - `-novr` : start the program without VR support, will use the monitor plus mouse and keyboard
+ - `-sdk:<NAME>` : force the program to use the specified SDK. Valid values for `<NAME>` are:
+    - `SteamVR`
+    - `Oculus`
+    - `Simulator`
 
 ## Thanks
 
