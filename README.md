@@ -5,6 +5,16 @@ PhotonNetwork for allowing up to 4 people to join the same scene together and DF
 those people can actually talk to each other.
 
 ![Demo Scene](vrtk-pun-voice-demo.png)
+
+## Requirements
+
+To enable the Voice Chat that this Demo includes you will need the `DFVoice` asset that
+can be downloaded from the Unity Asset Store, but this is _not a free asset_! You'll have
+to import it yourself into the project. If you don't want to do that you can still continue
+running this demo without Voice Chat support. To do that simply:
+
+ - Remove the `Asset/Libraries/NetVoice` folder
+ 
 ## Configuration
 
 To be able to use this example project you'll have to set it up first:
