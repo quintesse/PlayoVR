@@ -1,16 +1,25 @@
+using System;
 using UnityEngine;
-using Photon;
 
 public class MyNetworkManager : Photon.PunBehaviour {
     private GameObject[] spawns;
 
-    [Tooltip("Reference to the player avatar prefab that will be instantiated when entering the room")]
-    public GameObject playerAvatar;
+    [Tooltip("Reference to the player avatar prefab without voice support (DFVoice is not available)")]
+    public GameObject mutePlayerAvatar;
+    [Tooltip("Reference to the player avatar prefab with voice support (DFVoice is available)")]
+    public GameObject voicedPlayerAvatar;
     [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
     public byte MaxPlayersPerRoom = 4;
     public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 
+    private GameObject playerAvatar;
+
     void Awake() {
+        if (Type.GetType("NetVoice.LocalVoiceController") != null) {
+            playerAvatar = voicedPlayerAvatar;
+        } else {
+            playerAvatar = mutePlayerAvatar;
+        }
         if (playerAvatar == null) {
             Debug.LogError("MyNetworkManager is missing a reference to the player avatar prefab!");
         }
