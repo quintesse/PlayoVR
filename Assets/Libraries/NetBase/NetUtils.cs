@@ -1,4 +1,4 @@
-﻿namespace NetVRTK {
+﻿namespace NetBase {
     using UnityEngine;
     using System.Collections;
 

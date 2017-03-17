@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using NetVRTK;
+using NetBase;
 
 public class MyNetworkAudio : NetworkAudio {
 

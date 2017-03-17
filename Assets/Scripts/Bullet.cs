@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using NetVRTK;
+using NetBase;
 
 public class Bullet : MonoBehaviour {
     public AudioClip hitSolidSound;

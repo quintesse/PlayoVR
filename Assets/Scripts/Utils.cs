@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.VR;
 using System;
-using System.Collections;
-using NetVRTK;
+using NetBase;
 
 public class Utils {
 

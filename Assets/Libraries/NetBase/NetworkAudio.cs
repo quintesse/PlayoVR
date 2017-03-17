@@ -1,6 +1,5 @@
-﻿namespace NetVRTK {
+﻿namespace NetBase {
     using UnityEngine;
-    using System.Collections;
 
     [RequireComponent(typeof(PhotonView))]
     public abstract class NetworkAudio : Photon.PunBehaviour {

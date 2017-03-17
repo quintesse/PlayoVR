@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using VRTK;
+using NetBase;
 using NetVRTK;
 
 public class Gun : Photon.MonoBehaviour {
