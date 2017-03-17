@@ -40,9 +40,10 @@ To test locally without another computer you can create a standalone Non-VR buil
 
 If you want to add networking to your VRTK interactable objects then you just need to follow a couple of simple steps. This assumes you already have a project that has both the `VRTK` and `Photon Unity Networking` assets (you can find them on the Unity Asset store) and that networking has already been set up. So for each object that has a `VRTK_Interactable_Object` script you do the following:
 
+ - From this project copy/drag the `NetBase` and `NetVRTK` folders
  - Add a `PhotonView` script
  - Add a `NetworkGrabManager` script
- - Add a `NetworkInterpolatingTransform` script (leave the deafult options)
+ - Add a `NetworkInterpolatingTransform` script (leave the default options)
  - Drag the last two scripts to the `Observed Components` of the `PhotonView`
  - For now you also must make sure that you are not using the `VRTK_ChildOfControllerGrabAttach` script. That limitation will be removed in a future update
  
