@@ -34,14 +34,12 @@ public abstract class SDKChooser : MonoBehaviour
                 return;
             }
 
-            SceneManager.sceneLoaded -= onSceneLoaded;
-
             SDKManager.PopulateObjectReferences(true);
             SDKManager.gameObject.SetActive(true);
-
-            Destroy(gameObject);
-
             SDKWasChosen.Invoke();
+
+            SceneManager.sceneLoaded -= onSceneLoaded;
+            Destroy(gameObject);
         };
         SceneManager.sceneLoaded += onSceneLoaded;
 
@@ -53,15 +51,21 @@ public abstract class SDKChooser : MonoBehaviour
         SDKManager.headsetSDKInfo = VRTK_SDKManager.InstalledHeadsetSDKInfos.First(predicate);
         SDKManager.controllerSDKInfo = VRTK_SDKManager.InstalledControllerSDKInfos.First(predicate);
 
-        VRSettings.LoadDeviceByName(setup.VRDeviceNameToLoad);
+        if (!string.IsNullOrEmpty(setup.VRDeviceNameToLoad)) {
+            VRSettings.LoadDeviceByName(setup.VRDeviceNameToLoad);
+        }
         StartCoroutine(LoadSceneAfterFrameDelay(setup));
 
         Debug.Log("Using SDK '" + setup.PrettyName + "'");
     }
 
-    private static IEnumerator LoadSceneAfterFrameDelay(SDKSetup setup)
+    private IEnumerator LoadSceneAfterFrameDelay(SDKSetup setup)
     {
         yield return null;
+
+        if (!string.IsNullOrEmpty(setup.VRDeviceNameToLoad)) {
+            VRSettings.enabled = true;
+        }
 
         SceneManager.LoadScene(
             setup.SceneToLoad,

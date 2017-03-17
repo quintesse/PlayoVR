@@ -538,7 +538,7 @@ MonoBehaviour:
     Priority: 20
   - PrettyName: Simulator
     SceneToLoad: SDKSimulatorScene
-    VRDeviceNameToLoad: None
+    VRDeviceNameToLoad:
     Priority: 10
   SDKWasChosen:
     m_PersistentCalls:
