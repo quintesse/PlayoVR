@@ -9,6 +9,8 @@
 /Assets/Libraries/SteamVR/InteractionSystem*
 /Assets/Libraries/SteamVR/Scenes*
 /Assets/Libraries/VRTK/Examples*
+/Assets/Libraries/DFVoice/*
+/Assets/Libraries/DFVoice.meta
 
 # Don't store the Photon network settings, they contain private info
 /Assets/Libraries/Photon/Photon Unity Networking/Resources/PhotonServerSettings.asset*
