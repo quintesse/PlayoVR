@@ -31,7 +31,7 @@
             }
         }
 
-        void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
+        protected void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
             if (stream.isWriting) {
                 Obtain(); // Obtain the current state of the object
                 if (!onChangeOnly || HasChanged()) { // Determine if we should send it
