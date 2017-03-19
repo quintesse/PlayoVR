@@ -25,8 +25,9 @@ GameObject:
   - component: {fileID: 114531619737491070}
   - component: {fileID: 114175941248337178}
   - component: {fileID: 114982492250686170}
-  - component: {fileID: 114545520694356908}
   - component: {fileID: 114293729372137782}
+  - component: {fileID: 114101436865905092}
+  - component: {fileID: 114434739499023912}
   m_Layer: 0
   m_Name: ItemGun
   m_TagString: Holsterable
@@ -396,6 +397,24 @@ MonoBehaviour:
   useOverrideButton: 0
   allowedUseControllers: 0
   usingState: 0
+--- !u!114 &114101436865905092
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1009108833589340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  position: 2
+  rotation: 2
+  scale: 0
+  velocity: 1
+  angularVelocity: 1
+  useLocalValues: 1
+  onChangeOnly: 1
 --- !u!114 &114175941248337178
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -438,6 +457,17 @@ MonoBehaviour:
   bulletPrefab: {fileID: 184260, guid: cbd26eb7c6d51c14487b1120fff7844a, type: 2}
   bulletSpawn: {fileID: 4719475787863064}
   fireGunSound: {fileID: 8300000, guid: edc6dc12da6af43409913c1d4323ab14, type: 3}
+--- !u!114 &114434739499023912
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1009108833589340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114531619737491070
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -458,31 +488,14 @@ MonoBehaviour:
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114545520694356908}
+  - {fileID: 114101436865905092}
   - {fileID: 114982492250686170}
+  - {fileID: 114434739499023912}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
---- !u!114 &114545520694356908
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1009108833589340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  position: 2
-  rotation: 2
-  scale: 0
-  velocity: 1
-  angularVelocity: 1
-  useLocalValues: 1
-  onChangeOnly: 1
 --- !u!114 &114982492250686170
 MonoBehaviour:
   m_ObjectHideFlags: 1
