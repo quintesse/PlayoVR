@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using UnityEngine;
 
-    public class NetworkParentableObject : NetworkObject {
+    public class NetworkParentManager : NetworkBehaviour {
         private int parentId;
         private string parentPath;
         private int prevParentId;
@@ -24,7 +24,7 @@
                     return pvl.linkedView.viewID;
                 }
             }
-            return -1;
+            return 0;
         }
 
         private string GetParentPath() {
@@ -49,31 +49,23 @@
         }
 
         protected override void Obtain() {
-            base.Obtain();
             parentId = GetParentId();
             parentPath = GetParentPath();
         }
 
         protected override bool HasChanged() {
-            return base.HasChanged() || parentId != prevParentId || parentPath != prevParentPath;
+            return parentId != prevParentId || parentPath != prevParentPath;
         }
 
-        protected override void Write(PhotonStream stream, PhotonMessageInfo info) {
-            base.Write(stream, info);
+        protected override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
+            Debug.Log("Ser NPM " + stream.isWriting + " " + NetUtils.GetPath(transform));
             stream.Serialize(ref parentId);
             stream.Serialize(ref parentPath);
         }
 
         protected override void Retain() {
-            base.Retain();
             prevParentId = parentId;
             prevParentPath = parentPath;
-        }
-
-        protected override void Read(PhotonStream stream, PhotonMessageInfo info) {
-            base.Read(stream, info);
-            stream.Serialize(ref parentId);
-            stream.Serialize(ref parentPath);
         }
 
         protected override void Apply() {
