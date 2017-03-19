@@ -3,25 +3,24 @@
     using System.Collections.Generic;
     using UnityEngine;
     using VRTK;
+    using NetBase;
 
     [RequireComponent(typeof(VRTK_InteractableObject)), RequireComponent(typeof(PhotonView))]
-    public class NetworkGrabManager : Photon.MonoBehaviour {
+    public class NetworkGrabManager : NetworkBehaviour {
         private int grabOwner;
         private int prevGrabOwner;
 
-        void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
-            if (stream.isWriting) {
-                if (HasChanged()) {
-                    stream.Serialize(ref grabOwner);
-                }
-            } else {
-                stream.Serialize(ref grabOwner);
-            }
-            Retain();
+        protected override bool HasChanged() {
+            return prevGrabOwner != grabOwner;
         }
 
-        private bool HasChanged() {
-            return prevGrabOwner != grabOwner;
+        protected override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
+            Debug.Log("Ser NGM " + stream.isWriting + " " + NetUtils.GetPath(transform));
+            stream.Serialize(ref grabOwner);
+        }
+
+        protected override void Retain() {
+            prevGrabOwner = grabOwner;
         }
 
         private PhotonView GetAvatarHandView() {
@@ -34,10 +33,6 @@
 
         private void InitState(int ownerId) {
             grabOwner = ownerId;
-        }
-
-        private void Retain() {
-            prevGrabOwner = grabOwner;
         }
 
         void Awake() {

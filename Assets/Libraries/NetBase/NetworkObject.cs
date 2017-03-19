@@ -3,13 +3,18 @@
     using UnityEngine;
 
     [RequireComponent(typeof(PhotonView))]
-    public class NetworkObject : Photon.MonoBehaviour {
+    public class NetworkObject : NetworkBehaviour {
         public enum UpdateMode { None, Set, Lerp }
 
+        [Tooltip("Update mode to use for the object's position")]
         public UpdateMode position = UpdateMode.Lerp;
+        [Tooltip("Update mode to use for the object's rotation")]
         public UpdateMode rotation = UpdateMode.Lerp;
+        [Tooltip("Update mode to use for the object's scale")]
         public UpdateMode scale = UpdateMode.None;
+        [Tooltip("Update mode to use for the object's velocity")]
         public UpdateMode velocity = UpdateMode.Set;
+        [Tooltip("Update mode to use for the object's angualr velocity")]
         public UpdateMode angularVelocity = UpdateMode.Set;
 
         [Tooltip("Use local coordinates if true, otherwise use world coordinates")]
@@ -31,52 +36,33 @@
             }
         }
 
-        protected void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
-            if (stream.isWriting) {
-                Obtain(); // Obtain the current state of the object
-                if (!onChangeOnly || HasChanged()) { // Determine if we should send it
-                    Write(stream, info); // Send the new state
-                    Retain(); // Remember the state for later
-                }
-            } else {
-                Read(stream, info); // Receive the new state
-                Apply(); // Apply the new state to the object
-            }
-        }
-
-        protected virtual void Obtain() {
+        protected override void Obtain() {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Obtain();
             }
         }
 
-        protected virtual bool HasChanged() {
-            bool changed = false;
+        protected override bool HasChanged() {
+            bool changed = !onChangeOnly;
             foreach (ComponentInterpolator ci in cipols) {
                 changed = changed || ci.HasChanged();
             }
             return changed;
         }
 
-        protected virtual void Write(PhotonStream stream, PhotonMessageInfo info) {
+        protected override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
             foreach (ComponentInterpolator ci in cipols) {
-                ci.Write(stream, info);
+                ci.Serialize(stream, info);
             }
         }
 
-        protected virtual void Retain() {
+        protected override void Retain() {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Retain();
             }
         }
 
-        protected virtual void Read(PhotonStream stream, PhotonMessageInfo info) {
-            foreach (ComponentInterpolator ci in cipols) {
-                ci.Read(stream, info);
-            }
-        }
-
-        protected virtual void Apply() {
+        protected override void Apply() {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Apply();
             }
@@ -111,7 +97,7 @@
             return interpolationBackTime / 1000d;
         }
 
-        class ComponentInterpolator {
+        abstract class ComponentInterpolator {
             protected NetworkObject nit;
 
             internal struct State {
@@ -134,36 +120,16 @@
 
             public ComponentInterpolator(NetworkObject nit) {
                 this.nit = nit;
-                reset(ref state);
-                reset(ref prevstate);
             }
 
-            private static void reset(ref State state) {
-                state.pos = Vector3.zero;
-                state.rot = Quaternion.identity;
-                state.scale = Vector3.one;
-                state.v = Vector3.zero;
-                state.angv = Vector3.zero;
-            }
+            public abstract void Obtain();
 
-            public virtual void Obtain() {
-                reset(ref state);
-            }
+            public abstract bool HasChanged();
 
-            public virtual bool HasChanged() {
-                return false;
-            }
-
-            public virtual void Write(PhotonStream stream, PhotonMessageInfo info) {
-            }
+            public abstract void Serialize(PhotonStream stream, PhotonMessageInfo info);
 
             public virtual void Retain() {
                 prevstate = state;
-            }
-
-            public virtual void Read(PhotonStream stream, PhotonMessageInfo info) {
-                state.timestamp = info.timestamp;
-                reset(ref state);
             }
 
             public virtual void Apply() {
@@ -231,10 +197,17 @@
 
             public TransformInterpolator(NetworkObject nit, Transform transform) : base(nit) {
                 this.transform = transform;
+                reset(ref state);
+            }
+
+            private static void reset(ref State state) {
+                state.pos = Vector3.zero;
+                state.rot = Quaternion.identity;
+                state.scale = Vector3.one;
             }
 
             public override void Obtain() {
-                base.Obtain();
+                reset(ref state);
                 if (nit.useLocalValues) {
                     if (nit.position != UpdateMode.None)
                         state.pos = transform.localPosition;
@@ -251,22 +224,15 @@
             }
 
             public override bool HasChanged() {
-                return base.HasChanged() || state.pos != prevstate.pos || state.rot != prevstate.rot || state.scale != prevstate.scale;
+                return state.pos != prevstate.pos || state.rot != prevstate.rot || state.scale != prevstate.scale;
             }
 
-            public override void Write(PhotonStream stream, PhotonMessageInfo info) {
-                base.Write(stream, info);
-                // Send update
-                if (nit.position != UpdateMode.None)
-                    stream.Serialize(ref state.pos);
-                if (nit.rotation != UpdateMode.None)
-                    stream.Serialize(ref state.rot);
-                if (nit.scale != UpdateMode.None)
-                    stream.Serialize(ref state.scale);
-            }
-
-            public override void Read(PhotonStream stream, PhotonMessageInfo info) {
-                base.Read(stream, info);
+            public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
+                Debug.Log("Ser NO-T " + stream.isWriting + " " + NetUtils.GetPath(nit.transform));
+                if (stream.isReading) {
+                    state.timestamp = info.timestamp;
+                    reset(ref state);
+                }
                 if (nit.position != UpdateMode.None)
                     stream.Serialize(ref state.pos);
                 if (nit.rotation != UpdateMode.None)
@@ -320,10 +286,16 @@
 
             public RigidBodyInterpolator(NetworkObject nit, Rigidbody rbody) : base(nit) {
                 this.rbody = rbody;
+                reset(ref state);
+            }
+
+            private static void reset(ref State state) {
+                state.v = Vector3.zero;
+                state.angv = Vector3.zero;
             }
 
             public override void Obtain() {
-                base.Obtain();
+                reset(ref state);
                 if (nit.velocity != UpdateMode.None)
                     state.v = rbody.velocity;
                 if (nit.angularVelocity != UpdateMode.None)
@@ -331,19 +303,15 @@
             }
 
             public override bool HasChanged() {
-                return base.HasChanged() || state.v != prevstate.v || state.angv != prevstate.angv;
+                return state.v != prevstate.v || state.angv != prevstate.angv;
             }
 
-            public override void Write(PhotonStream stream, PhotonMessageInfo info) {
-                base.Write(stream, info);
-                if (nit.velocity != UpdateMode.None)
-                    stream.Serialize(ref state.v);
-                if (nit.angularVelocity != UpdateMode.None)
-                    stream.Serialize(ref state.angv);
-            }
-
-            public override void Read(PhotonStream stream, PhotonMessageInfo info) {
-                base.Read(stream, info);
+            public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
+                Debug.Log("Ser NO-RB " + stream.isWriting + " " + NetUtils.GetPath(nit.transform));
+                if (stream.isReading) {
+                    state.timestamp = info.timestamp;
+                    reset(ref state);
+                }
                 if (nit.velocity != UpdateMode.None)
                     stream.Serialize(ref state.v);
                 if (nit.angularVelocity != UpdateMode.None)
