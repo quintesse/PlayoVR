@@ -4,16 +4,24 @@
     using UnityEngine;
 
     public class NetworkParentableObject : NetworkObject {
-        private int parentView;
+        private int parentId;
         private string parentPath;
-        private int prevParentView;
+        private int prevParentId;
         private string prevParentPath;
 
-        private int GetParentView() {
+        private int GetParentId() {
             if (transform.parent != null) {
+                NetworkAttachment na = transform.parent.GetComponentInParent<NetworkAttachment>();
+                if (na != null) {
+                    return -na.id;
+                }
                 PhotonView pv = transform.parent.GetComponentInParent<PhotonView>();
                 if (pv != null) {
                     return pv.viewID;
+                }
+                PhotonViewLink pvl = transform.parent.GetComponentInParent<PhotonViewLink>();
+                if (pvl != null) {
+                    return pvl.linkedView.viewID;
                 }
             }
             return -1;
@@ -21,11 +29,20 @@
 
         private string GetParentPath() {
             if (transform.parent != null) {
+                NetworkAttachment na = transform.parent.GetComponentInParent<NetworkAttachment>();
+                if (na != null) {
+                    return null; // TODO see if we can return some path here
+                }
                 PhotonView pv = transform.parent.GetComponentInParent<PhotonView>();
                 if (pv != null) {
                     return NetUtils.RelPath(transform.parent, pv.transform);
                 } else {
-                    return NetUtils.GetPath(transform.parent);
+                    PhotonViewLink pvl = transform.parent.GetComponentInParent<PhotonViewLink>();
+                    if (pvl != null) {
+                        return null; // TODO see if we can return some path here
+                    } else {
+                        return NetUtils.GetPath(transform.parent);
+                    }
                 }
             }
             return null;
@@ -33,40 +50,48 @@
 
         protected override void Obtain() {
             base.Obtain();
-            parentView = GetParentView();
+            parentId = GetParentId();
             parentPath = GetParentPath();
         }
 
         protected override bool HasChanged() {
-            return base.HasChanged() || parentView != prevParentView || parentPath != prevParentPath;
+            return base.HasChanged() || parentId != prevParentId || parentPath != prevParentPath;
         }
 
         protected override void Write(PhotonStream stream, PhotonMessageInfo info) {
             base.Write(stream, info);
-            stream.Serialize(ref parentView);
+            stream.Serialize(ref parentId);
             stream.Serialize(ref parentPath);
         }
 
         protected override void Retain() {
             base.Retain();
-            prevParentView = parentView;
+            prevParentId = parentId;
             prevParentPath = parentPath;
         }
 
         protected override void Read(PhotonStream stream, PhotonMessageInfo info) {
             base.Read(stream, info);
-            stream.Serialize(ref parentView);
+            stream.Serialize(ref parentId);
             stream.Serialize(ref parentPath);
         }
 
         protected override void Apply() {
-            int actualParentView = GetParentView();
+            int actualParentView = GetParentId();
             string actualParentPath = GetParentPath();
             //Debug.Log("Recvd " + parentView + ":" + parentPath);
-            if (actualParentView != parentView || actualParentPath != parentPath) {
+            if (actualParentView != parentId || actualParentPath != parentPath) {
                 //Debug.Log("Reparenting from " + actualParentView + ":" + actualParentPath + " to " + parentView + ":" + parentPath);
-                PhotonView pv = PhotonView.Find(parentView);
-                Transform newParent = pv != null ? pv.transform : null;
+                Transform newParent;
+                if (parentId > 0) {
+                    PhotonView pv = PhotonView.Find(parentId);
+                    newParent = pv != null ? pv.transform : null;
+                } else if (parentId < 0) {
+                    NetworkAttachment na = NetworkAttachment.Find(parentId);
+                    newParent = na != null ? na.transform : null;
+                } else {
+                    newParent = null;
+                }
                 Transform child = NetUtils.Find(newParent, parentPath);
                 if (child != null) {
                     newParent = child;
