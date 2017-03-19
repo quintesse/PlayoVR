@@ -24,9 +24,9 @@ GameObject:
   - component: {fileID: 114371206082767138}
   - component: {fileID: 114531619737491070}
   - component: {fileID: 114175941248337178}
-  - component: {fileID: 114913016717235544}
   - component: {fileID: 114982492250686170}
-  - component: {fileID: 114535738746383138}
+  - component: {fileID: 114545520694356908}
+  - component: {fileID: 114293729372137782}
   m_Layer: 0
   m_Name: ItemGun
   m_TagString: Holsterable
@@ -164,7 +164,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1009108833589340}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.75, y: 0.84999996, z: 0.75}
+  m_LocalPosition: {x: 0.75, y: 0.84999996, z: 0.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4264116168355410}
@@ -380,13 +380,14 @@ MonoBehaviour:
   disableWhenIdle: 1
   touchHighlightColor: {r: 0.27450982, g: 0.27450982, b: 0.27450982, a: 0}
   allowedTouchControllers: 0
+  ignoredColliders: []
   isGrabbable: 1
   holdButtonToGrab: 0
   stayGrabbedOnTeleport: 1
   validDrop: 1
   grabOverrideButton: 0
   allowedGrabControllers: 0
-  grabAttachMechanicScript: {fileID: 114913016717235544}
+  grabAttachMechanicScript: {fileID: 114293729372137782}
   secondaryGrabActionScript: {fileID: 114175941248337178}
   isUsable: 1
   holdButtonToUse: 1
@@ -406,6 +407,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18055ba762aa3994f9c10208cd088bc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114293729372137782
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1009108833589340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ec2ac476f2fc9a45a4e69712580a603, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  precisionGrab: 0
+  rightSnapHandle: {fileID: 4331748400189046}
+  leftSnapHandle: {fileID: 4331748400189046}
+  throwVelocityWithAttachDistance: 0
+  throwMultiplier: 1
+  onGrabCollisionDelay: 0
 --- !u!114 &114371206082767138
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -440,14 +458,14 @@ MonoBehaviour:
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114535738746383138}
+  - {fileID: 114545520694356908}
   - {fileID: 114982492250686170}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
---- !u!114 &114535738746383138
+--- !u!114 &114545520694356908
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -455,7 +473,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1009108833589340}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
+  m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   position: 2
@@ -465,26 +483,6 @@ MonoBehaviour:
   angularVelocity: 1
   useLocalValues: 1
   onChangeOnly: 1
-  observedComponents: []
---- !u!114 &114913016717235544
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1009108833589340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8afa0b205791c9f4496bf2814aeac078, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  precisionGrab: 0
-  rightSnapHandle: {fileID: 4331748400189046}
-  leftSnapHandle: {fileID: 4331748400189046}
-  throwVelocityWithAttachDistance: 0
-  throwMultiplier: 1
-  onGrabCollisionDelay: 0
-  destroyImmediatelyOnThrow: 1
-  breakForce: 1500
 --- !u!114 &114982492250686170
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -433,7 +433,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &303223248
 Transform:
@@ -622,7 +622,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &561752874
 Transform:
@@ -819,6 +819,10 @@ Prefab:
       propertyPath: m_RootOrder
       value: 18
       objectReference: {fileID: 0}
+    - target: {fileID: 1009108833589340, guid: 429ee57ae76989a4b818a79fafd9d8d7, type: 2}
+      propertyPath: m_Name
+      value: Gun NE
+      objectReference: {fileID: 0}
     - target: {fileID: 114531619737491070, guid: 429ee57ae76989a4b818a79fafd9d8d7,
         type: 2}
       propertyPath: viewIdField
@@ -828,10 +832,6 @@ Prefab:
         type: 2}
       propertyPath: instantiationId
       value: 9
-      objectReference: {fileID: 0}
-    - target: {fileID: 1009108833589340, guid: 429ee57ae76989a4b818a79fafd9d8d7, type: 2}
-      propertyPath: m_Name
-      value: Gun NE
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 429ee57ae76989a4b818a79fafd9d8d7, type: 2}
@@ -852,7 +852,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!23 &885208440
 MeshRenderer:
@@ -1436,7 +1436,7 @@ MonoBehaviour:
   grabButton: 7
   grabPrecognition: 0
   throwMultiplier: 1
-  createRigidBodyWhenNotTouching: 0
+  createRigidBodyWhenNotTouching: 1
   controllerAttachPoint: {fileID: 0}
 --- !u!114 &1646208340
 MonoBehaviour:
@@ -1589,7 +1589,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableTeleport: 1
-  pointerRenderer: {fileID: 0}
+  pointerRenderer: {fileID: 1646208344}
   activationButton: 10
   holdButtonToActivate: 1
   activateOnEnable: 0
@@ -1746,7 +1746,7 @@ MonoBehaviour:
   grabButton: 7
   grabPrecognition: 0
   throwMultiplier: 1
-  createRigidBodyWhenNotTouching: 0
+  createRigidBodyWhenNotTouching: 1
   controllerAttachPoint: {fileID: 0}
 --- !u!114 &1938258488
 MonoBehaviour:
@@ -1899,7 +1899,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableTeleport: 1
-  pointerRenderer: {fileID: 0}
+  pointerRenderer: {fileID: 1938258492}
   activationButton: 10
   holdButtonToActivate: 1
   activateOnEnable: 0
@@ -1940,7 +1940,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &2026403676
 Transform:
