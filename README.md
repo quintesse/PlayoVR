@@ -6,6 +6,19 @@ those people can actually talk to each other.
 
 ![Demo Scene](Docs/Images/vrtk-pun-voice-demo.png)
 
+## Changelog
+
+ - 2017-03-15
+   - First version
+ - 2017-03-16
+   - Updated to use the `SDKChooser`
+ - 2017-03-17
+   - Fixed `SDKChooser`
+   - Split the code up in modules
+   - Code can now work without DFVoice
+ - 2017-03-19
+   - Now supporting objects that are re-parented
+   
 ## Requirements
 
 To enable the Voice Chat that this Demo includes you will need the `DFVoice` asset that
