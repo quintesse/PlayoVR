@@ -39,6 +39,9 @@
         }
 
         public static Transform Find(Transform parent, string name) {
+            if (name == null) {
+                return parent;
+            }
             if (parent != null) {
                 return parent.Find(name);
             } else {
