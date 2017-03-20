@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 114293729372137782}
   - component: {fileID: 114101436865905092}
   - component: {fileID: 114434739499023912}
+  - component: {fileID: 114559553703285720}
   m_Layer: 0
   m_Name: ItemGun
   m_TagString: Holsterable
@@ -488,14 +489,27 @@ MonoBehaviour:
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114101436865905092}
-  - {fileID: 114982492250686170}
-  - {fileID: 114434739499023912}
+  - {fileID: 114559553703285720}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
+--- !u!114 &114559553703285720
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1009108833589340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede0661de736eac468b0ce313b47b84f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  observedBehaviours:
+  - {fileID: 114982492250686170}
+  - {fileID: 114434739499023912}
+  - {fileID: 114101436865905092}
 --- !u!114 &114982492250686170
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -30,6 +30,7 @@ GameObject:
   - component: {fileID: 114461646444634442}
   - component: {fileID: 114850760172276944}
   - component: {fileID: 114740659021493392}
+  - component: {fileID: 114665496541941468}
   m_Layer: 0
   m_Name: ItemSphere
   m_TagString: Untagged
@@ -161,6 +162,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114665496541941468
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1991625737178822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede0661de736eac468b0ce313b47b84f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  observedBehaviours:
+  - {fileID: 114497296670972620}
+  - {fileID: 114740659021493392}
+  - {fileID: 114850760172276944}
 --- !u!114 &114700851640191538
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -181,9 +197,7 @@ MonoBehaviour:
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114497296670972620}
-  - {fileID: 114740659021493392}
-  - {fileID: 114850760172276944}
+  - {fileID: 114665496541941468}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
