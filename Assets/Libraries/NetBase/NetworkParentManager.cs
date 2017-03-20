@@ -54,7 +54,7 @@
         }
 
         public override bool HasChanged() {
-            return parentId != prevParentId || parentPath != prevParentPath;
+            return !onChangeOnly || parentId != prevParentId || parentPath != prevParentPath;
         }
 
         public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {

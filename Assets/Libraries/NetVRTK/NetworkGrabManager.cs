@@ -11,7 +11,7 @@
         private int prevGrabOwner;
 
         public override bool HasChanged() {
-            return prevGrabOwner != grabOwner;
+            return !onChangeOnly || prevGrabOwner != grabOwner;
         }
 
         public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {

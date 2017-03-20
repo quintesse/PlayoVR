@@ -4,6 +4,8 @@
     using UnityEngine;
 
     public abstract class NetworkBehaviour : Photon.MonoBehaviour {
+        [Tooltip("Only send updates if any of the tracked values have changed")]
+        public bool onChangeOnly = false;
 
         protected void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
             if (stream.isWriting) {

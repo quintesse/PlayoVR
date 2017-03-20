@@ -19,8 +19,6 @@
 
         [Tooltip("Use local coordinates if true, otherwise use world coordinates")]
         public bool useLocalValues = true;
-        [Tooltip("Only send updates if any of the tracked values have changed")]
-        public bool onChangeOnly = true;
 
         private ComponentInterpolator[] cipols = new ComponentInterpolator[0];
 
