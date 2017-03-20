@@ -8,16 +8,20 @@ those people can actually talk to each other.
 
 ## Changelog
 
- - 2017-03-15
-   - First version
- - 2017-03-16
-   - Updated to use the `SDKChooser`
+ - 2017-03-20
+   - Changed `NetworkParentableObject` to stand-alone `NetworkParentManager
+   - Introduced `NetworkBehaviour` base class for all network classes
+   - Made `onChangeOnly` part of all network classes and made it default to `false`
+ - 2017-03-19
+   - Now supporting objects that are re-parented
  - 2017-03-17
    - Fixed `SDKChooser`
    - Split the code up in modules
    - Code can now work without DFVoice
- - 2017-03-19
-   - Now supporting objects that are re-parented
+ - 2017-03-16
+   - Updated to use the `SDKChooser`
+ - 2017-03-15
+   - First version
    
 ## Requirements
 
@@ -75,10 +79,42 @@ This script handles the transfer of "ownership" that Photon imposes on object. O
 
 ![NetworkGrabManager](Docs/Images/network-grab-manager.png)
 
+### Properties:
+
+ - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
+
 ### Requirements:
 
  - must be registered with a `PhotonView`'s list of `Observed Components`
  - an `VRTK_InteractableObject` must exist on the same object
+
+## NetworkParentManager
+
+This script handles those situations when an object changes parents.
+
+There are several strategies that this script uses to determine if the object has changed parent and how it should communicate those changes to the other clients.
+
+The easiest way is to look at the "full path" of its parent, eg: `/Building/Floor3/BookCase12/SnapZone`. If that changes we know the object has changed parents and we should tell the other clients about it. This works in some cases but besides being very inefficient (the string might be very long) it doesn't work when the object don't have the exact same "path name" in every client (eg. my plaey object is called "Player" locally but "Player(Clone)" in other clients).
+
+So to make the process less dependent on the full path name because that not always uniquely references an object on all clients the `NetworkParentableObject` will look for the existence of a `PhotonView` component in any of the parents. It will then determine the path relative to that object. The advantage of that is a) all `PhotonView`s have a unique number that is the same across all clients en b) the paths to send will be shorter (many times the `PhotonView` can be found on the direct parent of the object which means we don't need a path at all) making things more efficient.
+
+But unfortunately this doesn't cover one of the most common situations when using VRTK: grabbing an object using the `VRTK_Interactable_Object` grab mechanic. Because what happens when you grab an object is that VRTK will make it a child of the VR controller that performed the grab, it will *not* be a child of your player avatar's hands, which is the representation that others will see of you in _their_ clients. So we need a way to link your VR hands to the hands of your avatar in such a way that we can send the reparenting operation and in such a way that the other clients will understand it.
+
+One way of solving this could be to actually move the `PhotonView`s from the hand of your local avatar to the VR controller objects. But the solution I've implemented in this demo is to create an object called `PhotonViewLink` which you can put on an object and then link it to a `PhotonView` on another object. When the `NetworkParentableObject` script encounters this it will treat the linked `PhotonView` as the object's parent.
+
+And finally we have the situation where a parent object is part of the scene, it won't get moved around so it doesn't need a `PhotonView` (and you don't want to give it one either because you can only have a 1000 tracked objects in Photon in total) but its "full path" can't always be determined 100%. For those cases exists the `NetworkAttachment` script. It serves the same function as a `PhotonView` for determining parentage but without actually wasting the resources of an actual `PhotonView`.
+
+![NetworkParentManager](Docs/Images/network-parent-manager.png)
+
+### Properties:
+
+ - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
+
+### Requirements:
+
+ - must be registered with a `PhotonView`'s list of `Observed Components`
+ - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
+ - If used with a `NetworkGrabManager` place this script *after* that one in the `PhotonView`'s list of `Observed Components`
 
 ## NetworkObject
 
@@ -105,31 +141,7 @@ NB: The reason for **Use local values** is that it's almost always better to use
 
  - must be registered with a `PhotonView`'s list of `Observed Components`
  - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
-
-## NetworkParentableObject
-
-Like `NetworkObject` this script handles the synchronization of position, orientation and movement of an object between clients. But besides that it also handles those situations when an object changes parents.
-
-There are several strategies that this script uses to determine if the object has changed parent and how it should communicate those changes to the other clients.
-
-The easiest way is to look at the "full path" of its parent, eg: `/Building/Floor3/BookCase12/SnapZone`. If that changes we know the object has changed parents and we should tell the other clients about it. This works in some cases but besides being very inefficient (the string might be very long) it doesn't work when the object don't have the exact same "path name" in every client (eg. my plaey object is called "Player" locally but "Player(Clone)" in other clients).
-
-So to make the process less dependent on the full path name because that not always uniquely references an object on all clients the `NetworkParentableObject` will look for the existence of a `PhotonView` component in any of the parents. It will then determine the path relative to that object. The advantage of that is a) all `PhotonView`s have a unique number that is the same across all clients en b) the paths to send will be shorter (many times the `PhotonView` can be found on the direct parent of the object which means we don't need a path at all) making things more efficient.
-
-But unfortunately this doesn't cover one of the most common situations when using VRTK: grabbing an object using the `VRTK_Interactable_Object` grab mechanic. Because what happens when you grab an object is that VRTK will make it a child of the VR controller that performed the grab, it will *not* be a child of your player avatar's hands, which is the representation that others will see of you in _their_ clients. So we need a way to link your VR hands to the hands of your avatar in such a way that we can send the reparenting operation and in such a way that the other clients will understand it.
-
-One way of solving this could be to actually move the `PhotonView`s from the hand of your local avatar to the VR controller objects. But the solution I've implemented in this demo is to create an object called `PhotonViewLink` which you can put on an object and then link it to a `PhotonView` on another object. When the `NetworkParentableObject` script encounters this it will treat the linked `PhotonView` as the object's parent.
-
-And finally we have the situation where a parent object is part of the scene, it won't get moved around so it doesn't need a `PhotonView` (and you don't want to give it one either because you can only have a 1000 tracked objects in Photon in total) but its "full path" can't always be determined 100%. For those cases exists the `NetworkAttachment` script. It serves the same function as a `PhotonView` for determining parentage but without actually wasting the resources of an actual `PhotonView`.
-
-### Properties:
-
- - See `NetworkObject`
-
-### Requirements:
-
- - must be registered with a `PhotonView`'s list of `Observed Components`
- - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
+ - If used with a `NetworkGrabManager` and/or `NetworkParentManager` place this script *after* those in the `PhotonView`'s list of `Observed Components`
 
 ## PhotonViewLink
 
