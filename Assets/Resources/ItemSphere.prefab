@@ -30,7 +30,6 @@ GameObject:
   - component: {fileID: 114461646444634442}
   - component: {fileID: 114850760172276944}
   - component: {fileID: 114740659021493392}
-  - component: {fileID: 114665496541941468}
   m_Layer: 0
   m_Name: ItemSphere
   m_TagString: Untagged
@@ -162,21 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &114665496541941468
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1991625737178822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ede0661de736eac468b0ce313b47b84f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  observedBehaviours:
-  - {fileID: 114497296670972620}
-  - {fileID: 114740659021493392}
-  - {fileID: 114850760172276944}
+  onChangeOnly: 1
 --- !u!114 &114700851640191538
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -192,12 +177,14 @@ MonoBehaviour:
   group: 0
   OwnerShipWasTransfered: 0
   prefixBackup: -1
-  synchronization: 3
+  synchronization: 1
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114665496541941468}
+  - {fileID: 114497296670972620}
+  - {fileID: 114740659021493392}
+  - {fileID: 114850760172276944}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
@@ -214,6 +201,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onChangeOnly: 1
 --- !u!114 &114850760172276944
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -225,13 +213,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onChangeOnly: 0
   position: 2
   rotation: 2
   scale: 0
   velocity: 1
   angularVelocity: 1
   useLocalValues: 1
-  onChangeOnly: 1
 --- !u!114 &114935897818585254
 MonoBehaviour:
   m_ObjectHideFlags: 1
