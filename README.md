@@ -83,9 +83,10 @@ This script handles the transfer of "ownership" that Photon imposes on object. O
 
  - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
 
-### Requirements:
+### Requirements/suggestions:
 
  - must be registered with a `PhotonView`'s list of `Observed Components`
+ - best used with `PhotonView`'s `Reliable Delta Compressed` option and in that case leave `onChangeOnly` turned off
  - an `VRTK_InteractableObject` must exist on the same object
 
 ## NetworkParentManager
@@ -110,9 +111,10 @@ And finally we have the situation where a parent object is part of the scene, it
 
  - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
 
-### Requirements:
+### Requirements/suggestions:
 
  - must be registered with a `PhotonView`'s list of `Observed Components`
+ - best used with `PhotonView`'s `Reliable Delta Compressed` option and in that case leave `onChangeOnly` turned off
  - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
  - If used with a `NetworkGrabManager` place this script *after* that one in the `PhotonView`'s list of `Observed Components`
 
@@ -137,9 +139,10 @@ This script handles the synchronization of position, orientation and movement of
 
 NB: The reason for **Use local values** is that it's almost always better to use the local coordinate system, especially in combination with **On change only** because there are many situations where an object stays immobile relative to its parent, even if the parent itself (or any ancestor) is moved around a lot. This makes it more efficient because no updates have to be sent in those cases. But if your objects can change parents (you are using the `VRTK_Interactable_Object` grab mechanic for example) then sometimes it might be desirable to use world coordinates by disabling **Use local values**. Just know that this *might* be less efficient. In those cases it might be best to switch to `NetworkParentableObject` instead.
 
-### Requirements:
+### Requirements/suggestions:
 
  - must be registered with a `PhotonView`'s list of `Observed Components`
+ - can be used with `PhotonView`'s unreliable transmission options, but if used with either a `NetworkGrabManager` and/or a `NetworkParentManager` you need the `Reliable Delta Compressed` option
  - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
  - If used with a `NetworkGrabManager` and/or `NetworkParentManager` place this script *after* those in the `PhotonView`'s list of `Observed Components`
 
