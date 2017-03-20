@@ -48,27 +48,26 @@
             return null;
         }
 
-        protected override void Obtain() {
+        public override void Obtain() {
             parentId = GetParentId();
             parentPath = GetParentPath();
         }
 
-        protected override bool HasChanged() {
+        public override bool HasChanged() {
             return parentId != prevParentId || parentPath != prevParentPath;
         }
 
-        protected override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
-            Debug.Log("Ser NPM " + stream.isWriting + " " + NetUtils.GetPath(transform));
+        public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
             stream.Serialize(ref parentId);
             stream.Serialize(ref parentPath);
         }
 
-        protected override void Retain() {
+        public override void Retain() {
             prevParentId = parentId;
             prevParentPath = parentPath;
         }
 
-        protected override void Apply() {
+        public override void Apply() {
             int actualParentView = GetParentId();
             string actualParentPath = GetParentPath();
             //Debug.Log("Recvd " + parentView + ":" + parentPath);

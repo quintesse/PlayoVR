@@ -26,7 +26,7 @@
         /// when writing to the stream it won't be necessary to
         /// implement this.
         /// </summary>
-        protected virtual void Obtain() {
+        public virtual void Obtain() {
         }
 
         /// <summary>
@@ -36,19 +36,19 @@
         /// false if the state is the same and no update needs to be sent.
         /// </summary>
         /// <returns>Boolean indicating the object's state has changed</returns>
-        protected abstract bool HasChanged();
+        public abstract bool HasChanged();
 
         /// <summary>
         /// Gets called to read/write the object's state to/from the Photon stream
         /// </summary>
-        protected abstract void Serialize(PhotonStream stream, PhotonMessageInfo info);
+        public abstract void Serialize(PhotonStream stream, PhotonMessageInfo info);
 
         /// <summary>
         /// Gets called to store a copy of the current state so it can be
         /// used to check for changes in the state. If no change checks
         /// are being done it won't be necessary to implement this.
         /// </summary>
-        protected virtual void Retain() {
+        public virtual void Retain() {
         }
 
         /// <summary>
@@ -56,7 +56,7 @@
         /// If the state was applied directly to the object's state when
         /// reading from the stream it won't be necessary to implement this.
         /// </summary>
-        protected virtual void Apply() {
+        public virtual void Apply() {
         }
 
     }

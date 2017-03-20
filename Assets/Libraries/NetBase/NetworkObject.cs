@@ -36,13 +36,13 @@
             }
         }
 
-        protected override void Obtain() {
+        public override void Obtain() {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Obtain();
             }
         }
 
-        protected override bool HasChanged() {
+        public override bool HasChanged() {
             bool changed = !onChangeOnly;
             foreach (ComponentInterpolator ci in cipols) {
                 changed = changed || ci.HasChanged();
@@ -50,19 +50,19 @@
             return changed;
         }
 
-        protected override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
+        public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Serialize(stream, info);
             }
         }
 
-        protected override void Retain() {
+        public override void Retain() {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Retain();
             }
         }
 
-        protected override void Apply() {
+        public override void Apply() {
             foreach (ComponentInterpolator ci in cipols) {
                 ci.Apply();
             }
@@ -228,7 +228,6 @@
             }
 
             public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
-                Debug.Log("Ser NO-T " + stream.isWriting + " " + NetUtils.GetPath(nit.transform));
                 if (stream.isReading) {
                     state.timestamp = info.timestamp;
                     reset(ref state);
@@ -307,7 +306,6 @@
             }
 
             public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
-                Debug.Log("Ser NO-RB " + stream.isWriting + " " + NetUtils.GetPath(nit.transform));
                 if (stream.isReading) {
                     state.timestamp = info.timestamp;
                     reset(ref state);

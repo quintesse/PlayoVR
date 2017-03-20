@@ -10,16 +10,15 @@
         private int grabOwner;
         private int prevGrabOwner;
 
-        protected override bool HasChanged() {
+        public override bool HasChanged() {
             return prevGrabOwner != grabOwner;
         }
 
-        protected override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
-            Debug.Log("Ser NGM " + stream.isWriting + " " + NetUtils.GetPath(transform));
+        public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
             stream.Serialize(ref grabOwner);
         }
 
-        protected override void Retain() {
+        public override void Retain() {
             prevGrabOwner = grabOwner;
         }
 
