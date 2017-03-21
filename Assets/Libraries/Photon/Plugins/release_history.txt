@@ -8,20 +8,11 @@ https://doc.photonengine.com
 http://forum.photonengine.com
  
 
-
-*** Version 4.1.1.6 (9. December 2016 - rev3801)
-    Changed: Default SentCountAllowance = 7.
-Loadbalancing:
-    Added: OpJoinRandom will now "remember" to send ExpectedUsers to the Game Server (by caching the value).
-    Added: AuthEvent and it's handling. This (internally sent) event can now update the client's token anytime (before that expires).
-    Added: LoadBalancingClient.OpChangeGroups().
-    Changed: LoadBalancingClient.Disconnect() no longer sets it's own State to Disconnected. It waits till the state-change callback gets called by the lib.
-
-
 *** Version 4.1.1.5 (18. November 2016 - rev3775)
 Internal:
     Fixed: Photon-init request is now created by the factory method CreateAndEnqueueCommand to make sure we fragment the init if needed (for small MTU and more init-data).
     Fixed: Bug in TrafficStatsReset method, which caused the averaged stats to go up infinitely after a reset.
+
 
 *** Version 4.1.1.4 (21. October 2016 - rev3737)
     Internal: Added ArraySegment<T> support for byte[]. This way, we can internally reuse more memory.

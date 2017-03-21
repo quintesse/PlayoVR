@@ -18,7 +18,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 /// <remarks>
 /// When entering a new room, this script will take a moment to establish the start timestamp. While this is done, all values are 0.
 /// Uses a Custom Property in a room to sync a start time for a multiplayer game.
-///
+/// 
 /// The internally used roomStartTimestamp is only valid in "this" room and only on the one Game Server where
 /// it was established initially. This means: <b>This is not useful for asynchronous gameplay!</b>
 /// </remarks>
@@ -51,7 +51,7 @@ public class InRoomTime : MonoBehaviour
     /// <remarks>When IsoomTimeSet is false, RoomTimestamp and RoomTime will both be zero.</remarks>
     public bool IsRoomTimeSet
     {
-        get { return PhotonNetwork.inRoom && PhotonNetwork.room.CustomProperties.ContainsKey(StartTimeKey); }
+        get { return PhotonNetwork.inRoom && PhotonNetwork.room.customProperties.ContainsKey(StartTimeKey); }
     }
 
 

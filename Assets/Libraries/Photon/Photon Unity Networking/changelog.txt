@@ -1,19 +1,3 @@
-v1.80 (15. December 2016)
-Fixed: PhotonTransformView first take routine to take in consideration what to update instead of forcing position, rotation scale no matter what.
-Updated: PlayerRoomIndexing.cs to account for potential race conditions when masterClient is transfered and new player joins. SanitizeIndexing() is now in place.
-Fixed: Fix ownership management for scene objects when MasterCLient is/was changed.
-Updated: Chat demo, with new Friend Status update and message implementation available in the Interface as a friends' List.
-Added: "Best Region" support for WebGL exports (uses http to measure roundtrip times).
-Fixed: JoinRandomRoom() will now correctly send ExpectedUsers to the Game Server (if any were set in the RoomOptions). This fixes issues when you wanted to reserve slots in a room for other players.
-Added: A null-reference check in FindGameObjectsWithComponent(), which could fail in rare cases otherwise.
-Changed: Setting RunInBackground is now done in the PhotonSettings file. It's enabled by default but in a few exports, this could lead to issues.
-Added: The internal "AuthEvent". This event by the server can now update the client's token anytime (before that expires). Good for longer play sessions.
-Removed: Surplus debug log output.
-Changed: Public variable- and property-naming to PascalCase (beginning with an uppercase character) in RoomInfo, Room and PhotonPlayer class. The old naming is still available but attributed as Obsolete, so you should update asap. Sadly, this is extra work for everyone but we want to make the API more stringent.
-Changed: The PhotonPlayer.name is now .NickName to make it more obvious that this is not the user's ID (and might be changed at will).
-Removed: Obsolete PhotonView.observed. Since a while, each PhotonView has a list of observed components instead. If you have a very old (!) project, check your PhotonViews and make sure they still observe the scripts you meant to observe. Newer projects won't be affected.
-
-
 v1.79 (18. November 2016)
 Changed: PUN will no longer aggregate the data from ALL objects in a group into ONE message. Instead, a maximum of 10 objects will be sent together. The idea is to avoid huge messages, which need fragmentation. Fragmentation needs to be avoided, cause fragments are always reliable (and you basically lose "unreliable" updates when you send too much). There is a new variable for this: NetworkingPeer.ObjectsInOneUpdate.
 Changed: As we send a max of 10 gameobject-updates in one message, we can use a byte as type for their ID (instead of short). This minimally saves data but makes this PUN incompatible with older builds. We separate PUN versions for you so there won't be a clash. PhotonNetwork.versionPUN is inserted into your Game Version to separate players.
@@ -23,7 +7,7 @@ Fixed: SocketWebTcp for WebGL was time scale dependant and would stop receiving 
 Updated: DemoChat UI reworked to match demo Hub look and feel.
 Updated: DemoHub pixel Perfect Canvas fix.
 Added: Two more regions: Korea, Seoul (kr) and India, Chennai (in). If you're using the hosting option "Best Region", you may want to update the configuration in your PhotonServerSettings file.
-Updated: PunBasics-Launcher demo scene Canvas screensize fix.
+
 
 v1.78 (1. November 2016)
 Fixed: NetworkingPeer ownership assignment on late join when MasterClient is involved.

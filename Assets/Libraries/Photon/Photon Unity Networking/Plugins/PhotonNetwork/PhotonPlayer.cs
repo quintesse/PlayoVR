@@ -40,15 +40,14 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
 
     /// <summary>Nickname of this player.</summary>
     /// <remarks>Set the PhotonNetwork.playerName to make the name synchronized in a room.</remarks>
-    public string NickName 
-    {
+    public string name {
         get
         {
             return this.nameField;
         }
         set
         {
-            if (!IsLocal)
+            if (!isLocal)
             {
                 Debug.LogError("Error: Cannot change the name of a remote player!");
                 return;
@@ -65,10 +64,10 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
 
     /// <summary>UserId of the player, available when the room got created with RoomOptions.PublishUserId = true.</summary>
     /// <remarks>Useful for PhotonNetwork.FindFriends and blocking slots in a room for expected players (e.g. in PhotonNetwork.CreateRoom).</remarks>
-    public string UserId { get; internal set; }
+    public string userId { get; internal set; }
 
     /// <summary>Only one player is controlled by each client. Others are not local.</summary>
-    public readonly bool IsLocal = false;
+    public readonly bool isLocal = false;
 
     /// <summary>
     /// True if this player is the Master Client of the current room.
@@ -76,13 +75,15 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// <remarks>
     /// See also: PhotonNetwork.masterClient.
     /// </remarks>
-    public bool IsMasterClient
+    public bool isMasterClient
     {
         get { return (PhotonNetwork.networkingPeer.mMasterClientId == this.ID); }
     }
 
+
     /// <summary>Players might be inactive in a room when PlayerTTL for a room is > 0. If true, the player is not getting events from this room (now) but can return later.</summary>
-    public bool IsInactive { get; set; }    // needed for rejoins
+    public bool isInactive { get; set; }    // needed for rejoins
+
 
     /// <summary>Read-only cache for custom properties of player. Set via PhotonPlayer.SetCustomProperties.</summary>
     /// <remarks>
@@ -91,17 +92,17 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// sync values with the server.
     /// </remarks>
     /// <see cref="SetCustomProperties"/>
-    public Hashtable CustomProperties { get; internal set; }
+    public Hashtable customProperties { get; internal set; }
 
     /// <summary>Creates a Hashtable with all properties (custom and "well known" ones).</summary>
     /// <remarks>If used more often, this should be cached.</remarks>
-    public Hashtable AllProperties
+    public Hashtable allProperties
     {
         get
         {
             Hashtable allProps = new Hashtable();
-            allProps.Merge(this.CustomProperties);
-            allProps[ActorProperties.PlayerName] = this.NickName;
+            allProps.Merge(this.customProperties);
+            allProps[ActorProperties.PlayerName] = this.name;
             return allProps;
         }
     }
@@ -119,8 +120,8 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// <param name="name">Name of the player (a "well known property").</param>
     public PhotonPlayer(bool isLocal, int actorID, string name)
     {
-        this.CustomProperties = new Hashtable();
-        this.IsLocal = isLocal;
+        this.customProperties = new Hashtable();
+        this.isLocal = isLocal;
         this.actorID = actorID;
         this.nameField = name;
     }
@@ -128,10 +129,10 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// <summary>
     /// Internally used to create players from event Join
     /// </summary>
-    protected internal PhotonPlayer(bool isLocal, int actorID, Hashtable properties)
+    internal protected PhotonPlayer(bool isLocal, int actorID, Hashtable properties)
     {
-        this.CustomProperties = new Hashtable();
-        this.IsLocal = isLocal;
+        this.customProperties = new Hashtable();
+        this.isLocal = isLocal;
         this.actorID = actorID;
 
         this.InternalCacheProperties(properties);
@@ -156,7 +157,7 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// </summary>
     internal void InternalChangeLocalID(int newID)
     {
-        if (!this.IsLocal)
+        if (!this.isLocal)
         {
             Debug.LogError("ERROR You should never change PhotonPlayer IDs!");
             return;
@@ -170,7 +171,7 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// </summary>
     internal void InternalCacheProperties(Hashtable properties)
     {
-        if (properties == null || properties.Count == 0 || this.CustomProperties.Equals(properties))
+        if (properties == null || properties.Count == 0 || this.customProperties.Equals(properties))
         {
             return;
         }
@@ -181,15 +182,15 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
         }
         if (properties.ContainsKey(ActorProperties.UserId))
         {
-            this.UserId = (string)properties[ActorProperties.UserId];
+            this.userId = (string)properties[ActorProperties.UserId];
         }
         if (properties.ContainsKey(ActorProperties.IsInactive))
         {
-            this.IsInactive = (bool)properties[ActorProperties.IsInactive]; //TURNBASED new well-known propery for players
+            this.isInactive = (bool)properties[ActorProperties.IsInactive]; //TURNBASED new well-known propery for players
         }
 
-        this.CustomProperties.MergeStringKeys(properties);
-        this.CustomProperties.StripKeysWithNullValues();
+        this.customProperties.MergeStringKeys(properties);
+        this.customProperties.StripKeysWithNullValues();
     }
 
 
@@ -256,11 +257,6 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
         bool noCas = customPropsToCheck == null || customPropsToCheck.Count == 0;
         bool inOnlineRoom = this.actorID > 0 && !PhotonNetwork.offlineMode;
 
-        if (noCas)
-        {
-            this.CustomProperties.Merge(customProps);
-            this.CustomProperties.StripKeysWithNullValues();
-        }
 
         if (inOnlineRoom)
         {
@@ -364,12 +360,12 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
 		{
 			return false;
 		}
-
+		
 		return this.GetHashCode().Equals(other.GetHashCode());
 	}
 
 	public bool Equals (int other)
-	{
+	{	
 		return this.GetHashCode().Equals(other);
 	}
 
@@ -380,12 +376,12 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// </summary>
     public override string ToString()
     {
-        if (string.IsNullOrEmpty(this.NickName))
+        if (string.IsNullOrEmpty(this.name))
         {
-            return string.Format("#{0:00}{1}{2}",  this.ID, this.IsInactive ? " (inactive)" : " ", this.IsMasterClient ? "(master)":"");
+            return string.Format("#{0:00}{1}{2}",  this.ID, this.isInactive ? " (inactive)" : " ", this.isMasterClient ? "(master)":"");
         }
 
-        return string.Format("'{0}'{1}{2}", this.NickName, this.IsInactive ? " (inactive)" : " ", this.IsMasterClient ? "(master)" : "");
+        return string.Format("'{0}'{1}{2}", this.name, this.isInactive ? " (inactive)" : " ", this.isMasterClient ? "(master)" : "");
     }
 
     /// <summary>
@@ -397,32 +393,6 @@ public class PhotonPlayer : IComparable<PhotonPlayer>, IComparable<int>, IEquata
     /// </remarks>
     public string ToStringFull()
     {
-        return string.Format("#{0:00} '{1}'{2} {3}", this.ID, this.NickName, this.IsInactive ? " (inactive)" : "", this.CustomProperties.ToStringFull());
+        return string.Format("#{0:00} '{1}'{2} {3}", this.ID, this.name, this.isInactive ? " (inactive)" : "", this.customProperties.ToStringFull());
     }
-
-
-    #region Obsoleted variable names
-
-    [Obsolete("Please use NickName (updated case for naming).")]
-    public string name { get { return this.NickName; } set { this.NickName = value; } }
-
-    [Obsolete("Please use UserId (updated case for naming).")]
-    public string userId { get { return this.UserId; } internal set { this.UserId = value; } }
-
-    [Obsolete("Please use IsLocal (updated case for naming).")]
-    public bool isLocal { get { return this.IsLocal; } }
-
-    [Obsolete("Please use IsMasterClient (updated case for naming).")]
-    public bool isMasterClient { get { return this.IsMasterClient; } }
-
-    [Obsolete("Please use IsInactive (updated case for naming).")]
-    public bool isInactive { get { return this.IsInactive; } set { this.IsInactive = value; } }
-
-    [Obsolete("Please use CustomProperties (updated case for naming).")]
-    public Hashtable customProperties { get { return this.CustomProperties; } internal set { this.CustomProperties = value; } }
-
-    [Obsolete("Please use AllProperties (updated case for naming).")]
-    public Hashtable allProperties { get { return this.AllProperties; } }
-
-    #endregion
 }

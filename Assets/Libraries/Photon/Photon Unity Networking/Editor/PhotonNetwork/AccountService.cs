@@ -10,7 +10,7 @@
 // ----------------------------------------------------------------------------
 
 #if UNITY_EDITOR
-//#define PHOTON_VOICE
+#define PHOTON_VOICE
 
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;

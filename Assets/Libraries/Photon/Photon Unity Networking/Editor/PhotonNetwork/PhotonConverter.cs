@@ -401,16 +401,13 @@ public class PhotonConverter : Photon.MonoBehaviour
                 int oldViewID = int.Parse(str);
 
                 view.viewID = oldViewID;
-
+                
                 #if !UNITY_MIN_5_3
                 EditorUtility.SetDirty(view);
                 EditorUtility.SetDirty(view.gameObject);
                 #endif
             }
-
-            view.ObservedComponents = new List<Component>();
-            view.ObservedComponents.Add(netView.observed);
-
+            view.observed = netView.observed;
             if (netView.stateSynchronization == NetworkStateSynchronization.Unreliable)
             {
                 view.synchronization = ViewSynchronization.Unreliable;

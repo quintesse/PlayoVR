@@ -41,16 +41,13 @@ namespace ExitGames.UtilityScripts
 			if (PhotonNetwork.inRoom)
 			{
 				EditorGUILayout.LabelField("Player Index", "PhotonPlayer ID");
-				if (_target.PlayerIds != null)
+				int index = 0;
+				foreach(int ID in _target.PlayerIds)
 				{
-					int index = 0;
-					foreach(int ID in _target.PlayerIds)
-					{
-						GUI.enabled = ID!=0;
-						EditorGUILayout.LabelField("Player " +index + (PhotonNetwork.player.ID==ID?" - You -":""), ID==0?"n/a":PhotonPlayer.Find(ID).ToStringFull());
-						GUI.enabled = true;
-						index++;
-					}
+					GUI.enabled = ID!=0;
+					EditorGUILayout.LabelField("Player " +index + (PhotonNetwork.player.ID==ID?" - You -":""), ID==0?"n/a":PhotonPlayer.Find(ID).ToStringFull());
+					GUI.enabled = true;
+					index++;
 				}
 			}else{
 				GUILayout.Label("Room Indexing only works when localPlayer is inside a room");

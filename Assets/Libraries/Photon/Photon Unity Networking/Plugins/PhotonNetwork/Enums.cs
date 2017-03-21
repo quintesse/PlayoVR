@@ -482,10 +482,6 @@ public enum CloudRegionCode
     sa = 7,
     ///<summary>Canada East, Montreal, cae</summary>
     cae = 8,
-    ///<summary>South Korea, Seoul, kr</summary>
-    kr = 9,
-    ///<summary>India, Chennai, in</summary>
-    @in = 10,
 
     /// <summary>No region selected.</summary>
     none = 4
@@ -506,9 +502,7 @@ public enum CloudRegionFlag
     au =    1 << 4,
     usw =   1 << 5,
     sa =    1 << 6,
-    cae =   1 << 7,
-    kr =    1 << 8,
-    @in =   1 << 9,
+    cae =   1 << 7
 };
 
 
@@ -537,9 +531,6 @@ public enum EncryptionMode
     /// <summary>
     /// With this encryption mode for UDP, the connection gets setup and all further datagrams get encrypted almost entirely. On-demand message encryption (like in PayloadEncryption) is skipped.
     /// </summary>
-    /// <remarks>
-    /// This mode requires AuthOnce or AuthOnceWss as AuthMode!
-    /// </remarks>
     DatagramEncryption = 10,
 }
 

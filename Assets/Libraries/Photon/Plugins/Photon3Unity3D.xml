@@ -637,7 +637,7 @@
         </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.SentCountAllowance">
              <summary>
-             Number of send retries before a peer is considered lost/disconnected. Default: 7.
+             Number of send retries before a peer is considered lost/disconnected. Default: 5.
              The initial timeout countdown of a command is calculated by the current roundTripTime + 4 * roundTripTimeVariance.
              Please note that the timeout span until a command will be resent is not constant, but based on
              the roundtrip time at the initial sending, which will be doubled with every failed retry.

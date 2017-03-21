@@ -1,22 +1,12 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(PhotonView))]
 public class SmoothSyncMovement : Photon.MonoBehaviour, IPunObservable
 {
     public float SmoothingDelay = 5;
     public void Awake()
     {
-        bool observed = false;
-        foreach (Component observedComponent in this.photonView.ObservedComponents)
-        {
-            if (observedComponent == this)
-            {
-                observed = true;
-                break;
-            }
-        }
-        if (!observed)
+        if (this.photonView == null || this.photonView.observed != this)
         {
             Debug.LogWarning(this + " is not observed by this object's photonView! OnPhotonSerializeView() in this class won't be used.");
         }
@@ -28,7 +18,7 @@ public class SmoothSyncMovement : Photon.MonoBehaviour, IPunObservable
         {
             //We own this player: send the others our data
             stream.SendNext(transform.position);
-            stream.SendNext(transform.rotation);
+            stream.SendNext(transform.rotation); 
         }
         else
         {

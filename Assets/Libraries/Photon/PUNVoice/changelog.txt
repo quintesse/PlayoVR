@@ -1,0 +1,57 @@
+v1.8
+CHANGED: PUN updated to v1.79
+FIXED: when player left a room, VoiceClient.removePlayerVoices tried to remove player voices from wrong container
+FIXED: microphone release in unity apps
+FIXED: AudioStreamPlayer: previous buffer tail played back on stream resume 
+CHANGED: iOS library rebuilt with full bitcode (Archive menu used in xcode)
+
+v1.7
+  PUNVoice:
+CHANGED: PUN updated to v1.76
+BREAKING: Opus Delay replaced with Photon.Voice.FrameDuration in PhotonVoiceSettings
+(If non-default Delay was used, updating new FrameDuration setting required)
+CHANGED: AudioStreamPlayer skips empty frames w/o error
+ADDED: PhotonVoiceNetwork.Client FramesSent, FramesSentBytes, RoundTripTime, RoundTripTimeVariance properties (rtt calculated only if local voices echoed back)
+CHANGED: VoiceClient.UseLossCompensation property removed
+FIXED: voice now works on self hosted when PUN is using TCP, different ports per app
+FIXED: AudioStreamPlayer: assigning negative values to playSamplePos caused AudioSource position setting error
+FIXED: AudioStreamPlayer buffer size set precisely basing on frame size and delay values (+1 sec) or it could be too small for high delays
+FIXED: setting PhotonVoiceRecorder.Transmit to PhotonVoiceSettings.AutoTransmit moved to Start() from OnJoinedVoiceRoom() or it's skipped if PhotonVoiceRecorder created after joining a room
+CHANGED: PushToTalk demo now exposes change of audio group using binary group chat
+  VoiceClient (accessible via PhotonVoiceNetwork.Client):
+ADDED: LocalVoice FramesSent, FramesSentBytes 
+ADDED: VoiceClient FramesSent, FramesSentBytes, RoundTripTime, RoundTripTimeVariance properties (rtt calculated only if local voices echoed back)
+CHANGED: memory allocation and buffer copying optimizations
+CHANGED: loss compensation is always on (synchronization relies on it)
+BREAKING: VoiceClient.UseLossCompensation property removed
+
+v1.6
+CHANGED: updated to PUN 1.75
+FIXED: iOS IPv6 support
+
+v1.5
+CHANGED: updated to PUN 1.74
+FIXED: Crash of iOS application exported from Unity 5.3.6+ (opus library exposes only interface methods now)
+ADDED: Linux support (opus libraries built for Ubuntu Linux added)
+CHANGED: automatic PhotonVoiceNetwork singleton creation
+CHANGED: LoadBalancingClient and Photon.Voice actions used internally can be safely overridden by user
+CHANGED: better error handling when no microphone device found (no multiple errors)
+ADDED: Push-To-Talk (PTT) demo scene that exposes toggling voice transmission on demand (button or key binding)
+
+v1.4
+CHANGED: Updated to PUN v1.72
+ADDED: ability to switch microphone device while joined to voice room
+
+v1.3
+CHANGED: Updated to PUN v1.69
+FIXED: Universal Windows WSA/x64 folder name
+
+v1.2
+ADDED: Universal Windows platform support
+FIXED: iOS fat lib missing armv7 component
+FIXED: MacOS opus dll import in editor
+
+v1.1:
+FIXED: MacOS opus plugin lib at default location is accessible when running in editor and as a standalone app
+FIXED: manually created PhotonVoiceNetwork instance got destroyed on scene change leaving PUNVoice w/o singleton (now PhotonVoiceNetwork singleton is created independently of accidentally added in editor PhotonVoiceNetwork instances, non-singleton instances disabled because all methods return immediately)
+FIXED: voice != null checks in PhotonVoiceRecorder's Transmit and Detect properties

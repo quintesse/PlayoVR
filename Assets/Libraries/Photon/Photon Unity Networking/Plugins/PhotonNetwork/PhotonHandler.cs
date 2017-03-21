@@ -24,7 +24,7 @@ using UnityEngine.Profiling;
 /// <summary>
 /// Internal Monobehaviour that allows Photon to run an Update loop.
 /// </summary>
-internal class PhotonHandler : MonoBehaviour
+internal class PhotonHandler : Photon.MonoBehaviour
 {
     public static PhotonHandler SP;
 
@@ -71,9 +71,9 @@ internal class PhotonHandler : MonoBehaviour
             PhotonNetwork.networkingPeer.SetLevelInPropsIfSynced(SceneManagerHelper.ActiveSceneName);
         };
     }
-
+    
     #else
-
+    
     /// <summary>Called by Unity after a new level was loaded.</summary>
     protected void OnLevelWasLoaded(int level)
     {
@@ -96,14 +96,13 @@ internal class PhotonHandler : MonoBehaviour
     /// Called by Unity when the application gets paused (e.g. on Android when in background).
     /// </summary>
     /// <remarks>
-    /// Sets a disconnect timer when PhotonNetwork.BackgroundTimeout > 0.1f. See PhotonNetwork.BackgroundTimeout.
-    ///
     /// Some versions of Unity will give false values for pause on Android (and possibly on other platforms).
+    /// Sets a disconnect timer when PhotonNetwork.BackgroundTimeout > 0.001f.
     /// </remarks>
-    /// <param name="pause">If the app pauses.</param>
+    /// <param name="pause"></param>
     protected void OnApplicationPause(bool pause)
     {
-        if (PhotonNetwork.BackgroundTimeout > 0.1f)
+        if (PhotonNetwork.BackgroundTimeout > 0.001f)
         {
             if (timerToStopConnectionInBackground == null)
             {
@@ -194,7 +193,7 @@ internal class PhotonHandler : MonoBehaviour
 
     public static void StartFallbackSendAckThread()
     {
-	    #if !UNITY_WEBGL
+#if !UNITY_WEBGL
         if (sendThreadShouldRun)
         {
             return;
@@ -202,40 +201,30 @@ internal class PhotonHandler : MonoBehaviour
 
         sendThreadShouldRun = true;
         SupportClassPun.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
-	    #endif
+#endif
     }
 
     public static void StopFallbackSendAckThread()
     {
-	    #if !UNITY_WEBGL
+#if !UNITY_WEBGL
         sendThreadShouldRun = false;
-	    #endif
+#endif
     }
 
-    /// <summary>A thread which runs independent from the Update() calls. Keeps connections online while loading or in background. See PhotonNetwork.BackgroundTimeout.</summary>
     public static bool FallbackSendAckThread()
     {
         if (sendThreadShouldRun && PhotonNetwork.networkingPeer != null)
         {
             // check if the client should disconnect after some seconds in background
-            if (timerToStopConnectionInBackground != null && PhotonNetwork.BackgroundTimeout > 0.1f)
+            if (timerToStopConnectionInBackground != null && PhotonNetwork.BackgroundTimeout > 0.001f)
             {
                 if (timerToStopConnectionInBackground.ElapsedMilliseconds > PhotonNetwork.BackgroundTimeout * 1000)
                 {
-                    if (PhotonNetwork.connected)
-                    {
-                        PhotonNetwork.Disconnect();
-                    }
-                    timerToStopConnectionInBackground.Stop();
-                    timerToStopConnectionInBackground.Reset();
                     return sendThreadShouldRun;
                 }
             }
 
-            if (PhotonNetwork.networkingPeer.ConnectionTime - PhotonNetwork.networkingPeer.LastSendOutgoingTime > 200)
-            {
-                PhotonNetwork.networkingPeer.SendAcksOnly();
-            }
+            PhotonNetwork.networkingPeer.SendAcksOnly();
         }
 
         return sendThreadShouldRun;
