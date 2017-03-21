@@ -33,6 +33,14 @@ namespace VRTK
         }
 
         /// <summary>
+        /// The ProcessFixedUpdate method enables an SDK to run logic for every Unity FixedUpdate
+        /// </summary>
+        /// <param name="options">A dictionary of generic options that can be used to within the fixed update.</param>
+        public override void ProcessFixedUpdate(Dictionary<string, object> options)
+        {
+        }
+
+        /// <summary>
         /// The GetHeadset method returns the Transform of the object that is used to represent the headset in the scene.
         /// </summary>
         /// <returns>A transform of the object representing the headset in the scene.</returns>
@@ -66,7 +74,8 @@ namespace VRTK
         /// <returns>A Vector3 containing the current velocity of the headset.</returns>
         public override Vector3 GetHeadsetVelocity()
         {
-            return OVRManager.isHmdPresent ? OVRPlugin.GetEyeVelocity(OVRPlugin.Eye.Left).ToOVRPose().position : Vector3.zero;
+            //return OVRManager.isHmdPresent ? OVRPlugin.GetEyeVelocity(OVRPlugin.Eye.Left).ToOVRPose().position : Vector3.zero;
+            return Vector3.zero;
         }
 
         /// <summary>
