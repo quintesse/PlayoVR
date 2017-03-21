@@ -125,6 +125,8 @@ And finally we have the situation where a parent object is part of the scene, it
 
 This script handles the synchronization of position, orientation and movement of an object between clients.
 
+*It is NOT necessary to use this script if you're happy with the way Photon's `NetworkTransformView` and `NetworkRigidbodyView` work! I just happen to like this script better than theirs.*
+
 ![NetworkObject](Docs/Images/network-object.png)
 
 ### Properties:
