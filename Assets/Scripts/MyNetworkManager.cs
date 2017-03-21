@@ -4,6 +4,8 @@ using UnityEngine;
 public class MyNetworkManager : Photon.PunBehaviour {
     private GameObject[] spawns;
 
+    public string gameVersion = "1.0";
+
     [Tooltip("Reference to the player avatar prefab without voice support (DFVoice is not available)")]
     public GameObject mutePlayerAvatar;
     [Tooltip("Reference to the player avatar prefab with voice support (DFVoice is available)")]
@@ -24,10 +26,17 @@ public class MyNetworkManager : Photon.PunBehaviour {
             Debug.LogError("MyNetworkManager is missing a reference to the player avatar prefab!");
         }
         spawns = GameObject.FindGameObjectsWithTag("Respawn");
-        PhotonNetwork.autoJoinLobby = true;
+        PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
         PhotonNetwork.automaticallySyncScene = true;
         PhotonNetwork.logLevel = Loglevel;
-        PhotonNetwork.ConnectUsingSettings("0.1");
+        PhotonNetwork.ConnectUsingSettings(gameVersion);
+    }
+
+    public override void OnConnectedToMaster() {
+        Debug.Log("Connected to master");
+
+        Debug.Log("Joining random room...");
+        PhotonNetwork.JoinRandomRoom();
     }
 
     public override void OnJoinedLobby() {

@@ -1237,12 +1237,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 642757e5fb114ae49b5ace44dba12c7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameVersion: 1.0
   mutePlayerAvatar: {fileID: 1507327272486684, guid: 79ea9a3ecf941be4387c5eb20085dfb6,
     type: 2}
   voicedPlayerAvatar: {fileID: 1153555728618568, guid: 42d5254386048dc4b8092b1ea0fe2b1e,
     type: 2}
   MaxPlayersPerRoom: 4
-  Loglevel: 1
+  Loglevel: 0
 --- !u!114 &1461049259
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1267,8 +1268,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
-  OwnerShipWasTransfered: 0
   prefixBackup: -1
+  observed: {fileID: 0}
   synchronization: 0
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
@@ -1278,7 +1279,6 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 10
   instantiationId: 10
-  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!4 &1461049262
 Transform:
