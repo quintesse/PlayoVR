@@ -25,7 +25,7 @@ using System.Threading;
 using VR = UnityEngine.VR;
 
 /// <summary>
-/// Contains information about the user's preferences and body dimensions.
+/// (Deprecated) Contains information about the user's preferences and body dimensions.
 /// </summary>
 public class OVRProfile : Object
 {
@@ -45,7 +45,7 @@ public class OVRProfile : Object
 	[System.Obsolete]
 	public string locale { get { return "en_US"; } }
 
-	public float ipd { get { return Vector3.Distance (OVRPlugin.GetNodePose (OVRPlugin.Node.EyeLeft, false).ToOVRPose ().position, OVRPlugin.GetNodePose (OVRPlugin.Node.EyeRight, false).ToOVRPose ().position); } }
+	public float ipd { get { return Vector3.Distance (OVRPlugin.GetNodePose (OVRPlugin.Node.EyeLeft, OVRPlugin.Step.Render).ToOVRPose ().position, OVRPlugin.GetNodePose (OVRPlugin.Node.EyeRight, OVRPlugin.Step.Render).ToOVRPose ().position); } }
 	public float eyeHeight { get { return OVRPlugin.eyeHeight; } }
 	public float eyeDepth { get { return OVRPlugin.eyeDepth; } }
 	public float neckHeight { get { return eyeHeight - 0.075f; } }

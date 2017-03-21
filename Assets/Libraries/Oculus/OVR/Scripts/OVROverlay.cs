@@ -23,8 +23,8 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
-using VR = UnityEngine.VR;
-
+using VR = UnityEngine.VR;
+
 /// <summary>
 /// Add OVROverlay script to an object with an optional mesh primitive
 /// rendered as a TimeWarp overlay instead by drawing it into the eye buffer.
@@ -47,16 +47,22 @@ using VR = UnityEngine.VR;
 ///				**Only the half of the cylinder can be displayed, which means the arc angle has to be smaller than 180 degree,  [scale.x] / [scale.z] <= PI
 ///				**Your camera has to be inside of the inscribed sphere of the cylinder, the overlay will be faded out automatically when the camera is close to the inscribed sphere's surface.
 ///				**Translation only works correctly with vrDriver 1.04 or above
-///		3. Cubemap: [Mobile Only], Display overlay as a cube map
+///		3. Cubemap: Display overlay as a cube map
+///		4. OffcenterCubemap: [Mobile Only] Display overlay as a cube map with a texture coordinate offset
+///			* The actually sampling will looks like [color = texture(cubeLayerSampler, normalize(direction) + offset)] instead of [color = texture( cubeLayerSampler, direction )]
+///			* The extra center offset can be feed from transform.position
+///			* Note: if transform.position's magnitude is greater than 1, which will cause some cube map pixel always invisible 
+///					Which is usually not what people wanted, we don't kill the ability for developer to do so here, but will warn out.
 /// </summary>
-
+
 public class OVROverlay : MonoBehaviour
 {
 	public enum OverlayShape
 	{
 		Quad = 0,       // Display overlay as a quad
-		Cylinder = 1,   // [Mobile Only][Experimental] Display overlay as a cylinder, Translation only works correctly with vrDriver 1.04 or above 
-		Cubemap = 2,    // [Mobile Only] Display overlay as a cube map
+		Cylinder = 1,   // [Mobile Only][Experimental] Display overlay as a cylinder, Translation only works correctly with vrDriver 1.04 or above 
+		Cubemap = 2,    // Display overlay as a cube map
+		OffcenterCubemap = 4,    // Display overlay as a cube map with a center offset 
 	}
 
 	public enum OverlayType
@@ -73,7 +79,7 @@ public class OVROverlay : MonoBehaviour
 	const int maxInstances = 15;
 #endif
 
-	static OVROverlay[] instances = new OVROverlay[maxInstances];
+	internal static OVROverlay[] instances = new OVROverlay[maxInstances];
 
 	/// <summary>
 	/// Specify overlay's type
@@ -168,7 +174,7 @@ public class OVROverlay : MonoBehaviour
 			return;
 
 #if !UNITY_ANDROID || UNITY_EDITOR
-		if (currentOverlayShape == OverlayShape.Cylinder)
+		if (currentOverlayShape == OverlayShape.Cylinder || currentOverlayShape == OverlayShape.OffcenterCubemap)
 		{
 			Debug.LogWarning("Overlay shape " + currentOverlayShape + " is not supported on current platform");
 		}
@@ -207,16 +213,26 @@ public class OVROverlay : MonoBehaviour
 		OVRPose pose = (headLocked) ? transform.ToHeadSpacePose() : transform.ToTrackingSpacePose();
 		Vector3 scale = transform.lossyScale;
 		for (int i = 0; i < 3; ++i)
-			scale[i] /= Camera.current.transform.lossyScale[i];
-
+			scale[i] /= Camera.current.transform.lossyScale[i];
+
 #if !UNITY_ANDROID
 		if (currentOverlayShape == OverlayShape.Cubemap)
 		{
 			pose.position = Camera.current.transform.position;
 		}
 #endif
-
-		// Cylinder overlay sanity checking
+		// Pack the offsetCenter directly into pose.position for offcenterCubemap
+		if (currentOverlayShape == OverlayShape.OffcenterCubemap)
+		{
+			pose.position = transform.position;
+
+			if ( pose.position.magnitude > 1.0f )
+			{
+				Debug.LogWarning("your cube map center offset's magnitude is greater than 1, which will cause some cube map pixel always invisible .");
+			}
+		}
+
+		// Cylinder overlay sanity checking
 		if (currentOverlayShape == OverlayShape.Cylinder)
 		{
 			float arcAngle = scale.x / scale.z / (float)Math.PI * 180.0f;

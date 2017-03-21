@@ -23,8 +23,6 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.IO;
 
 [InitializeOnLoad]
@@ -34,7 +32,7 @@ class OVRMoonlightLoader
 	{
 		EnforceInputManagerBindings();
 		EditorApplication.update += EnforceBundleId;
-		EditorApplication.delayCall += EnforceVRSupport;
+		EditorApplication.update += EnforceVRSupport;
 
 		if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
 			return;
@@ -73,10 +71,18 @@ class OVRMoonlightLoader
 
 	static void EnforceVRSupport()
 	{
-		var mgrs = GameObject.FindObjectsOfType<OVRManager> ().Where (m => m.isActiveAndEnabled);
-		if (mgrs.Count () != 0 && !PlayerSettings.virtualRealitySupported) {
-			Debug.Log ("Enabling Unity VR support");
-			PlayerSettings.virtualRealitySupported = true;
+		if (PlayerSettings.virtualRealitySupported)
+			return;
+		
+		var mgrs = GameObject.FindObjectsOfType<OVRManager>();
+		for (int i = 0; i < mgrs.Length; ++i)
+		{
+			if (mgrs [i].isActiveAndEnabled)
+			{
+				Debug.Log ("Enabling Unity VR support");
+				PlayerSettings.virtualRealitySupported = true;
+				return;
+			}
 		}
 	}
 

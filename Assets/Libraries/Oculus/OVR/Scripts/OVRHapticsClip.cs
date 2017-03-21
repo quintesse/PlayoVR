@@ -115,7 +115,11 @@ public class OVRHapticsClip
 
 	private void InitializeFromAudioFloatTrack(float[] sourceData, double sourceFrequency, int sourceChannelCount, int sourceChannel)
 	{
-		double stepSizePrecise = sourceFrequency / OVRHaptics.Config.SampleRateHz;
+		double stepSizePrecise = (sourceFrequency + 1e-6) / OVRHaptics.Config.SampleRateHz;
+
+		if (stepSizePrecise < 1.0)
+			return;
+
 		int stepSize = (int)stepSizePrecise;
 		double stepSizeError = stepSizePrecise - stepSize;
 		double accumulatedStepSizeError = 0.0f;

@@ -33,7 +33,9 @@ partial class OculusBuildApp
 		{
 			EditorUserBuildSettings.SwitchActiveBuildTarget (BuildTarget.StandaloneWindows);
 		}
-#if UNITY_5_4
+#if UNITY_5_5_OR_NEWER
+		UnityEditorInternal.VR.VREditor.SetVREnabledOnTargetGroup(BuildTargetGroup.Standalone, true);
+#elif UNITY_5_4_OR_NEWER
 		UnityEditorInternal.VR.VREditor.SetVREnabled(BuildTargetGroup.Standalone, true);
 #endif
 		PlayerSettings.virtualRealitySupported = true;
@@ -48,7 +50,10 @@ partial class OculusBuildApp
 		{
 			EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.Android);
 		}
-#if UNITY_5_4
+
+#if UNITY_5_5_OR_NEWER
+		UnityEditorInternal.VR.VREditor.SetVREnabledOnTargetGroup(BuildTargetGroup.Standalone, true);
+#elif UNITY_5_4_OR_NEWER
 		UnityEditorInternal.VR.VREditor.SetVREnabled(BuildTargetGroup.Android, true);
 #endif
 		PlayerSettings.virtualRealitySupported = true;

@@ -132,16 +132,16 @@ public class OVRTracker
 		switch (tracker)
 		{
 			case 0:
-				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerZero, false).ToOVRPose();
+				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerZero, OVRPlugin.Step.Render).ToOVRPose();
 				break;
 			case 1:
-				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerOne, false).ToOVRPose();
+				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerOne, OVRPlugin.Step.Render).ToOVRPose();
 				break;
 			case 2:
-				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerTwo, false).ToOVRPose();
+				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerTwo, OVRPlugin.Step.Render).ToOVRPose();
 				break;
 			case 3:
-				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerThree, false).ToOVRPose();
+				p = OVRPlugin.GetNodePose(OVRPlugin.Node.TrackerThree, OVRPlugin.Step.Render).ToOVRPose();
 				break;
 			default:
 				return OVRPose.identity;

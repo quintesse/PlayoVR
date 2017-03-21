@@ -49,6 +49,7 @@ public static class OVRInput
 		PrimaryThumbstickDown     = 0x00020000, ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickDown], [RTouch: RThumbstickDown]
 		PrimaryThumbstickLeft     = 0x00040000, ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickLeft], [RTouch: RThumbstickLeft]
 		PrimaryThumbstickRight    = 0x00080000, ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickRight], [RTouch: RThumbstickRight]
+		PrimaryTouchpad           = 0x00000400, ///< Maps to RawButton: [TrackedRemote, LTrackedRemote: LTouchpad], [RTrackedRemote: RTouchpad], [Gamepad, Touch, LTouch, RTouch: None]
 		SecondaryShoulder         = 0x00100000, ///< Maps to RawButton: [Gamepad: RShoulder], [Touch, LTouch, RTouch: None]
 		SecondaryIndexTrigger     = 0x00200000, ///< Maps to RawButton: [Gamepad, Touch: RIndexTrigger], [LTouch, RTouch: None]
 		SecondaryHandTrigger      = 0x00400000, ///< Maps to RawButton: [Gamepad: None], [Touch: RHandTrigger], [LTouch, RTouch: None]
@@ -57,6 +58,7 @@ public static class OVRInput
 		SecondaryThumbstickDown   = 0x02000000, ///< Maps to RawButton: [Gamepad, Touch: RThumbstickDown], [LTouch, RTouch: None]
 		SecondaryThumbstickLeft   = 0x04000000, ///< Maps to RawButton: [Gamepad, Touch: RThumbstickLeft], [LTouch, RTouch: None]
 		SecondaryThumbstickRight  = 0x08000000, ///< Maps to RawButton: [Gamepad, Touch: RThumbstickRight], [LTouch, RTouch: None]
+		SecondaryTouchpad         = 0x00000800, ///< Maps to RawButton: [TrackedRemote: RTouchpad], [Gamepad, Touch, LTouch, RTouch, LTrackedRemote, RTrackedRemote: None]
 		DpadUp                    = 0x00000010, ///< Maps to RawButton: [Gamepad: DpadUp], [Touch, LTouch, RTouch: None]
 		DpadDown                  = 0x00000020, ///< Maps to RawButton: [Gamepad: DpadDown], [Touch, LTouch, RTouch: None]
 		DpadLeft                  = 0x00000040, ///< Maps to RawButton: [Gamepad: DpadLeft], [Touch, LTouch, RTouch: None]
@@ -64,7 +66,7 @@ public static class OVRInput
 		Up                        = 0x10000000, ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickUp], [RTouch: RThumbstickUp]
 		Down                      = 0x20000000, ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickDown], [RTouch: RThumbstickDown]
 		Left                      = 0x40000000, ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickLeft], [RTouch: RThumbstickLeft]
-		Right     = unchecked((int)0x80000000), ///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickRight], [RTouch: RThumbstickRight]
+		Right      = unchecked((int)0x80000000),///< Maps to RawButton: [Gamepad, Touch, LTouch: LThumbstickRight], [RTouch: RThumbstickRight]
 		Any                       = ~None,      ///< Maps to RawButton: [Gamepad, Touch, LTouch, RTouch: Any]
 	}
 
@@ -87,6 +89,7 @@ public static class OVRInput
 		LThumbstickDown           = 0x00000020, ///< Maps to Physical Button: [Gamepad, Touch, LTouch: LThumbstickDown], [RTouch: None]
 		LThumbstickLeft           = 0x00000040, ///< Maps to Physical Button: [Gamepad, Touch, LTouch: LThumbstickLeft], [RTouch: None]
 		LThumbstickRight          = 0x00000080, ///< Maps to Physical Button: [Gamepad, Touch, LTouch: LThumbstickRight], [RTouch: None]
+		LTouchpad                 = 0x40000000, ///< Maps to Physical Button: 
 		RShoulder                 = 0x00000008, ///< Maps to Physical Button: [Gamepad: RShoulder], [Touch, LTouch, RTouch: None]
 		RIndexTrigger             = 0x04000000, ///< Maps to Physical Button: [Gamepad, Touch, RTouch: RIndexTrigger], [LTouch: None]
 		RHandTrigger              = 0x08000000, ///< Maps to Physical Button: [Gamepad: None], [Touch, RTouch: RHandTrigger], [LTouch: None]
@@ -95,6 +98,7 @@ public static class OVRInput
 		RThumbstickDown           = 0x00002000, ///< Maps to Physical Button: [Gamepad, Touch, RTouch: RThumbstickDown], [LTouch: None]
 		RThumbstickLeft           = 0x00004000, ///< Maps to Physical Button: [Gamepad, Touch, RTouch: RThumbstickLeft], [LTouch: None]
 		RThumbstickRight          = 0x00008000, ///< Maps to Physical Button: [Gamepad, Touch, RTouch: RThumbstickRight], [LTouch: None]
+		RTouchpad  = unchecked((int)0x80000000),///< Maps to Physical Button: 
 		DpadUp                    = 0x00010000, ///< Maps to Physical Button: [Gamepad: DpadUp], [Touch, LTouch, RTouch: None]
 		DpadDown                  = 0x00020000, ///< Maps to Physical Button: [Gamepad: DpadDown], [Touch, LTouch, RTouch: None]
 		DpadLeft                  = 0x00040000, ///< Maps to Physical Button: [Gamepad: DpadLeft], [Touch, LTouch, RTouch: None]
@@ -114,9 +118,11 @@ public static class OVRInput
 		PrimaryIndexTrigger       = Button.PrimaryIndexTrigger,   ///< Maps to RawTouch: [Gamepad: None], [Touch, LTouch: LIndexTrigger], [RTouch: RIndexTrigger]
 		PrimaryThumbstick         = Button.PrimaryThumbstick,     ///< Maps to RawTouch: [Gamepad: None], [Touch, LTouch: LThumbstick], [RTouch: RThumbstick]
 		PrimaryThumbRest          = 0x00001000,                   ///< Maps to RawTouch: [Gamepad: None], [Touch, LTouch: LThumbRest], [RTouch: RThumbRest]
+		PrimaryTouchpad           = Button.PrimaryTouchpad,       ///< Maps to RawTouch: 
 		SecondaryIndexTrigger     = Button.SecondaryIndexTrigger, ///< Maps to RawTouch: [Gamepad: None], [Touch: RIndexTrigger], [LTouch, RTouch: None]
 		SecondaryThumbstick       = Button.SecondaryThumbstick,   ///< Maps to RawTouch: [Gamepad: None], [Touch: RThumbstick], [LTouch, RTouch: None]
 		SecondaryThumbRest        = 0x00100000,                   ///< Maps to RawTouch: [Gamepad: None], [Touch: RThumbRest], [LTouch, RTouch: None]
+		SecondaryTouchpad         = Button.SecondaryTouchpad,     ///< Maps to RawTouch: 
 		Any                       = ~None,                        ///< Maps to RawTouch: [Gamepad: None], [Touch, LTouch, RTouch: Any]
 	}
 
@@ -132,9 +138,11 @@ public static class OVRInput
 		LIndexTrigger             = 0x00001000,                   ///< Maps to Physical Touch: [Gamepad: None], [Touch, LTouch: LIndexTrigger], [RTouch: None]
 		LThumbstick               = RawButton.LThumbstick,        ///< Maps to Physical Touch: [Gamepad: None], [Touch, LTouch: LThumbstick], [RTouch: None]
 		LThumbRest                = 0x00000800,                   ///< Maps to Physical Touch: [Gamepad: None], [Touch, LTouch: LThumbRest], [RTouch: None]
+		LTouchpad                 = RawButton.LTouchpad,          ///< Maps to Physical Touch: 
 		RIndexTrigger             = 0x00000010,                   ///< Maps to Physical Touch: [Gamepad: None], [Touch, RTouch: RIndexTrigger], [LTouch: None]
 		RThumbstick               = RawButton.RThumbstick,        ///< Maps to Physical Touch: [Gamepad: None], [Touch, RTouch: RThumbstick], [LTouch: None]
 		RThumbRest                = 0x00000008,                   ///< Maps to Physical Touch: [Gamepad: None], [Touch, RTouch: RThumbRest], [LTouch: None]
+		RTouchpad                 = RawButton.RTouchpad,          ///< Maps to Physical Touch: 
 		Any                       = ~None,                        ///< Maps to Physical Touch: [Gamepad: None], [Touch, LTouch, RTouch: Any]
 	}
 
@@ -193,7 +201,9 @@ public static class OVRInput
 	{
 		None                      = 0,     ///< Maps to RawAxis2D: [Gamepad, Touch, LTouch, RTouch: None]
 		PrimaryThumbstick         = 0x01,  ///< Maps to RawAxis2D: [Gamepad, Touch, LTouch: LThumbstick], [RTouch: RThumbstick]
+		PrimaryTouchpad           = 0x04,  ///< Maps to RawAxis2D: 
 		SecondaryThumbstick       = 0x02,  ///< Maps to RawAxis2D: [Gamepad, Touch: RThumbstick], [LTouch, RTouch: None]
+		SecondaryTouchpad         = 0x08,  ///< Maps to RawAxis2D: 
 		Any                       = ~None, ///< Maps to RawAxis2D: [Gamepad, Touch, LTouch, RTouch: Any]
 	}
 
@@ -203,7 +213,9 @@ public static class OVRInput
 	{
 		None                      = 0,     ///< Maps to Physical Axis2D: [Gamepad, Touch, LTouch, RTouch: None]
 		LThumbstick               = 0x01,  ///< Maps to Physical Axis2D: [Gamepad, Touch, LTouch: LThumbstick], [RTouch: None]
+		LTouchpad                 = 0x04,  ///< Maps to Physical Axis2D:
 		RThumbstick               = 0x02,  ///< Maps to Physical Axis2D: [Gamepad, Touch, RTouch: RThumbstick], [LTouch: None]
+		RTouchpad                 = 0x08,  ///< Maps to Physical Axis2D: 
 		Any                       = ~None, ///< Maps to Physical Axis2D: [Gamepad, Touch, LTouch, RTouch: Any]
 	}
 
@@ -218,6 +230,8 @@ public static class OVRInput
 		Remote                    = OVRPlugin.Controller.Remote,   ///< Oculus Remote controller.
 		Gamepad                   = OVRPlugin.Controller.Gamepad,  ///< Xbox 360 or Xbox One gamepad on PC. Generic gamepad on Android.
 		Touchpad                  = OVRPlugin.Controller.Touchpad, ///< GearVR touchpad on Android.
+		LTrackedRemote            = OVRPlugin.Controller.LTrackedRemote, ///< GearVR tracked remote on Android.
+		RTrackedRemote            = OVRPlugin.Controller.RTrackedRemote, ///< GearVR tracked remote on Android.
 		Active                    = OVRPlugin.Controller.Active,   ///< Default controller. Represents the controller that most recently registered a button press from the user.
 		All                       = OVRPlugin.Controller.All,      ///< Represents the logical OR of all controllers.
 	}
@@ -227,8 +241,8 @@ public static class OVRInput
 	private static List<OVRControllerBase> controllers;
 	private static Controller activeControllerType = Controller.None;
 	private static Controller connectedControllerTypes = Controller.None;
-	private static bool useFixedPoses = false;
-	private static int fixedUpdateCount = 0;
+	private static OVRPlugin.Step stepType = OVRPlugin.Step.Render;
+    private static int fixedUpdateCount = 0;
 
 
 	private static bool _pluginSupportsActiveController = false;
@@ -262,10 +276,12 @@ public static class OVRInput
 #if UNITY_ANDROID && !UNITY_EDITOR
 			new OVRControllerGamepadAndroid(),
 			new OVRControllerTouchpad(),
+			new OVRControllerLTrackedRemote(),
+			new OVRControllerRTrackedRemote(),
 #elif UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
 			new OVRControllerGamepadMac(),
 #else
-			new OVRControllerGamepadPC(),
+            new OVRControllerGamepadPC(),
 			new OVRControllerTouch(),
 			new OVRControllerLTouch(),
 			new OVRControllerRTouch(),
@@ -274,13 +290,13 @@ public static class OVRInput
 		};
 	}
 
-	/// <summary>
-	/// Updates the internal state of OVRInput. Must be called manually if used independently from OVRManager.
-	/// </summary>
-	public static void Update()
+    /// <summary>
+    /// Updates the internal state of OVRInput. Must be called manually if used independently from OVRManager.
+    /// </summary>
+    public static void Update()
 	{
 		connectedControllerTypes = Controller.None;
-		useFixedPoses = false;
+		stepType = OVRPlugin.Step.Render;
 		fixedUpdateCount = 0;
 
 		for (int i = 0; i < controllers.Count; i++)
@@ -310,9 +326,22 @@ public static class OVRInput
 			activeControllerType = Controller.None;
 		}
 
+        // Promote TrackedRemote to Active if one is connected and no other controller is active 
+		if (activeControllerType == Controller.None)
+		{
+            if ((connectedControllerTypes & Controller.RTrackedRemote) != 0)
+            {
+                activeControllerType = Controller.RTrackedRemote;
+            }
+            else if ((connectedControllerTypes & Controller.LTrackedRemote) != 0)
+            {
+                activeControllerType = Controller.LTrackedRemote;
+            }
+		}
+
 		if (pluginSupportsActiveController)
 		{
-			// override locally derived active and connected controllers if plugin provdes more accurate data
+			// override locally derived active and connected controllers if plugin provides more accurate data
 			connectedControllerTypes = (OVRInput.Controller)OVRPlugin.GetConnectedControllers();
 			activeControllerType = (OVRInput.Controller)OVRPlugin.GetActiveController();
 		}
@@ -323,7 +352,7 @@ public static class OVRInput
 	/// </summary>
 	public static void FixedUpdate()
 	{
-		useFixedPoses = true;
+		stepType = OVRPlugin.Step.Physics;
 
 		double predictionSeconds = (double)fixedUpdateCount * Time.fixedDeltaTime / Mathf.Max(Time.timeScale, 1e-6f);
 		fixedUpdateCount++;
@@ -340,8 +369,10 @@ public static class OVRInput
 		switch (controllerType)
 		{
 			case Controller.LTouch:
+            case Controller.LTrackedRemote:
                 return OVRPlugin.GetNodeOrientationTracked(OVRPlugin.Node.HandLeft);
             case Controller.RTouch:
+            case Controller.RTrackedRemote:
                 return OVRPlugin.GetNodeOrientationTracked(OVRPlugin.Node.HandRight);
             default:
 				return false;
@@ -357,8 +388,10 @@ public static class OVRInput
 		switch (controllerType)
 		{
 			case Controller.LTouch:
+			case Controller.LTrackedRemote:
                 return OVRPlugin.GetNodePositionTracked(OVRPlugin.Node.HandLeft);
             case Controller.RTouch:
+            case Controller.RTrackedRemote:
                 return OVRPlugin.GetNodePositionTracked(OVRPlugin.Node.HandRight);
             default:
 				return false;
@@ -374,9 +407,11 @@ public static class OVRInput
 		switch (controllerType)
 		{
 			case Controller.LTouch:
-                return OVRPlugin.GetNodePose(OVRPlugin.Node.HandLeft, useFixedPoses).ToOVRPose().position;
+			case Controller.LTrackedRemote:
+                return OVRPlugin.GetNodePose(OVRPlugin.Node.HandLeft, stepType).ToOVRPose().position;
             case Controller.RTouch:
-                return OVRPlugin.GetNodePose(OVRPlugin.Node.HandRight, useFixedPoses).ToOVRPose().position;
+			case Controller.RTrackedRemote:
+                return OVRPlugin.GetNodePose(OVRPlugin.Node.HandRight, stepType).ToOVRPose().position;
             default:
 				return Vector3.zero;
 		}
@@ -391,9 +426,11 @@ public static class OVRInput
         switch (controllerType)
         {
             case Controller.LTouch:
-                return OVRPlugin.GetNodeVelocity(OVRPlugin.Node.HandLeft, useFixedPoses).ToOVRPose().position;
+			case Controller.LTrackedRemote:
+				return OVRPlugin.GetNodeVelocity(OVRPlugin.Node.HandLeft, stepType).FromFlippedZVector3f();
             case Controller.RTouch:
-                return OVRPlugin.GetNodeVelocity(OVRPlugin.Node.HandRight, useFixedPoses).ToOVRPose().position;
+			case Controller.RTrackedRemote:
+				return OVRPlugin.GetNodeVelocity(OVRPlugin.Node.HandRight, stepType).FromFlippedZVector3f();
             default:
                 return Vector3.zero;
         }
@@ -408,9 +445,11 @@ public static class OVRInput
         switch (controllerType)
         {
             case Controller.LTouch:
-                return OVRPlugin.GetNodeAcceleration(OVRPlugin.Node.HandLeft, useFixedPoses).ToOVRPose().position;
+			case Controller.LTrackedRemote:
+				return OVRPlugin.GetNodeAcceleration(OVRPlugin.Node.HandLeft, stepType).FromFlippedZVector3f();
             case Controller.RTouch:
-                return OVRPlugin.GetNodeAcceleration(OVRPlugin.Node.HandRight, useFixedPoses).ToOVRPose().position;
+			case Controller.RTrackedRemote:
+				return OVRPlugin.GetNodeAcceleration(OVRPlugin.Node.HandRight, stepType).FromFlippedZVector3f();
             default:
                 return Vector3.zero;
         }
@@ -425,47 +464,53 @@ public static class OVRInput
 		switch (controllerType)
 		{
 			case Controller.LTouch:
-                return OVRPlugin.GetNodePose(OVRPlugin.Node.HandLeft, useFixedPoses).ToOVRPose().orientation;
+			case Controller.LTrackedRemote:
+				return OVRPlugin.GetNodePose(OVRPlugin.Node.HandLeft, stepType).ToOVRPose().orientation;
             case Controller.RTouch:
-                return OVRPlugin.GetNodePose(OVRPlugin.Node.HandRight, useFixedPoses).ToOVRPose().orientation;
+			case Controller.RTrackedRemote:
+				return OVRPlugin.GetNodePose(OVRPlugin.Node.HandRight, stepType).ToOVRPose().orientation;
             default:
 				return Quaternion.identity;
 		}
 	}
 
-    /// <summary>
-    /// Gets the angular velocity of the given Controller local to its tracking space.
-    /// Only supported for Oculus LTouch and RTouch controllers. Non-tracked controllers will return Quaternion.identity.
-    /// </summary>
-    public static Quaternion GetLocalControllerAngularVelocity(OVRInput.Controller controllerType)
-    {
-        switch (controllerType)
-        {
-            case Controller.LTouch:
-                return OVRPlugin.GetNodeVelocity(OVRPlugin.Node.HandLeft, useFixedPoses).ToOVRPose().orientation;
-            case Controller.RTouch:
-                return OVRPlugin.GetNodeVelocity(OVRPlugin.Node.HandRight, useFixedPoses).ToOVRPose().orientation;
-            default:
-                return Quaternion.identity;
-        }
-    }
+	/// <summary>
+	/// Gets the angular velocity of the given Controller local to its tracking space in radians per second around each axis.
+	/// Only supported for Oculus LTouch and RTouch controllers. Non-tracked controllers will return Quaternion.identity.
+	/// </summary>
+	public static Vector3 GetLocalControllerAngularVelocity(OVRInput.Controller controllerType)
+	{
+		switch (controllerType)
+		{
+		case Controller.LTouch:
+		case Controller.LTrackedRemote:
+			return OVRPlugin.GetNodeAngularVelocity(OVRPlugin.Node.HandLeft, stepType).FromFlippedZVector3f();
+		case Controller.RTouch:
+		case Controller.RTrackedRemote:
+			return OVRPlugin.GetNodeAngularVelocity(OVRPlugin.Node.HandRight, stepType).FromFlippedZVector3f();
+		default:
+			return Vector3.zero;
+		}
+	}
 
-    /// <summary>
-    /// Gets the angular acceleration of the given Controller local to its tracking space.
-    /// Only supported for Oculus LTouch and RTouch controllers. Non-tracked controllers will return Quaternion.identity.
-    /// </summary>
-    public static Quaternion GetLocalControllerAngularAcceleration(OVRInput.Controller controllerType)
-    {
-        switch (controllerType)
-        {
-            case Controller.LTouch:
-                return OVRPlugin.GetNodeAcceleration(OVRPlugin.Node.HandLeft, useFixedPoses).ToOVRPose().orientation;
-            case Controller.RTouch:
-                return OVRPlugin.GetNodeAcceleration(OVRPlugin.Node.HandRight, useFixedPoses).ToOVRPose().orientation;
-            default:
-                return Quaternion.identity;
-        }
-    }
+	/// <summary>
+	/// Gets the angular acceleration of the given Controller local to its tracking space in radians per second per second around each axis.
+	/// Only supported for Oculus LTouch and RTouch controllers. Non-tracked controllers will return Quaternion.identity.
+	/// </summary>
+	public static Vector3 GetLocalControllerAngularAcceleration(OVRInput.Controller controllerType)
+	{
+		switch (controllerType)
+		{
+		case Controller.LTouch:
+		case Controller.LTrackedRemote:
+			return OVRPlugin.GetNodeAngularAcceleration(OVRPlugin.Node.HandLeft, stepType).FromFlippedZVector3f();
+		case Controller.RTouch:
+		case Controller.RTrackedRemote:
+			return OVRPlugin.GetNodeAngularAcceleration(OVRPlugin.Node.HandRight, stepType).FromFlippedZVector3f();
+		default:
+			return Vector3.zero;
+		}
+	}
 
 	/// <summary>
 	/// Gets the current state of the given virtual button mask with the given controller mask.
@@ -919,24 +964,42 @@ public static class OVRInput
 
 				if ((RawAxis1D.LIndexTrigger & resolvedMask) != 0)
 				{
-					maxAxis = CalculateAbsMax(maxAxis, controller.currentState.LIndexTrigger);
+					float axis = controller.currentState.LIndexTrigger;
+
+					if (controller.shouldApplyDeadzone)
+						axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
+					maxAxis = CalculateAbsMax(maxAxis, axis);
 				}
 				if ((RawAxis1D.RIndexTrigger & resolvedMask) != 0)
 				{
-					maxAxis = CalculateAbsMax(maxAxis, controller.currentState.RIndexTrigger);
+					float axis = controller.currentState.RIndexTrigger;
+
+					if (controller.shouldApplyDeadzone)
+						axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
+					maxAxis = CalculateAbsMax(maxAxis, axis);
 				}
 				if ((RawAxis1D.LHandTrigger & resolvedMask) != 0)
 				{
-					maxAxis = CalculateAbsMax(maxAxis, controller.currentState.LHandTrigger);
+					float axis = controller.currentState.LHandTrigger;
+
+					if (controller.shouldApplyDeadzone)
+						axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
+					maxAxis = CalculateAbsMax(maxAxis, axis);
 				}
 				if ((RawAxis1D.RHandTrigger & resolvedMask) != 0)
 				{
-					maxAxis = CalculateAbsMax(maxAxis, controller.currentState.RHandTrigger);
+					float axis = controller.currentState.RHandTrigger;
+
+					if (controller.shouldApplyDeadzone)
+						axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
+					maxAxis = CalculateAbsMax(maxAxis, axis);
 				}
 			}
 		}
-
-		maxAxis = CalculateDeadzone(maxAxis, AXIS_DEADZONE_THRESHOLD);
 
 		return maxAxis;
 	}
@@ -980,6 +1043,20 @@ public static class OVRInput
 						controller.currentState.LThumbstick.x,
 						controller.currentState.LThumbstick.y);
 
+					if (controller.shouldApplyDeadzone)
+						axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
+					maxAxis = CalculateAbsMax(maxAxis, axis);
+				}
+				if ((RawAxis2D.LTouchpad & resolvedMask) != 0)
+				{
+					Vector2 axis = new Vector2(
+						controller.currentState.LTouchpad.x,
+						controller.currentState.LTouchpad.y);
+
+					//if (controller.shouldApplyDeadzone)
+					//	axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
 					maxAxis = CalculateAbsMax(maxAxis, axis);
 				}
 				if ((RawAxis2D.RThumbstick & resolvedMask) != 0)
@@ -988,12 +1065,24 @@ public static class OVRInput
 						controller.currentState.RThumbstick.x,
 						controller.currentState.RThumbstick.y);
 
+					if (controller.shouldApplyDeadzone)
+						axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
+					maxAxis = CalculateAbsMax(maxAxis, axis);
+				}
+				if ((RawAxis2D.RTouchpad & resolvedMask) != 0)
+				{
+					Vector2 axis = new Vector2(
+						controller.currentState.RTouchpad.x,
+						controller.currentState.RTouchpad.y);
+
+					//if (controller.shouldApplyDeadzone)
+					//	axis = CalculateDeadzone(axis, AXIS_DEADZONE_THRESHOLD);
+
 					maxAxis = CalculateAbsMax(maxAxis, axis);
 				}
 			}
 		}
-
-		maxAxis = CalculateDeadzone(maxAxis, AXIS_DEADZONE_THRESHOLD);
 
 		return maxAxis;
 	}
@@ -1004,6 +1093,14 @@ public static class OVRInput
 	public static Controller GetConnectedControllers()
 	{
 		return connectedControllerTypes;
+	}
+    
+	/// <summary>
+	/// Returns true if the specified controller type is currently connected.
+	/// </summary>
+	public static bool IsControllerConnected(Controller controller)
+	{
+		return (connectedControllerTypes & controller) == controller;
 	}
 
 	/// <summary>
@@ -1119,6 +1216,7 @@ public static class OVRInput
 			public RawButton PrimaryThumbstickDown    = RawButton.None;
 			public RawButton PrimaryThumbstickLeft    = RawButton.None;
 			public RawButton PrimaryThumbstickRight   = RawButton.None;
+			public RawButton PrimaryTouchpad          = RawButton.None;
 			public RawButton SecondaryShoulder        = RawButton.None;
 			public RawButton SecondaryIndexTrigger    = RawButton.None;
 			public RawButton SecondaryHandTrigger     = RawButton.None;
@@ -1127,6 +1225,7 @@ public static class OVRInput
 			public RawButton SecondaryThumbstickDown  = RawButton.None;
 			public RawButton SecondaryThumbstickLeft  = RawButton.None;
 			public RawButton SecondaryThumbstickRight = RawButton.None;
+			public RawButton SecondaryTouchpad        = RawButton.None;
 			public RawButton DpadUp                   = RawButton.None;
 			public RawButton DpadDown                 = RawButton.None;
 			public RawButton DpadLeft                 = RawButton.None;
@@ -1171,6 +1270,8 @@ public static class OVRInput
 					rawMask |= PrimaryThumbstickLeft;
 				if ((virtualMask & Button.PrimaryThumbstickRight) != 0)
 					rawMask |= PrimaryThumbstickRight;
+				if ((virtualMask & Button.PrimaryTouchpad) != 0)
+					rawMask |= PrimaryTouchpad;
 				if ((virtualMask & Button.SecondaryShoulder) != 0)
 					rawMask |= SecondaryShoulder;
 				if ((virtualMask & Button.SecondaryIndexTrigger) != 0)
@@ -1187,6 +1288,8 @@ public static class OVRInput
 					rawMask |= SecondaryThumbstickLeft;
 				if ((virtualMask & Button.SecondaryThumbstickRight) != 0)
 					rawMask |= SecondaryThumbstickRight;
+				if ((virtualMask & Button.SecondaryTouchpad) != 0)
+					rawMask |= SecondaryTouchpad;
 				if ((virtualMask & Button.DpadUp) != 0)
 					rawMask |= DpadUp;
 				if ((virtualMask & Button.DpadDown) != 0)
@@ -1218,9 +1321,11 @@ public static class OVRInput
 			public RawTouch PrimaryIndexTrigger       = RawTouch.None;
 			public RawTouch PrimaryThumbstick         = RawTouch.None;
 			public RawTouch PrimaryThumbRest          = RawTouch.None;
+			public RawTouch PrimaryTouchpad           = RawTouch.None;
 			public RawTouch SecondaryIndexTrigger     = RawTouch.None;
 			public RawTouch SecondaryThumbstick       = RawTouch.None;
 			public RawTouch SecondaryThumbRest        = RawTouch.None;
+			public RawTouch SecondaryTouchpad         = RawTouch.None;
 
 			public RawTouch ToRawMask(Touch virtualMask)
 			{
@@ -1243,12 +1348,16 @@ public static class OVRInput
 					rawMask |= PrimaryThumbstick;
 				if ((virtualMask & Touch.PrimaryThumbRest) != 0)
 					rawMask |= PrimaryThumbRest;
+				if ((virtualMask & Touch.PrimaryTouchpad) != 0)
+					rawMask |= PrimaryTouchpad;
 				if ((virtualMask & Touch.SecondaryIndexTrigger) != 0)
 					rawMask |= SecondaryIndexTrigger;
 				if ((virtualMask & Touch.SecondaryThumbstick) != 0)
 					rawMask |= SecondaryThumbstick;
 				if ((virtualMask & Touch.SecondaryThumbRest) != 0)
 					rawMask |= SecondaryThumbRest;
+				if ((virtualMask & Touch.SecondaryTouchpad) != 0)
+					rawMask |= SecondaryTouchpad;
 
 				return rawMask;
 			}
@@ -1314,7 +1423,9 @@ public static class OVRInput
 		{
 			public RawAxis2D None                      = RawAxis2D.None;
 			public RawAxis2D PrimaryThumbstick         = RawAxis2D.None;
+			public RawAxis2D PrimaryTouchpad           = RawAxis2D.None;
 			public RawAxis2D SecondaryThumbstick       = RawAxis2D.None;
+			public RawAxis2D SecondaryTouchpad         = RawAxis2D.None;
 
 			public RawAxis2D ToRawMask(Axis2D virtualMask)
 			{
@@ -1325,8 +1436,12 @@ public static class OVRInput
 
 				if ((virtualMask & Axis2D.PrimaryThumbstick) != 0)
 					rawMask |= PrimaryThumbstick;
+				if ((virtualMask & Axis2D.PrimaryTouchpad) != 0)
+					rawMask |= PrimaryTouchpad;
 				if ((virtualMask & Axis2D.SecondaryThumbstick) != 0)
 					rawMask |= SecondaryThumbstick;
+				if ((virtualMask & Axis2D.SecondaryTouchpad) != 0)
+					rawMask |= SecondaryTouchpad;
 
 				return rawMask;
 			}
@@ -1338,8 +1453,9 @@ public static class OVRInput
 		public VirtualNearTouchMap nearTouchMap = new VirtualNearTouchMap();
 		public VirtualAxis1DMap axis1DMap = new VirtualAxis1DMap();
 		public VirtualAxis2DMap axis2DMap = new VirtualAxis2DMap();
-		public OVRPlugin.ControllerState previousState = new OVRPlugin.ControllerState();
-		public OVRPlugin.ControllerState currentState = new OVRPlugin.ControllerState();
+		public OVRPlugin.ControllerState2 previousState = new OVRPlugin.ControllerState2();
+		public OVRPlugin.ControllerState2 currentState = new OVRPlugin.ControllerState2();
+		public bool shouldApplyDeadzone = true;
 
 		public OVRControllerBase()
 		{
@@ -1352,7 +1468,8 @@ public static class OVRInput
 
 		public virtual Controller Update()
 		{
-			OVRPlugin.ControllerState state = OVRPlugin.GetControllerState((uint)controllerType);
+			OVRPlugin.ControllerState2 state = OVRPlugin.GetControllerState2((uint)controllerType);
+            //Debug.Log("MalibuManaged - " + (state.Touches & (uint)RawTouch.LTouchpad) + " " + state.LTouchpad.x + " " + state.LTouchpad.y + " " + state.RTouchpad.x + " " + state.RTouchpad.y);
 
 			if (state.LIndexTrigger >= AXIS_AS_BUTTON_THRESHOLD)
 				state.Buttons |= (uint)RawButton.LIndexTrigger;
@@ -1447,6 +1564,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.LThumbstickDown;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.LThumbstickLeft;
 			buttonMap.PrimaryThumbstickRight   = RawButton.LThumbstickRight;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.None;
 			buttonMap.SecondaryIndexTrigger    = RawButton.RIndexTrigger;
 			buttonMap.SecondaryHandTrigger     = RawButton.RHandTrigger;
@@ -1455,6 +1573,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.RThumbstickDown;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.RThumbstickLeft;
 			buttonMap.SecondaryThumbstickRight = RawButton.RThumbstickRight;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.None;
 			buttonMap.DpadDown                 = RawButton.None;
 			buttonMap.DpadLeft                 = RawButton.None;
@@ -1475,9 +1594,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.LIndexTrigger;
 			touchMap.PrimaryThumbstick         = RawTouch.LThumbstick;
 			touchMap.PrimaryThumbRest          = RawTouch.LThumbRest;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.RIndexTrigger;
 			touchMap.SecondaryThumbstick       = RawTouch.RThumbstick;
 			touchMap.SecondaryThumbRest        = RawTouch.RThumbRest;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -1502,7 +1623,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                      = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick         = RawAxis2D.LThumbstick;
+			axis2DMap.PrimaryTouchpad           = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick       = RawAxis2D.RThumbstick;
+			axis2DMap.SecondaryTouchpad         = RawAxis2D.None;
 		}
 	}
 
@@ -1530,6 +1653,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.LThumbstickDown;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.LThumbstickLeft;
 			buttonMap.PrimaryThumbstickRight   = RawButton.LThumbstickRight;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.None;
 			buttonMap.SecondaryIndexTrigger    = RawButton.None;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -1538,6 +1662,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.None;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.None;
 			buttonMap.SecondaryThumbstickRight = RawButton.None;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.None;
 			buttonMap.DpadDown                 = RawButton.None;
 			buttonMap.DpadLeft                 = RawButton.None;
@@ -1558,9 +1683,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.LIndexTrigger;
 			touchMap.PrimaryThumbstick         = RawTouch.LThumbstick;
 			touchMap.PrimaryThumbRest          = RawTouch.LThumbRest;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -1585,7 +1712,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                      = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick         = RawAxis2D.LThumbstick;
+			axis2DMap.PrimaryTouchpad           = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick       = RawAxis2D.None;
+			axis2DMap.SecondaryTouchpad         = RawAxis2D.None;
 		}
 	}
 
@@ -1613,6 +1742,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.RThumbstickDown;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.RThumbstickLeft;
 			buttonMap.PrimaryThumbstickRight   = RawButton.RThumbstickRight;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.None;
 			buttonMap.SecondaryIndexTrigger    = RawButton.None;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -1621,6 +1751,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.None;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.None;
 			buttonMap.SecondaryThumbstickRight = RawButton.None;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.None;
 			buttonMap.DpadDown                 = RawButton.None;
 			buttonMap.DpadLeft                 = RawButton.None;
@@ -1641,9 +1772,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.RIndexTrigger;
 			touchMap.PrimaryThumbstick         = RawTouch.RThumbstick;
 			touchMap.PrimaryThumbRest          = RawTouch.RThumbRest;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -1668,7 +1801,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                      = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick         = RawAxis2D.RThumbstick;
+			axis2DMap.PrimaryTouchpad           = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick       = RawAxis2D.None;
+			axis2DMap.SecondaryTouchpad         = RawAxis2D.None;
 		}
 	}
 
@@ -1696,6 +1831,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.None;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.None;
 			buttonMap.PrimaryThumbstickRight   = RawButton.None;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.None;
 			buttonMap.SecondaryIndexTrigger    = RawButton.None;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -1704,6 +1840,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.None;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.None;
 			buttonMap.SecondaryThumbstickRight = RawButton.None;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.DpadUp;
 			buttonMap.DpadDown                 = RawButton.DpadDown;
 			buttonMap.DpadLeft                 = RawButton.DpadLeft;
@@ -1724,9 +1861,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.None;
 			touchMap.PrimaryThumbstick         = RawTouch.None;
 			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -1751,7 +1890,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                     = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick        = RawAxis2D.None;
+			axis2DMap.PrimaryTouchpad          = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick      = RawAxis2D.None;
+			axis2DMap.SecondaryTouchpad        = RawAxis2D.None;
 		}
 	}
 
@@ -1779,6 +1920,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.LThumbstickDown;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.LThumbstickLeft;
 			buttonMap.PrimaryThumbstickRight   = RawButton.LThumbstickRight;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.RShoulder;
 			buttonMap.SecondaryIndexTrigger    = RawButton.RIndexTrigger;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -1787,6 +1929,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.RThumbstickDown;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.RThumbstickLeft;
 			buttonMap.SecondaryThumbstickRight = RawButton.RThumbstickRight;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.DpadUp;
 			buttonMap.DpadDown                 = RawButton.DpadDown;
 			buttonMap.DpadLeft                 = RawButton.DpadLeft;
@@ -1807,9 +1950,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.None;
 			touchMap.PrimaryThumbstick         = RawTouch.None;
 			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -1834,7 +1979,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                      = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick         = RawAxis2D.LThumbstick;
+			axis2DMap.PrimaryTouchpad           = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick       = RawAxis2D.RThumbstick;
+			axis2DMap.SecondaryTouchpad         = RawAxis2D.None;
 		}
 	}
 
@@ -1900,7 +2047,7 @@ public static class OVRInput
 				return Controller.None;
 			}
 
-			OVRPlugin.ControllerState state = new OVRPlugin.ControllerState();
+			OVRPlugin.ControllerState2 state = new OVRPlugin.ControllerState2();
 
 			bool result = OVR_GamepadController_Update();
 
@@ -1992,6 +2139,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.LThumbstickDown;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.LThumbstickLeft;
 			buttonMap.PrimaryThumbstickRight   = RawButton.LThumbstickRight;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.RShoulder;
 			buttonMap.SecondaryIndexTrigger    = RawButton.RIndexTrigger;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -2000,6 +2148,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.RThumbstickDown;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.RThumbstickLeft;
 			buttonMap.SecondaryThumbstickRight = RawButton.RThumbstickRight;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.DpadUp;
 			buttonMap.DpadDown                 = RawButton.DpadDown;
 			buttonMap.DpadLeft                 = RawButton.DpadLeft;
@@ -2020,9 +2169,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.None;
 			touchMap.PrimaryThumbstick         = RawTouch.None;
 			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -2047,7 +2198,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                      = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick         = RawAxis2D.LThumbstick;
+			axis2DMap.PrimaryTouchpad           = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick       = RawAxis2D.RThumbstick;
+			axis2DMap.SecondaryTouchpad         = RawAxis2D.None;
 		}
 
 		public override void SetControllerVibration(float frequency, float amplitude)
@@ -2141,7 +2294,7 @@ public static class OVRInput
 				return Controller.None;
 			}
 
-			OVRPlugin.ControllerState state = new OVRPlugin.ControllerState();
+			OVRPlugin.ControllerState2 state = new OVRPlugin.ControllerState2();
 
 			state.ConnectedControllers = (uint)Controller.Gamepad;
 
@@ -2234,6 +2387,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.LThumbstickDown;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.LThumbstickLeft;
 			buttonMap.PrimaryThumbstickRight   = RawButton.LThumbstickRight;
+			buttonMap.PrimaryTouchpad          = RawButton.None;
 			buttonMap.SecondaryShoulder        = RawButton.RShoulder;
 			buttonMap.SecondaryIndexTrigger    = RawButton.RIndexTrigger;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -2242,6 +2396,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.RThumbstickDown;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.RThumbstickLeft;
 			buttonMap.SecondaryThumbstickRight = RawButton.RThumbstickRight;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.DpadUp;
 			buttonMap.DpadDown                 = RawButton.DpadDown;
 			buttonMap.DpadLeft                 = RawButton.DpadLeft;
@@ -2262,9 +2417,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.None;
 			touchMap.PrimaryThumbstick         = RawTouch.None;
 			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.None;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -2289,7 +2446,9 @@ public static class OVRInput
 		{
 			axis2DMap.None                      = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick         = RawAxis2D.LThumbstick;
+			axis2DMap.PrimaryTouchpad           = RawAxis2D.None;
 			axis2DMap.SecondaryThumbstick       = RawAxis2D.RThumbstick;
+			axis2DMap.SecondaryTouchpad         = RawAxis2D.None;
 		}
 
 		public override void SetControllerVibration(float frequency, float amplitude)
@@ -2300,8 +2459,9 @@ public static class OVRInput
 
 	private class OVRControllerTouchpad : OVRControllerBase
 	{
-		private Vector3 moveAmountMouse;
-		private float minMovMagnitudeMouse = 25.0f;
+        private OVRPlugin.Vector2f moveAmount;
+		private float maxTapMagnitude = 0.1f;
+		private float minMoveMagnitude = 0.15f;
 
 		public OVRControllerTouchpad()
 		{
@@ -2309,76 +2469,71 @@ public static class OVRInput
 		}
 
 		public override Controller Update()
-		{
-			OVRPlugin.ControllerState state = new OVRPlugin.ControllerState();
+        {
+            Controller res = base.Update();
 
-			if (Input.mousePresent)
-				state.ConnectedControllers = (uint)Controller.Touchpad;
-
-			if (Input.GetMouseButtonDown(0))
+            if (GetDown(RawTouch.LTouchpad, OVRInput.Controller.Touchpad))
 			{
-				moveAmountMouse = Input.mousePosition;
+                moveAmount = currentState.LTouchpad;
 			}
 
-			if (Input.GetMouseButtonUp(0))
+            if (GetUp(RawTouch.LTouchpad, OVRInput.Controller.Touchpad))
 			{
-				moveAmountMouse -= Input.mousePosition;
+				moveAmount.x = previousState.LTouchpad.x - moveAmount.x;
+				moveAmount.y = previousState.LTouchpad.y - moveAmount.y;
 
-				Vector3 move = moveAmountMouse;
+				Vector2 move = new Vector2(moveAmount.x, moveAmount.y);
+                float moveMag = move.magnitude;
 
-				if (move.magnitude < minMovMagnitudeMouse)
-				{
-					state.Buttons |= (uint)RawButton.A;
-				}
-				else
+                if (moveMag < maxTapMagnitude)
+                {
+                    // Emit Touchpad Tap
+                    currentState.Buttons |= (uint)RawButton.Start;
+                    currentState.Buttons |= (uint)RawButton.LTouchpad;
+                }
+				else if (moveMag >= minMoveMagnitude)
 				{
 					move.Normalize();
 
 					// Left/Right
 					if (Mathf.Abs(move.x) > Mathf.Abs(move.y))
 					{
-						if (move.x > 0.0f)
+						if (move.x < 0.0f)
 						{
-							state.Buttons |= (uint)RawButton.DpadRight;
+							currentState.Buttons |= (uint)RawButton.DpadLeft;
 						}
 						else
 						{
-							state.Buttons |= (uint)RawButton.DpadLeft;
+							currentState.Buttons |= (uint)RawButton.DpadRight;
 						}
 					}
 					// Up/Down
 					else
 					{
-						if (move.y > 0.0f)
+						if (move.y < 0.0f)
 						{
-							state.Buttons |= (uint)RawButton.DpadDown;
+							currentState.Buttons |= (uint)RawButton.DpadDown;
 						}
 						else
 						{
-							state.Buttons |= (uint)RawButton.DpadUp;
+							currentState.Buttons |= (uint)RawButton.DpadUp;
 						}
 					}
 				}
 			}
 
-			if (Input.GetKey(KeyCode.Escape))
-				state.Buttons |= (uint)RawButton.B;
-
-			previousState = currentState;
-			currentState = state;
-
-			return ((Controller)currentState.ConnectedControllers & controllerType);
-		}
+            return res;
+        }
 
 		public override void ConfigureButtonMap()
 		{
 			buttonMap.None                     = RawButton.None;
-			buttonMap.One                      = RawButton.A;
-			buttonMap.Two                      = RawButton.B;
+			buttonMap.One                      = RawButton.Start;
+			buttonMap.Two                      = RawButton.Back;
 			buttonMap.Three                    = RawButton.None;
 			buttonMap.Four                     = RawButton.None;
-			buttonMap.Start                    = RawButton.None;
-			buttonMap.Back                     = RawButton.None;
+			buttonMap.Start                    = RawButton.Start;
+			buttonMap.Back                     = RawButton.Back;
 			buttonMap.PrimaryShoulder          = RawButton.None;
 			buttonMap.PrimaryIndexTrigger      = RawButton.None;
 			buttonMap.PrimaryHandTrigger       = RawButton.None;
@@ -2387,6 +2542,7 @@ public static class OVRInput
 			buttonMap.PrimaryThumbstickDown    = RawButton.None;
 			buttonMap.PrimaryThumbstickLeft    = RawButton.None;
 			buttonMap.PrimaryThumbstickRight   = RawButton.None;
+            buttonMap.PrimaryTouchpad          = RawButton.Start;
 			buttonMap.SecondaryShoulder        = RawButton.None;
 			buttonMap.SecondaryIndexTrigger    = RawButton.None;
 			buttonMap.SecondaryHandTrigger     = RawButton.None;
@@ -2395,6 +2551,7 @@ public static class OVRInput
 			buttonMap.SecondaryThumbstickDown  = RawButton.None;
 			buttonMap.SecondaryThumbstickLeft  = RawButton.None;
 			buttonMap.SecondaryThumbstickRight = RawButton.None;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
 			buttonMap.DpadUp                   = RawButton.DpadUp;
 			buttonMap.DpadDown                 = RawButton.DpadDown;
 			buttonMap.DpadLeft                 = RawButton.DpadLeft;
@@ -2415,9 +2572,11 @@ public static class OVRInput
 			touchMap.PrimaryIndexTrigger       = RawTouch.None;
 			touchMap.PrimaryThumbstick         = RawTouch.None;
 			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.LTouchpad;
 			touchMap.SecondaryIndexTrigger     = RawTouch.None;
 			touchMap.SecondaryThumbstick       = RawTouch.None;
 			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
 		}
 
 		public override void ConfigureNearTouchMap()
@@ -2442,8 +2601,311 @@ public static class OVRInput
 		{
 			axis2DMap.None                     = RawAxis2D.None;
 			axis2DMap.PrimaryThumbstick        = RawAxis2D.None;
+			axis2DMap.PrimaryTouchpad          = RawAxis2D.LTouchpad;
 			axis2DMap.SecondaryThumbstick      = RawAxis2D.None;
+			axis2DMap.SecondaryTouchpad        = RawAxis2D.None;
 		}
 	}
-}
 
+	private class OVRControllerLTrackedRemote : OVRControllerBase
+	{
+        private bool emitSwipe;
+        private OVRPlugin.Vector2f moveAmount;
+		private float minMoveMagnitude = 0.3f;
+
+		public OVRControllerLTrackedRemote()
+		{
+			controllerType = Controller.LTrackedRemote;
+		}
+
+		public override void ConfigureButtonMap()
+		{
+			buttonMap.None                     = RawButton.None;
+			buttonMap.One                      = RawButton.LTouchpad;
+			buttonMap.Two                      = RawButton.Back;
+			buttonMap.Three                    = RawButton.None;
+			buttonMap.Four                     = RawButton.None;
+			buttonMap.Start                    = RawButton.Start;
+			buttonMap.Back                     = RawButton.Back;
+			buttonMap.PrimaryShoulder          = RawButton.None;
+			buttonMap.PrimaryIndexTrigger      = RawButton.LIndexTrigger;
+			buttonMap.PrimaryHandTrigger       = RawButton.None;
+			buttonMap.PrimaryThumbstick        = RawButton.None;
+			buttonMap.PrimaryThumbstickUp      = RawButton.None;
+			buttonMap.PrimaryThumbstickDown    = RawButton.None;
+			buttonMap.PrimaryThumbstickLeft    = RawButton.None;
+			buttonMap.PrimaryThumbstickRight   = RawButton.None;
+			buttonMap.PrimaryTouchpad          = RawButton.LTouchpad;
+			buttonMap.SecondaryShoulder        = RawButton.None;
+			buttonMap.SecondaryIndexTrigger    = RawButton.None;
+			buttonMap.SecondaryHandTrigger     = RawButton.None;
+			buttonMap.SecondaryThumbstick      = RawButton.None;
+			buttonMap.SecondaryThumbstickUp    = RawButton.None;
+			buttonMap.SecondaryThumbstickDown  = RawButton.None;
+			buttonMap.SecondaryThumbstickLeft  = RawButton.None;
+			buttonMap.SecondaryThumbstickRight = RawButton.None;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
+			buttonMap.DpadUp                   = RawButton.DpadUp;
+			buttonMap.DpadDown                 = RawButton.DpadDown;
+			buttonMap.DpadLeft                 = RawButton.DpadLeft;
+			buttonMap.DpadRight                = RawButton.DpadRight;
+			buttonMap.Up                       = RawButton.DpadUp;
+			buttonMap.Down                     = RawButton.DpadDown;
+			buttonMap.Left                     = RawButton.DpadLeft;
+			buttonMap.Right                    = RawButton.DpadRight;
+		}
+
+		public override void ConfigureTouchMap()
+		{
+			touchMap.None                      = RawTouch.None;
+			touchMap.One                       = RawTouch.None;
+			touchMap.Two                       = RawTouch.None;
+			touchMap.Three                     = RawTouch.None;
+			touchMap.Four                      = RawTouch.None;
+			touchMap.PrimaryIndexTrigger       = RawTouch.None;
+			touchMap.PrimaryThumbstick         = RawTouch.None;
+			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.LTouchpad;
+			touchMap.SecondaryIndexTrigger     = RawTouch.None;
+			touchMap.SecondaryThumbstick       = RawTouch.None;
+			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
+		}
+
+		public override void ConfigureNearTouchMap()
+		{
+			nearTouchMap.None                  = RawNearTouch.None;
+			nearTouchMap.PrimaryIndexTrigger   = RawNearTouch.None;
+			nearTouchMap.PrimaryThumbButtons   = RawNearTouch.None;
+			nearTouchMap.SecondaryIndexTrigger = RawNearTouch.None;
+			nearTouchMap.SecondaryThumbButtons = RawNearTouch.None;
+		}
+
+		public override void ConfigureAxis1DMap()
+		{
+			axis1DMap.None                     = RawAxis1D.None;
+			axis1DMap.PrimaryIndexTrigger      = RawAxis1D.None;
+			axis1DMap.PrimaryHandTrigger       = RawAxis1D.None;
+			axis1DMap.SecondaryIndexTrigger    = RawAxis1D.None;
+			axis1DMap.SecondaryHandTrigger     = RawAxis1D.None;
+		}
+
+		public override void ConfigureAxis2DMap()
+		{
+			axis2DMap.None                     = RawAxis2D.None;
+			axis2DMap.PrimaryThumbstick        = RawAxis2D.None;
+			axis2DMap.PrimaryTouchpad          = RawAxis2D.LTouchpad;
+			axis2DMap.SecondaryThumbstick      = RawAxis2D.None;
+			axis2DMap.SecondaryTouchpad        = RawAxis2D.None;
+		}
+
+        public override Controller Update()
+        {
+            Controller res = base.Update();
+
+            if (GetDown(RawTouch.LTouchpad, OVRInput.Controller.LTrackedRemote))
+			{
+                emitSwipe = true;
+                moveAmount = currentState.LTouchpad;
+			}
+
+            if (GetDown(RawButton.LTouchpad, OVRInput.Controller.LTrackedRemote))
+            {
+                emitSwipe = false;
+            }
+
+            if (GetUp(RawTouch.LTouchpad, OVRInput.Controller.LTrackedRemote) && emitSwipe)
+			{
+                emitSwipe = false;
+
+				moveAmount.x = previousState.LTouchpad.x - moveAmount.x;
+				moveAmount.y = previousState.LTouchpad.y - moveAmount.y;
+
+				Vector2 move = new Vector2(moveAmount.x, moveAmount.y);
+
+				if (move.magnitude >= minMoveMagnitude)
+				{
+					move.Normalize();
+
+					// Left/Right
+					if (Mathf.Abs(move.x) > Mathf.Abs(move.y))
+					{
+						if (move.x < 0.0f)
+						{
+							currentState.Buttons |= (uint)RawButton.DpadLeft;
+						}
+						else
+						{
+							currentState.Buttons |= (uint)RawButton.DpadRight;
+						}
+					}
+					// Up/Down
+					else
+					{
+						if (move.y < 0.0f)
+						{
+							currentState.Buttons |= (uint)RawButton.DpadDown;
+						}
+						else
+						{
+							currentState.Buttons |= (uint)RawButton.DpadUp;
+						}
+					}
+				}
+			}
+
+            return res;
+        }
+	}
+
+	private class OVRControllerRTrackedRemote : OVRControllerBase
+	{
+        private bool emitSwipe;
+        private OVRPlugin.Vector2f moveAmount;
+		private float minMoveMagnitude = 0.3f;
+
+		public OVRControllerRTrackedRemote()
+		{
+			controllerType = Controller.RTrackedRemote;
+		}
+
+		public override void ConfigureButtonMap()
+		{
+			buttonMap.None                     = RawButton.None;
+			buttonMap.One                      = RawButton.RTouchpad;
+			buttonMap.Two                      = RawButton.Back;
+			buttonMap.Three                    = RawButton.None;
+			buttonMap.Four                     = RawButton.None;
+			buttonMap.Start                    = RawButton.Start;
+			buttonMap.Back                     = RawButton.Back;
+			buttonMap.PrimaryShoulder          = RawButton.None;
+			buttonMap.PrimaryIndexTrigger      = RawButton.RIndexTrigger;
+			buttonMap.PrimaryHandTrigger       = RawButton.None;
+			buttonMap.PrimaryThumbstick        = RawButton.None;
+			buttonMap.PrimaryThumbstickUp      = RawButton.None;
+			buttonMap.PrimaryThumbstickDown    = RawButton.None;
+			buttonMap.PrimaryThumbstickLeft    = RawButton.None;
+			buttonMap.PrimaryThumbstickRight   = RawButton.None;
+			buttonMap.PrimaryTouchpad          = RawButton.RTouchpad;
+			buttonMap.SecondaryShoulder        = RawButton.None;
+			buttonMap.SecondaryIndexTrigger    = RawButton.None;
+			buttonMap.SecondaryHandTrigger     = RawButton.None;
+			buttonMap.SecondaryThumbstick      = RawButton.None;
+			buttonMap.SecondaryThumbstickUp    = RawButton.None;
+			buttonMap.SecondaryThumbstickDown  = RawButton.None;
+			buttonMap.SecondaryThumbstickLeft  = RawButton.None;
+			buttonMap.SecondaryThumbstickRight = RawButton.None;
+			buttonMap.SecondaryTouchpad        = RawButton.None;
+			buttonMap.DpadUp                   = RawButton.DpadUp;
+			buttonMap.DpadDown                 = RawButton.DpadDown;
+			buttonMap.DpadLeft                 = RawButton.DpadLeft;
+			buttonMap.DpadRight                = RawButton.DpadRight;
+			buttonMap.Up                       = RawButton.DpadUp;
+			buttonMap.Down                     = RawButton.DpadDown;
+			buttonMap.Left                     = RawButton.DpadLeft;
+			buttonMap.Right                    = RawButton.DpadRight;
+		}
+
+		public override void ConfigureTouchMap()
+		{
+			touchMap.None                      = RawTouch.None;
+			touchMap.One                       = RawTouch.None;
+			touchMap.Two                       = RawTouch.None;
+			touchMap.Three                     = RawTouch.None;
+			touchMap.Four                      = RawTouch.None;
+			touchMap.PrimaryIndexTrigger       = RawTouch.None;
+			touchMap.PrimaryThumbstick         = RawTouch.None;
+			touchMap.PrimaryThumbRest          = RawTouch.None;
+			touchMap.PrimaryTouchpad           = RawTouch.RTouchpad;
+			touchMap.SecondaryIndexTrigger     = RawTouch.None;
+			touchMap.SecondaryThumbstick       = RawTouch.None;
+			touchMap.SecondaryThumbRest        = RawTouch.None;
+			touchMap.SecondaryTouchpad         = RawTouch.None;
+		}
+
+		public override void ConfigureNearTouchMap()
+		{
+			nearTouchMap.None                  = RawNearTouch.None;
+			nearTouchMap.PrimaryIndexTrigger   = RawNearTouch.None;
+			nearTouchMap.PrimaryThumbButtons   = RawNearTouch.None;
+			nearTouchMap.SecondaryIndexTrigger = RawNearTouch.None;
+			nearTouchMap.SecondaryThumbButtons = RawNearTouch.None;
+		}
+
+		public override void ConfigureAxis1DMap()
+		{
+			axis1DMap.None                     = RawAxis1D.None;
+			axis1DMap.PrimaryIndexTrigger      = RawAxis1D.None;
+			axis1DMap.PrimaryHandTrigger       = RawAxis1D.None;
+			axis1DMap.SecondaryIndexTrigger    = RawAxis1D.None;
+			axis1DMap.SecondaryHandTrigger     = RawAxis1D.None;
+		}
+
+		public override void ConfigureAxis2DMap()
+		{
+			axis2DMap.None                     = RawAxis2D.None;
+			axis2DMap.PrimaryThumbstick        = RawAxis2D.None;
+			axis2DMap.PrimaryTouchpad          = RawAxis2D.RTouchpad;
+			axis2DMap.SecondaryThumbstick      = RawAxis2D.None;
+			axis2DMap.SecondaryTouchpad        = RawAxis2D.None;
+		}
+
+        public override Controller Update()
+        {
+            Controller res = base.Update();
+
+            if (GetDown(RawTouch.RTouchpad, OVRInput.Controller.RTrackedRemote))
+			{
+                emitSwipe = true;
+                moveAmount = currentState.RTouchpad;
+			}
+
+            if (GetDown(RawButton.RTouchpad, OVRInput.Controller.RTrackedRemote))
+			{
+                emitSwipe = false;
+			}
+
+            if (GetUp(RawTouch.RTouchpad, OVRInput.Controller.RTrackedRemote) && emitSwipe)
+			{
+                emitSwipe = false;
+
+				moveAmount.x = previousState.RTouchpad.x - moveAmount.x;
+				moveAmount.y = previousState.RTouchpad.y - moveAmount.y;
+
+				Vector2 move = new Vector2(moveAmount.x, moveAmount.y);
+
+				if (move.magnitude >= minMoveMagnitude)
+				{
+					move.Normalize();
+
+					// Left/Right
+					if (Mathf.Abs(move.x) > Mathf.Abs(move.y))
+					{
+						if (move.x < 0.0f)
+						{
+							currentState.Buttons |= (uint)RawButton.DpadLeft;
+						}
+						else
+						{
+							currentState.Buttons |= (uint)RawButton.DpadRight;
+						}
+					}
+					// Up/Down
+					else
+					{
+						if (move.y < 0.0f)
+						{
+							currentState.Buttons |= (uint)RawButton.DpadDown;
+						}
+						else
+						{
+							currentState.Buttons |= (uint)RawButton.DpadUp;
+						}
+					}
+				}
+			}
+
+            return res;
+        }
+    }
+}

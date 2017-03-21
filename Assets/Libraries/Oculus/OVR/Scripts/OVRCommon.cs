@@ -132,9 +132,19 @@ public static class OVRExtensions
 		return new Quaternion() { x = q.x, y = q.y, z = q.z, w = q.w };
 	}
 
+	internal static Quaternion FromFlippedZQuatf(this OVRPlugin.Quatf q)
+	{
+		return new Quaternion() { x = -q.x, y = -q.y, z = q.z, w = q.w };
+	}
+
 	internal static OVRPlugin.Quatf ToQuatf(this Quaternion q)
 	{
 		return new OVRPlugin.Quatf() { x = q.x, y = q.y, z = q.z, w = q.w };
+	}
+
+	internal static OVRPlugin.Quatf ToFlippedZQuatf(this Quaternion q)
+	{
+		return new OVRPlugin.Quatf() { x = -q.x, y = -q.y, z = q.z, w = q.w };
 	}
 }
 
@@ -232,32 +242,51 @@ public struct OVRPose
 	}
 }
 
+/// <summary>
+/// Encapsulates an 8-byte-aligned of unmanaged memory.
+/// </summary>
 public class OVRNativeBuffer : IDisposable
 {
 	private bool disposed = false;
 	private int m_numBytes = 0;
 	private IntPtr m_ptr = IntPtr.Zero;
 
+	/// <summary>
+	/// Creates a buffer of the specified size.
+	/// </summary>
 	public OVRNativeBuffer(int numBytes)
 	{
 		Reallocate(numBytes);
 	}
 
+	/// <summary>
+	/// Releases unmanaged resources and performs other cleanup operations before the <see cref="OVRNativeBuffer"/> is
+	/// reclaimed by garbage collection.
+	/// </summary>
 	~OVRNativeBuffer()
 	{
 		Dispose(false);
 	}
 
+	/// <summary>
+	/// Reallocates the buffer with the specified new size.
+	/// </summary>
 	public void Reset(int numBytes)
 	{
 		Reallocate(numBytes);
 	}
 
+	/// <summary>
+	/// The current number of bytes in the buffer.
+	/// </summary>
 	public int GetCapacity()
 	{
 		return m_numBytes;
 	}
 
+	/// <summary>
+	/// A pointer to the unmanaged memory in the buffer, starting at the given offset in bytes.
+	/// </summary>
 	public IntPtr GetPointer(int byteOffset = 0)
 	{
 		if (byteOffset < 0 || byteOffset >= m_numBytes)
@@ -265,6 +294,13 @@ public class OVRNativeBuffer : IDisposable
 		return (byteOffset == 0) ? m_ptr : new IntPtr(m_ptr.ToInt64() + byteOffset);
 	}
 
+	/// <summary>
+	/// Releases all resource used by the <see cref="OVRNativeBuffer"/> object.
+	/// </summary>
+	/// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="OVRNativeBuffer"/>. The <see cref="Dispose"/>
+	/// method leaves the <see cref="OVRNativeBuffer"/> in an unusable state. After calling <see cref="Dispose"/>, you must
+	/// release all references to the <see cref="OVRNativeBuffer"/> so the garbage collector can reclaim the memory that
+	/// the <see cref="OVRNativeBuffer"/> was occupying.</remarks>
 	public void Dispose()
 	{
 		Dispose(true);
