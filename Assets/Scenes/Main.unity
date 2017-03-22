@@ -175,6 +175,7 @@ Transform:
   - {fileID: 446266729}
   - {fileID: 1461049262}
   - {fileID: 608963550}
+  - {fileID: 919008623}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -513,7 +514,7 @@ GameObject:
   - component: {fileID: 446266729}
   - component: {fileID: 446266724}
   m_Layer: 0
-  m_Name: Startup
+  m_Name: SDKManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -543,7 +544,7 @@ MonoBehaviour:
   - PrettyName: Simulator
     SceneToLoad: SDKSimulatorScene
     VRDeviceNameToLoad: 
-    Priority: 10
+    Priority: 100
   SDKWasChosen:
     m_PersistentCalls:
       m_Calls:
@@ -573,6 +574,57 @@ Transform:
   m_Father: {fileID: 138227221}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &482678743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 482678744}
+  - component: {fileID: 482678745}
+  m_Layer: 0
+  m_Name: PUNVoice
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &482678744
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 482678743}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.44675493, y: -0.93194675, z: 0.2056129}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 919008623}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &482678745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 482678743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c83e06d07b8f654981913996327bdf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AutoConnect: 1
+  AutoDisconnect: 1
+  AutoTransmit: 1
+  SamplingRate: 24000
+  FrameDuration: 20000
+  Bitrate: 30000
+  VoiceDetection: 1
+  VoiceDetectionThreshold: 0.01
+  PlayDelayMs: 200
+  DebugLostPercent: 0
+  DebugInfo: 0
 --- !u!1 &553114853
 GameObject:
   m_ObjectHideFlags: 0
@@ -921,6 +973,50 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &919008622
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 919008623}
+  - component: {fileID: 919008624}
+  m_Layer: 0
+  m_Name: VoiceManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &919008623
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 919008622}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1954957657}
+  - {fileID: 482678744}
+  m_Father: {fileID: 138227221}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &919008624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 919008622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6ad911e45d290f45be679b8b212f08a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DF_Voice: {fileID: 1954957656}
+  PUN_Voice: {fileID: 482678743}
 --- !u!1001 &1034504468
 Prefab:
   m_ObjectHideFlags: 0
@@ -1219,6 +1315,7 @@ GameObject:
   - component: {fileID: 1461049260}
   - component: {fileID: 1461049259}
   - component: {fileID: 1461049258}
+  - component: {fileID: 1461049261}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -1238,10 +1335,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameVersion: 1.0
-  mutePlayerAvatar: {fileID: 1507327272486684, guid: 79ea9a3ecf941be4387c5eb20085dfb6,
-    type: 2}
-  voicedPlayerAvatar: {fileID: 1153555728618568, guid: 42d5254386048dc4b8092b1ea0fe2b1e,
-    type: 2}
   MaxPlayersPerRoom: 4
   Loglevel: 0
 --- !u!114 &1461049259
@@ -1280,6 +1373,19 @@ MonoBehaviour:
   viewIdField: 10
   instantiationId: 10
   isRuntimeInstantiated: 0
+--- !u!114 &1461049261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1461049257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0779623ef0268a44bd7d1c4fdbf039b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerAvatar: {fileID: 1396155991360138, guid: b25781c5d02888942ab3eadb32bea3bc,
+    type: 2}
 --- !u!4 &1461049262
 Transform:
   m_ObjectHideFlags: 0
@@ -1928,6 +2034,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useButton: 3
+--- !u!1 &1954957656
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1954957657}
+  m_Layer: 0
+  m_Name: DFVoice
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1954957657
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1954957656}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 919008623}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2026403675
 GameObject:
   m_ObjectHideFlags: 0
