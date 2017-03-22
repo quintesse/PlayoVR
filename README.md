@@ -8,6 +8,8 @@ those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-03-22
+   - Added support for Photon Voice chat
  - 2017-03-20
    - Changed `NetworkParentableObject` to stand-alone `NetworkParentManager
    - Introduced `NetworkBehaviour` base class for all network classes
@@ -66,6 +68,8 @@ To test locally without another computer you can create a standalone Non-VR buil
  - `-voice:<NAME>` : force the program to use the specified voice chat implementation. Valid values for `<NAME>` are:
     - `PUNVoice`
     - `DFVoice`
+
+*NB: supporting multiple voice implementations makes no sense for real applications. And it makes even less sense for different clients to use different implementations. But this is a demo for learning how to use this stuff after all, so everything goes.*
 
 ## Using networked interactable objects
 
