@@ -2,30 +2,13 @@ using System;
 using UnityEngine;
 
 public class MyNetworkManager : Photon.PunBehaviour {
-    private GameObject[] spawns;
-
     public string gameVersion = "1.0";
 
-    [Tooltip("Reference to the player avatar prefab without voice support (DFVoice is not available)")]
-    public GameObject mutePlayerAvatar;
-    [Tooltip("Reference to the player avatar prefab with voice support (DFVoice is available)")]
-    public GameObject voicedPlayerAvatar;
     [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
     public byte MaxPlayersPerRoom = 4;
     public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 
-    private GameObject playerAvatar;
-
     void Awake() {
-        if (Type.GetType("NetVoice.LocalVoiceController") != null) {
-            playerAvatar = voicedPlayerAvatar;
-        } else {
-            playerAvatar = mutePlayerAvatar;
-        }
-        if (playerAvatar == null) {
-            Debug.LogError("MyNetworkManager is missing a reference to the player avatar prefab!");
-        }
-        spawns = GameObject.FindGameObjectsWithTag("Respawn");
         PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
         PhotonNetwork.automaticallySyncScene = true;
         PhotonNetwork.logLevel = Loglevel;
@@ -61,10 +44,6 @@ public class MyNetworkManager : Photon.PunBehaviour {
 
     public override void OnJoinedRoom() {
         Debug.Log("Joined room");
-
-        if (PhotonNetwork.isMasterClient) {
-            NewPlayer(0);
-        }
     }
 
     public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
@@ -90,13 +69,5 @@ public class MyNetworkManager : Photon.PunBehaviour {
 
     public override void OnDisconnectedFromPhoton() {
         Debug.Log("We got disconnected form the Photon network");
-    }
-
-    [PunRPC]
-    void NewPlayer(int idx) {
-        // Create a new player at the appropriate spawn spot
-        var trans = spawns[idx].transform;
-        var player = PhotonNetwork.Instantiate(playerAvatar.name, trans.position, trans.rotation, 0);
-        player.name = "Player " + (idx + 1);
     }
 }
