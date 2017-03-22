@@ -62,6 +62,10 @@ To test locally without another computer you can create a standalone Non-VR buil
     - `SteamVR`
     - `Oculus`
     - `Simulator`
+ - `-novoice` : start the program without support for voice chat
+ - `-voice:<NAME>` : force the program to use the specified voice chat implementation. Valid values for `<NAME>` are:
+    - `PUNVoice`
+    - `DFVoice`
 
 ## Using networked interactable objects
 
