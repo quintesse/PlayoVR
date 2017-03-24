@@ -1,13 +1,15 @@
 # VRTK-PUN-Voice-Demo
 
 A small Unity demo project using VRTK for object interaction and VR controller handling,
-PhotonNetwork for allowing up to 4 people to join the same scene together and PUNVoice or
-DFVoice so those people can actually talk to each other.
+PhotonNetwork for allowing up to 4 people to join the same scene together and PUNVoice
+so those people can actually talk to each other.
 
 ![Demo Scene](Docs/Images/vrtk-pun-voice-demo.png)
 
 ## Changelog
 
+ - 2017-03-23
+   - Simplified project by removing DFVoice support and voice cli arguments
  - 2017-03-22
    - Added support for Photon Voice chat
  - 2017-03-20
@@ -25,15 +27,6 @@ DFVoice so those people can actually talk to each other.
  - 2017-03-15
    - First version
    
-## Requirements
-
-To enable the Voice Chat that this Demo includes you will need the `DFVoice` asset that
-can be downloaded from the Unity Asset Store, but this is _not a free asset_! You'll have
-to import it yourself into the project. If you don't want to do that you can still continue
-running this demo without Voice Chat support. To do that simply:
-
- - Remove the `Asset/Libraries/NetVoice` folder
- 
 ## Configuration
 
 To be able to use this example project you'll have to set it up first:
@@ -64,12 +57,6 @@ To test locally without another computer you can create a standalone Non-VR buil
     - `SteamVR`
     - `Oculus`
     - `Simulator`
- - `-novoice` : start the program without support for voice chat
- - `-voice:<NAME>` : force the program to use the specified voice chat implementation. Valid values for `<NAME>` are:
-    - `PUNVoice`
-    - `DFVoice`
-
-*NB: supporting multiple voice implementations makes no sense for real applications. And it makes even less sense for different clients to use different implementations. But this is a demo for learning how to use this stuff after all, so everything goes.*
 
 ## Using networked interactable objects
 
