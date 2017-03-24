@@ -5,6 +5,7 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 /Assets/Libraries/Photon/Photon Unity Networking/Demos*
+/Assets/Libraries/Photon/PUNVoice/DemoVoice*
 /Assets/Libraries/SteamVR/Extras*
 /Assets/Libraries/SteamVR/InteractionSystem*
 /Assets/Libraries/SteamVR/Scenes*
