@@ -31,8 +31,11 @@ namespace VRTK
     /// <example>
     /// `SteamVR_Unity_Toolkit/Examples/038_CameraRig_DashTeleport` shows how to turn off the mesh renderers of objects that are in the way during the dash.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Locomotion/VRTK_DashTeleport")]
     public class VRTK_DashTeleport : VRTK_HeightAdjustTeleport
     {
+        [Header("Dash Settings")]
+
         [Tooltip("The fixed time it takes to dash to a new position.")]
         public float normalLerpTime = 0.1f; // 100ms for every dash above minDistanceForNormalLerp
         [Tooltip("The minimum speed for dashing in meters per second.")]

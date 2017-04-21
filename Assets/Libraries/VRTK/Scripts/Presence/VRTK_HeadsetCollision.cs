@@ -30,6 +30,7 @@ namespace VRTK
     /// <example>
     /// `VRTK/Examples/011_Camera_HeadSetCollisionFading` has collidable walls around the play area and if the user puts their head into any of the walls then the headset will fade to black.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Presence/VRTK_HeadsetCollision")]
     public class VRTK_HeadsetCollision : MonoBehaviour
     {
         [Tooltip("The radius of the auto generated sphere collider for detecting collisions on the headset.")]
@@ -124,7 +125,7 @@ namespace VRTK
         {
             if (!headsetColliderContainer)
             {
-                headsetColliderContainer = new GameObject("VRTK_HeadsetColliderContainer");
+                headsetColliderContainer = new GameObject(VRTK_SharedMethods.GenerateVRTKObjectName(true, "HeadsetColliderContainer"));
                 headsetColliderContainer.transform.position = Vector3.zero;
                 headsetColliderContainer.transform.localRotation = headset.localRotation;
                 headsetColliderContainer.transform.localScale = Vector3.one;

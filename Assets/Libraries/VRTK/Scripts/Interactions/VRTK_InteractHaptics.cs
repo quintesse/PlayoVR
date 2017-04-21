@@ -6,6 +6,7 @@ namespace VRTK
     /// <summary>
     /// The Interact Haptics script is attached on the same GameObject as an Interactable Object script and provides controller haptics on touch, grab and use of the object.
     /// </summary>
+    [AddComponentMenu("VRTK/Scripts/Interactions/VRTK_InteractHaptics")]
     public class VRTK_InteractHaptics : MonoBehaviour
     {
         [Header("Haptics On Touch")]
@@ -77,7 +78,7 @@ namespace VRTK
         {
             if (!GetComponent<VRTK_InteractableObject>())
             {
-                Debug.LogError("The `VRTK_InteractHaptics` script is required to be attached to a GameObject that has the `VRTK_InteractableObject` script also attached to it.");
+                VRTK_Logger.Error(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.REQUIRED_COMPONENT_MISSING_FROM_GAMEOBJECT, "VRTK_InteractHaptics", "VRTK_InteractableObject", "the same"));
             }
         }
 

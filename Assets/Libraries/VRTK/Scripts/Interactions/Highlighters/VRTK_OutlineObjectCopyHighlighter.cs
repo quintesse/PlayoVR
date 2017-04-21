@@ -13,6 +13,7 @@ namespace VRTK.Highlighters
     ///
     /// `VRTK/Examples/035_Controller_OpacityAndHighlighting` demonstrates the outline highlighting if the left controller collides with the green box.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Interactions/Highlighters/VRTK_OutlineObjectCopyHighlighter")]
     public class VRTK_OutlineObjectCopyHighlighter : VRTK_BaseHighlighter
     {
         [Tooltip("The thickness of the outline effect")]
@@ -214,7 +215,7 @@ namespace VRTK.Highlighters
 
             if (copyModel == null)
             {
-                Debug.LogError("No Renderer has been found on the model to add highlighting to");
+                VRTK_Logger.Error(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.REQUIRED_COMPONENT_MISSING_FROM_GAMEOBJECT, "VRTK_OutlineObjectCopyHighlighter", "Renderer", "the same or child", " to add the highlighter to"));
                 return null;
             }
 

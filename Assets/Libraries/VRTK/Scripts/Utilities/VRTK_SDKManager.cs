@@ -15,6 +15,7 @@ namespace VRTK
     /// <summary>
     /// The SDK Manager script provides configuration of supported SDKs.
     /// </summary>
+    [AddComponentMenu("VRTK/Scripts/Utilities/VRTK_SDKManager")]
     public class VRTK_SDKManager : MonoBehaviour
     {
         /// <summary>
@@ -443,13 +444,13 @@ namespace VRTK
                 string[] removedSymbols = currentSymbols.Except(newSymbols).ToArray();
                 if (removedSymbols.Length > 0)
                 {
-                    Debug.Log("Scripting Define Symbols removed from [Project Settings->Player]: " + string.Join(", ", removedSymbols));
+                    VRTK_Logger.Info("Scripting Define Symbols removed from [Project Settings->Player]: " + string.Join(", ", removedSymbols));
                 }
 
                 string[] addedSymbols = newSymbols.Except(currentSymbols).ToArray();
                 if (addedSymbols.Length > 0)
                 {
-                    Debug.Log("Scripting Define Symbols added To [Project Settings->Player]: " + string.Join(", ", addedSymbols));
+                    VRTK_Logger.Info("Scripting Define Symbols added To [Project Settings->Player]: " + string.Join(", ", addedSymbols));
                 }
 
                 if (!changedSymbols)
@@ -657,7 +658,7 @@ namespace VRTK
                 string[] removedSymbols = currentSymbols.Except(newSymbols).ToArray();
                 if (removedSymbols.Length > 0)
                 {
-                    Debug.Log("Legacy (i.e. used by previous VRTK versions only) Scripting Define Symbols removed from [Project Settings->Player]: " + string.Join(", ", removedSymbols));
+                    VRTK_Logger.Info("Legacy (i.e. used by previous VRTK versions only) Scripting Define Symbols removed from [Project Settings->Player]: " + string.Join(", ", removedSymbols));
                 }
             }
         }
@@ -705,7 +706,7 @@ namespace VRTK
                 if (!string.IsNullOrEmpty(sdkErrorDescriptions))
                 {
                     sdkErrorDescriptions = "- " + sdkErrorDescriptions;
-                    Debug.LogError("There are some errors because of the current SDK Manager setup:\n" + sdkErrorDescriptions);
+                    VRTK_Logger.Error(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.SDK_MANAGER_ERRORS, new string[] { sdkErrorDescriptions }));
                 }
 
                 if (persistOnLoad && !VRTK_SharedMethods.IsEditTime())
@@ -736,7 +737,7 @@ namespace VRTK
             string sdkErrorDescription = GetSDKErrorDescription<BaseType>(prettyName, info, installedInfos);
             if (!string.IsNullOrEmpty(sdkErrorDescription))
             {
-                Debug.LogError(sdkErrorDescription);
+                VRTK_Logger.Error(sdkErrorDescription);
             }
         }
 

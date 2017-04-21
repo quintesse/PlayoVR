@@ -21,6 +21,7 @@ namespace VRTK
     /// <example>
     /// `VRTK/Examples/025_Controls_Overview` shows a collection of pressable buttons that are interacted with by activating the rigidbody on the controller by pressing the grab button without grabbing an object.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Controls/3D/VRTK_Button")]
     public class VRTK_Button : VRTK_Control
     {
 
@@ -28,9 +29,6 @@ namespace VRTK
         [Obsolete("`VRTK_Control.ButtonEvents` has been replaced with delegate events. `VRTK_Button_UnityEvents` is now required to access Unity events. This method will be removed in a future version of VRTK.")]
         public class ButtonEvents
         {
-            /// <summary>
-            /// Emitted when the button is successfully pushed.
-            /// </summary>
             public UnityEvent OnPush;
         }
 

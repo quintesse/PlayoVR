@@ -34,17 +34,7 @@ namespace VRTK
         /// <returns>A Vector3 array of the points in the scene that represent the play area boundaries.</returns>
         public override Vector3[] GetPlayAreaVertices(GameObject playArea)
         {
-            return new Vector3[8]
-            {
-                Vector3.zero,
-                Vector3.zero,
-                Vector3.zero,
-                Vector3.zero,
-                Vector3.zero,
-                Vector3.zero,
-                Vector3.zero,
-                Vector3.zero
-            };
+            return null;
         }
 
         /// <summary>
@@ -65,6 +55,23 @@ namespace VRTK
         public override bool IsPlayAreaSizeCalibrated(GameObject playArea)
         {
             return false;
+        }
+
+        /// <summary>
+        /// The GetDrawAtRuntime method returns whether the given play area drawn border is being displayed.
+        /// </summary>
+        /// <returns>Returns true if the drawn border is being displayed.</returns>
+        public override bool GetDrawAtRuntime()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// The SetDrawAtRuntime method sets whether the given play area drawn border should be displayed at runtime.
+        /// </summary>
+        /// <param name="value">The state of whether the drawn border should be displayed or not.</param>
+        public override void SetDrawAtRuntime(bool value)
+        {
         }
     }
 }

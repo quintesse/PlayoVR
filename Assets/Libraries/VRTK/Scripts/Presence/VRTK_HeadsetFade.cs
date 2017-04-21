@@ -30,6 +30,7 @@ namespace VRTK
     /// <example>
     /// `VRTK/Examples/011_Camera_HeadSetCollisionFading` has collidable walls around the play area and if the user puts their head into any of the walls then the headset will fade to black.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Presence/VRTK_HeadsetFade")]
     public class VRTK_HeadsetFade : MonoBehaviour
     {
         /// <summary>
@@ -134,14 +135,14 @@ namespace VRTK
 
         protected virtual void Start()
         {
-            headset = VRTK_DeviceFinder.HeadsetTransform();
+            headset = VRTK_DeviceFinder.HeadsetCamera();
             isTransitioning = false;
             isFaded = false;
 
             VRTK_SharedMethods.AddCameraFade();
             if (!VRTK_SDK_Bridge.HasHeadsetFade(headset))
             {
-                Debug.LogWarning("This 'VRTK_HeadsetFade' script needs a compatible fade script on the camera game object.");
+                VRTK_Logger.Warn(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.REQUIRED_COMPONENT_MISSING_FROM_GAMEOBJECT, "VRTK_HeadsetFade", "compatible fade", "Camera"));
             }
         }
 

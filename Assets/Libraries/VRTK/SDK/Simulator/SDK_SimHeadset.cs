@@ -68,16 +68,7 @@ namespace VRTK
         /// <returns>A transform of the object holding the headset camera in the scene.</returns>
         public override Transform GetHeadsetCamera()
         {
-            if (camera == null)
-            {
-                GameObject simPlayer = SDK_InputSimulator.FindInScene();
-                if (simPlayer)
-                {
-                    camera = simPlayer.transform.FindChild("Camera");
-                }
-            }
-
-            return camera;
+            return GetHeadset();
         }
 
         /// <summary>
@@ -118,7 +109,7 @@ namespace VRTK
         /// <param name="fadeOverlay">Determines whether to use an overlay on the fade.</param>
         public override void HeadsetFade(Color color, float duration, bool fadeOverlay = false)
         {
-
+            VRTK_ScreenFade.Start(color, duration);
         }
 
         /// <summary>
@@ -128,7 +119,7 @@ namespace VRTK
         /// <returns>Returns true if the headset has fade functionality on it.</returns>
         public override bool HasHeadsetFade(Transform obj)
         {
-            return false;
+            return obj.GetComponentInChildren<VRTK_ScreenFade>() != null;
         }
 
         /// <summary>
@@ -137,7 +128,10 @@ namespace VRTK
         /// <param name="camera">The Transform to with the camera on to add the fade functionality to.</param>
         public override void AddHeadsetFade(Transform camera)
         {
-
+            if (camera != null && camera.GetComponent<VRTK_ScreenFade>() == null)
+            {
+                camera.gameObject.AddComponent<VRTK_ScreenFade>();
+            }
         }
 
         private void Awake()

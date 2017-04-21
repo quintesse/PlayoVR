@@ -2,44 +2,27 @@
 {
     using UnityEngine;
     using UnityEngine.Events;
+    using System;
 
-    [RequireComponent(typeof(VRTK_ObjectControl))]
-    public class VRTK_ObjectControl_UnityEvents : MonoBehaviour
+    [AddComponentMenu("VRTK/Scripts/Utilities/Unity Events/VRTK_ObjectControl_UnityEvents")]
+    public sealed class VRTK_ObjectControl_UnityEvents : VRTK_UnityEvents<VRTK_ObjectControl>
     {
-        private VRTK_ObjectControl oc;
+        [Serializable]
+        public sealed class ObjectControlEvent : UnityEvent<object, ObjectControlEventArgs> { }
 
-        [System.Serializable]
-        public class UnityObjectEvent : UnityEvent<object, ObjectControlEventArgs> { };
+        public ObjectControlEvent OnXAxisChanged = new ObjectControlEvent();
+        public ObjectControlEvent OnYAxisChanged = new ObjectControlEvent();
 
-        /// <summary>
-        /// Emits the XAxisChanged class event.
-        /// </summary>
-        public UnityObjectEvent OnXAxisChanged = new UnityObjectEvent();
-
-        /// <summary>
-        /// Emits the YAxisChanged class event.
-        /// </summary>
-        public UnityObjectEvent OnYAxisChanged = new UnityObjectEvent();
-
-        private void SetObjectControl()
+        protected override void AddListeners(VRTK_ObjectControl component)
         {
-            if (oc == null)
-            {
-                oc = GetComponent<VRTK_ObjectControl>();
-            }
+            component.XAxisChanged += XAxisChanged;
+            component.YAxisChanged += YAxisChanged;
         }
 
-        private void OnEnable()
+        protected override void RemoveListeners(VRTK_ObjectControl component)
         {
-            SetObjectControl();
-            if (oc == null)
-            {
-                Debug.LogError("The VRTK_ObjectControl_UnityEvents script requires to be attached to a GameObject that contains a VRTK_ObjectControl script");
-                return;
-            }
-
-            oc.XAxisChanged += XAxisChanged;
-            oc.YAxisChanged += YAxisChanged;
+            component.XAxisChanged -= XAxisChanged;
+            component.YAxisChanged -= YAxisChanged;
         }
 
         private void XAxisChanged(object o, ObjectControlEventArgs e)
@@ -50,17 +33,6 @@
         private void YAxisChanged(object o, ObjectControlEventArgs e)
         {
             OnYAxisChanged.Invoke(o, e);
-        }
-
-        private void OnDisable()
-        {
-            if (oc == null)
-            {
-                return;
-            }
-
-            oc.XAxisChanged -= XAxisChanged;
-            oc.YAxisChanged -= YAxisChanged;
         }
     }
 }

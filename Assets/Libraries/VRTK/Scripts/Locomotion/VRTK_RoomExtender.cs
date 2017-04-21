@@ -12,6 +12,7 @@ namespace VRTK
     /// <example>
     /// `VRTK/Examples/028_CameraRig_RoomExtender` shows how the RoomExtender script is controlled by a VRTK_RoomExtender_Controller Example script located at both controllers. Pressing the `Touchpad` on the controller activates the Room Extender. The Additional Movement Multiplier is changed based on the touch distance to the centre of the touchpad.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Locomotion/VRTK_RoomExtender")]
     public class VRTK_RoomExtender : MonoBehaviour
     {
         /// <summary>
@@ -59,7 +60,7 @@ namespace VRTK
                 }
                 else
                 {
-                    Debug.LogWarning("The VRTK_RoomExtender script needs a movementTransform to work.");
+                    VRTK_Logger.Warn(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.REQUIRED_COMPONENT_MISSING_FROM_SCENE, "VRTK_RoomExtender", "Headset Transform"));
                 }
             }
             playArea = VRTK_DeviceFinder.PlayAreaTransform();

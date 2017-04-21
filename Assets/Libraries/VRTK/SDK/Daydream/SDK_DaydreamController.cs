@@ -98,21 +98,11 @@ namespace VRTK
         /// <returns>The index of the given controller.</returns>
         public override uint GetControllerIndex(GameObject controller)
         {
-            uint index = 0;
-
-            switch (controller.name)
+            if (CheckActualOrScriptAliasControllerIsRightHand(controller))
             {
-                case "Camera":
-                    index = 0;
-                    break;
-                case "RightController":
-                    index = 1;
-                    break;
-                case "LeftController":
-                    index = uint.MaxValue;
-                    break;
+                return 1;
             }
-            return index;
+            return uint.MaxValue;
         }
 
         /// <summary>
@@ -172,7 +162,7 @@ namespace VRTK
             controller = GetSDKManagerControllerRightHand(actual);
             if ((controller == null) && actual)
             {
-                controller = VRTK_SharedMethods.FindEvenInactiveGameObject<GvrControllerVisualManager>("/Controller");
+                controller = VRTK_SharedMethods.FindEvenInactiveGameObject<GvrControllerVisualManager>("Controller");
             }
             if (controller != null)
             {

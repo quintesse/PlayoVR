@@ -36,7 +36,7 @@ namespace VRTK
             cachedPlayArea = GetSDKManagerPlayArea();
             if (cachedPlayArea == null)
             {
-                var ovrManager = FindObjectOfType<OVRManager>();
+                var ovrManager = VRTK_SharedMethods.FindEvenInactiveComponent<OVRManager>();
                 if (ovrManager)
                 {
                     cachedPlayArea = ovrManager.transform;
@@ -73,7 +73,7 @@ namespace VRTK
 
                 return vertices;
             }
-            return new Vector3[0];
+            return null;
         }
 
         /// <summary>
@@ -96,6 +96,23 @@ namespace VRTK
             return true;
         }
 
+        /// <summary>
+        /// The GetDrawAtRuntime method returns whether the given play area drawn border is being displayed.
+        /// </summary>
+        /// <returns>Returns true if the drawn border is being displayed.</returns>
+        public override bool GetDrawAtRuntime()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// The SetDrawAtRuntime method sets whether the given play area drawn border should be displayed at runtime.
+        /// </summary>
+        /// <param name="value">The state of whether the drawn border should be displayed or not.</param>
+        public override void SetDrawAtRuntime(bool value)
+        {
+        }
+
 #if VRTK_DEFINE_SDK_OCULUSVR_AVATAR
         private OvrAvatar avatarContainer;
 
@@ -107,7 +124,7 @@ namespace VRTK
         {
             if (avatarContainer == null)
             {
-                avatarContainer = FindObjectOfType<OvrAvatar>();
+                avatarContainer = VRTK_SharedMethods.FindEvenInactiveComponent<OvrAvatar>();
                 if (avatarContainer != null && avatarContainer.GetComponent<VRTK_TransformFollow>() == null)
                 {
                     var objectFollow = avatarContainer.gameObject.AddComponent<VRTK_TransformFollow>();

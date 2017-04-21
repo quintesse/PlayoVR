@@ -37,6 +37,7 @@ namespace VRTK
     ///
     /// `VRTK/Examples/013_Controller_UsingAndGrabbingMultipleObjects` shows multiple objects that can be grabbed by holding the buttons or grabbed by toggling the button click and also has objects that can have their Using state toggled to show how multiple items can be turned on at the same time.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Interactions/VRTK_InteractableObject")]
     public class VRTK_InteractableObject : MonoBehaviour
     {
         /// <summary>
@@ -201,6 +202,7 @@ namespace VRTK
         protected VRTK_SnapDropZone storedSnapDropZone;
         protected Vector3 previousLocalScale = Vector3.zero;
         protected List<GameObject> currentIgnoredColliders = new List<GameObject>();
+        protected bool startDisabled = false;
 
         public virtual void OnInteractableObjectTouched(InteractableObjectEventArgs e)
         {
@@ -728,6 +730,7 @@ namespace VRTK
 
             if (disableWhenIdle && enabled)
             {
+                startDisabled = true;
                 enabled = false;
             }
         }
@@ -742,6 +745,7 @@ namespace VRTK
                 LoadPreviousState();
             }
             forcedDropped = false;
+            startDisabled = false;
         }
 
         protected virtual void OnDisable()
@@ -754,8 +758,11 @@ namespace VRTK
                 objectHighlighter = null;
             }
 
-            forceDisabled = true;
-            ForceStopInteracting();
+            if (!startDisabled)
+            {
+                forceDisabled = true;
+                ForceStopInteracting();
+            }
         }
 
         protected virtual void FixedUpdate()
@@ -968,7 +975,7 @@ namespace VRTK
 
         protected virtual Transform CreateAttachPoint(string namePrefix, string nameSuffix, Transform origin)
         {
-            var attachPoint = new GameObject(string.Format("[{0}][{1}]_Controller_AttachPoint", namePrefix, nameSuffix)).transform;
+            var attachPoint = new GameObject(VRTK_SharedMethods.GenerateVRTKObjectName(true, namePrefix, nameSuffix, "Controller", "AttachPoint")).transform;
             attachPoint.parent = transform;
             attachPoint.position = origin.position;
             attachPoint.rotation = origin.rotation;

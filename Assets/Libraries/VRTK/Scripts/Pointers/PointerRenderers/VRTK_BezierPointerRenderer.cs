@@ -16,12 +16,13 @@ namespace VRTK
     ///
     /// `VRTK/Examples/036_Controller_CustomCompoundPointer' shows how to display an object (a teleport beam) only if the teleport location is valid, and can create an animated trail along the tracer curve.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Pointers/Pointer Renderers/VRTK_BezierPointerRenderer")]
     public class VRTK_BezierPointerRenderer : VRTK_BasePointerRenderer
     {
         [Header("Bezier Pointer Appearance Settings")]
 
-        [Tooltip("The maximum length of the projected forward beam.")]
-        public float maximumLength = 10f;
+        [Tooltip("The maximum length of the projected beam. The x value is the length of the forward beam, the y value is the length of the downward beam.")]
+        public Vector2 maximumLength = new Vector2(10f, float.PositiveInfinity);
         [Tooltip("The number of items to render in the bezier curve tracer beam. A high number here will most likely have a negative impact of game performance due to large number of rendered objects.")]
         public int tracerDensity = 10;
         [Tooltip("The size of the ground cursor. This number also affects the size of the objects in the bezier curve tracer beam. The larger the radius, the larger the objects will be.")]
@@ -87,7 +88,7 @@ namespace VRTK
 
         protected override void CreatePointerObjects()
         {
-            actualContainer = new GameObject(string.Format("[{0}]BezierPointerRenderer_Container", gameObject.name));
+            actualContainer = new GameObject(VRTK_SharedMethods.GenerateVRTKObjectName(true, gameObject.name, "BezierPointerRenderer_Container"));
             VRTK_PlayerObject.SetPlayerObject(actualContainer, VRTK_PlayerObject.ObjectTypes.Pointer);
             actualContainer.SetActive(false);
 
@@ -159,7 +160,7 @@ namespace VRTK
             if (validLocationObject != null)
             {
                 actualValidLocationObject = Instantiate(validLocationObject);
-                actualValidLocationObject.name = string.Format("[{0}]BezierPointerRenderer_ValidLocation", gameObject.name);
+                actualValidLocationObject.name = VRTK_SharedMethods.GenerateVRTKObjectName(true, gameObject.name, "BezierPointerRenderer_ValidLocation");
                 actualValidLocationObject.transform.SetParent(actualCursor.transform);
                 actualValidLocationObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                 actualValidLocationObject.SetActive(false);
@@ -168,7 +169,7 @@ namespace VRTK
             if (invalidLocationObject != null)
             {
                 actualInvalidLocationObject = Instantiate(invalidLocationObject);
-                actualInvalidLocationObject.name = string.Format("[{0}]BezierPointerRenderer_InvalidLocation", gameObject.name);
+                actualInvalidLocationObject.name = VRTK_SharedMethods.GenerateVRTKObjectName(true, gameObject.name, "BezierPointerRenderer_InvalidLocation");
                 actualInvalidLocationObject.transform.SetParent(actualCursor.transform);
                 actualInvalidLocationObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                 actualInvalidLocationObject.SetActive(false);
@@ -179,7 +180,7 @@ namespace VRTK
         {
             actualCursor = (customCursor ? Instantiate(customCursor) : CreateCursorObject());
             CreateCursorLocations();
-            actualCursor.name = string.Format("[{0}]BezierPointerRenderer_Cursor", gameObject.name);
+            actualCursor.name = VRTK_SharedMethods.GenerateVRTKObjectName(true, gameObject.name, "BezierPointerRenderer_Cursor");
             VRTK_PlayerObject.SetPlayerObject(actualCursor, VRTK_PlayerObject.ObjectTypes.Pointer);
             actualCursor.layer = LayerMask.NameToLayer("Ignore Raycast");
             actualCursor.SetActive(false);
@@ -189,13 +190,13 @@ namespace VRTK
         {
             Transform origin = GetOrigin();
             float attachedRotation = Vector3.Dot(Vector3.up, origin.forward.normalized);
-            float calculatedLength = maximumLength;
+            float calculatedLength = maximumLength.x;
             Vector3 useForward = origin.forward;
             if ((attachedRotation * 100f) > heightLimitAngle)
             {
                 useForward = new Vector3(useForward.x, fixedForwardBeamForward.y, useForward.z);
                 float controllerRotationOffset = 1f - (attachedRotation - (heightLimitAngle / 100f));
-                calculatedLength = (maximumLength * controllerRotationOffset) * controllerRotationOffset;
+                calculatedLength = (maximumLength.x * controllerRotationOffset) * controllerRotationOffset;
             }
             else
             {
@@ -237,7 +238,7 @@ namespace VRTK
             Ray projectedBeamDownRaycast = new Ray(jointPosition, Vector3.down);
             RaycastHit collidedWith;
 
-            bool downRayHit = VRTK_CustomRaycast.Raycast(customRaycast, projectedBeamDownRaycast, out collidedWith, layersToIgnore, float.PositiveInfinity);
+            bool downRayHit = VRTK_CustomRaycast.Raycast(customRaycast, projectedBeamDownRaycast, out collidedWith, layersToIgnore, maximumLength.y);
 
             if (!downRayHit || (destinationHit.collider && destinationHit.collider != collidedWith.collider))
             {

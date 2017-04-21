@@ -23,9 +23,10 @@ namespace VRTK
     /// <example>
     /// `VRTK/Examples/004_CameraRig_BasicTeleport` uses the `VRTK_SimplePointer` script on the Controllers to initiate a laser pointer by pressing the `Touchpad` on the controller and when the laser pointer is deactivated (release the `Touchpad`) then the user is teleported to the location of the laser pointer tip as this is where the pointer destination marker position is set to.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Locomotion/VRTK_BasicTeleport")]
     public class VRTK_BasicTeleport : MonoBehaviour
     {
-        [Header("Base Options")]
+        [Header("Base Settings")]
 
         [Tooltip("The colour to fade to when blinking on teleport.")]
         public Color blinkToColor = Color.black;
@@ -201,11 +202,12 @@ namespace VRTK
 
         protected virtual Vector3 CheckTerrainCollision(Vector3 position, Transform target, bool useHeadsetForPosition)
         {
-            if (adjustYForTerrain && target.GetComponent<Terrain>())
+            Terrain targetTerrain = target.GetComponent<Terrain>();
+            if (adjustYForTerrain && targetTerrain != null)
             {
-                var checkPosition = (useHeadsetForPosition ? new Vector3(headset.position.x, position.y, headset.position.z) : position);
-                var terrainHeight = Terrain.activeTerrain.SampleHeight(checkPosition);
-                position.y = (terrainHeight > position.y ? position.y : Terrain.activeTerrain.GetPosition().y + terrainHeight);
+                Vector3 checkPosition = (useHeadsetForPosition ? new Vector3(headset.position.x, position.y, headset.position.z) : position);
+                float terrainHeight = targetTerrain.SampleHeight(checkPosition);
+                position.y = (terrainHeight > position.y ? position.y : targetTerrain.GetPosition().y + terrainHeight);
             }
             return position;
         }
@@ -255,12 +257,12 @@ namespace VRTK
 
         protected virtual void InitDestinationMarkerListeners(bool state)
         {
-            var leftHand = VRTK_DeviceFinder.GetControllerLeftHand();
-            var rightHand = VRTK_DeviceFinder.GetControllerRightHand();
+            GameObject leftHand = VRTK_DeviceFinder.GetControllerLeftHand();
+            GameObject rightHand = VRTK_DeviceFinder.GetControllerRightHand();
 
             InitDestinationSetListener(leftHand, state);
             InitDestinationSetListener(rightHand, state);
-            foreach (var destinationMarker in VRTK_ObjectCache.registeredDestinationMarkers)
+            foreach (VRTK_DestinationMarker destinationMarker in VRTK_ObjectCache.registeredDestinationMarkers)
             {
                 if (destinationMarker.gameObject != leftHand && destinationMarker.gameObject != rightHand)
                 {

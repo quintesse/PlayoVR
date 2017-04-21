@@ -235,6 +235,7 @@
             {
                 if (!ValidElement(pointer.pointerEventData.pointerPress))
                 {
+                    pointer.pointerEventData.pointerPress = null;
                     return true;
                 }
 
@@ -260,12 +261,13 @@
 
         protected virtual void Drag(VRTK_UIPointer pointer, List<RaycastResult> results)
         {
-            pointer.pointerEventData.dragging = pointer.SelectionButtonActive() && pointer.pointerEventData.delta != Vector2.zero;
+            pointer.pointerEventData.dragging = pointer.IsSelectionButtonPressed() && pointer.pointerEventData.delta != Vector2.zero;
 
             if (pointer.pointerEventData.pointerDrag)
             {
                 if (!ValidElement(pointer.pointerEventData.pointerDrag))
                 {
+                    pointer.pointerEventData.pointerDrag = null;
                     return;
                 }
 

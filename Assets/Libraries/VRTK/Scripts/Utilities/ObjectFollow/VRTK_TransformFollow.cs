@@ -6,6 +6,7 @@ namespace VRTK
     /// <summary>
     /// Changes one game object's transform to follow another game object's transform.
     /// </summary>
+    [AddComponentMenu("VRTK/Scripts/Utilities/Object Follow/VRTK_TransformFollow")]
     public class VRTK_TransformFollow : VRTK_ObjectFollow
     {
         /// <summary>
@@ -14,11 +15,13 @@ namespace VRTK
         /// <param name="OnUpdate">Follow in the Update method.</param>
         /// <param name="OnLateUpdate">Follow in the LateUpdate method.</param>
         /// <param name="OnPreRender">Follow in the OnPreRender method. (This script doesn't have to be attached to a camera.)</param>
+        /// <param name="OnPreCull">Follow in the OnPreCull method. (This script doesn't have to be attached to a camera.)</param>
         public enum FollowMoment
         {
             OnUpdate,
             OnLateUpdate,
-            OnPreRender
+            OnPreRender,
+            OnPreCull
         }
 
         [Tooltip("The moment at which to follow.")]
@@ -47,6 +50,15 @@ namespace VRTK
                     {
                         Camera.onPreRender += OnCamPreRender;
                     }
+
+                    if (_moment == FollowMoment.OnPreCull && value != FollowMoment.OnPreCull)
+                    {
+                        Camera.onPreCull -= OnCamPreCull;
+                    }
+                    if (_moment != FollowMoment.OnPreCull && value == FollowMoment.OnPreCull)
+                    {
+                        Camera.onPreCull += OnCamPreCull;
+                    }
                 }
 
                 _moment = value;
@@ -70,6 +82,11 @@ namespace VRTK
             {
                 Camera.onPreRender += OnCamPreRender;
             }
+
+            if (moment == FollowMoment.OnPreCull)
+            {
+                Camera.onPreCull += OnCamPreCull;
+            }
         }
 
         protected virtual void OnDisable()
@@ -77,6 +94,7 @@ namespace VRTK
             transformToFollow = null;
             transformToChange = null;
             Camera.onPreRender -= OnCamPreRender;
+            Camera.onPreCull -= OnCamPreCull;
         }
 
         protected void Update()
@@ -95,8 +113,16 @@ namespace VRTK
             }
         }
 
-        //this method shouldn't be called `OnPreRender` to prevent a name clash with `MonoBehaviour.OnPreRender` since that is used when this script is attached to a camera
+        // The following `OnCam*` methods need to have the `Cam` addition to prevent a name clash with the `MonoBehaviour.On*` methods since those are used when this script is attached to a camera.
         protected virtual void OnCamPreRender(Camera cam)
+        {
+            if (cam.gameObject.transform == VRTK_SDK_Bridge.GetHeadsetCamera())
+            {
+                Follow();
+            }
+        }
+
+        protected virtual void OnCamPreCull(Camera cam)
         {
             if (cam.gameObject.transform == VRTK_SDK_Bridge.GetHeadsetCamera())
             {

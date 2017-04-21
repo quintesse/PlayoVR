@@ -11,6 +11,7 @@ namespace VRTK
     ///
     /// Supported movements are: forward, backward, strafe left, strafe right, turn left, turn right, up, down.
     /// </remarks>
+    [AddComponentMenu("VRTK/Scripts/Utilities/VRTK_Simulator")]
     public class VRTK_Simulator : MonoBehaviour
     {
         [System.Serializable]
@@ -54,7 +55,7 @@ namespace VRTK
             playArea = VRTK_DeviceFinder.PlayAreaTransform();
             if (!headset)
             {
-                Debug.LogWarning("Could not find camera. Simulator deactivated.");
+                VRTK_Logger.Warn(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.REQUIRED_COMPONENT_MISSING_FROM_SCENE, "VRTK_Simulator", "Headset Camera", ". Simulator deactivated."));
                 enabled = false;
                 return;
             }

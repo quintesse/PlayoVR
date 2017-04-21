@@ -14,14 +14,15 @@ namespace VRTK
     ///
     /// `VRTK/Examples/020_CameraRig_MeshTeleporting` shows how the teleportation of a user can also traverse mesh colliders.
     /// </example>
+    [AddComponentMenu("VRTK/Scripts/Locomotion/VRTK_HeightAdjustTeleport")]
     public class VRTK_HeightAdjustTeleport : VRTK_BasicTeleport
     {
-        [Header("Height Adjust Options")]
+        [Header("Height Adjust Settings")]
 
         [Tooltip("A custom raycaster to use when raycasting to find floors.")]
         public VRTK_CustomRaycast customRaycast;
-        [Tooltip("**OBSOLETE** The layers to ignore when raycasting to find floors.")]
-        [Obsolete("`VRTK_HeightAdjustTeleport.layersToIgnore` is no longer used in the `VRTK_HeightAdjustTeleport` class. This parameter will be removed in a future version of VRTK.")]
+        [Tooltip("**OBSOLETE [Use customRaycast]** The layers to ignore when raycasting to find floors.")]
+        [Obsolete("`VRTK_HeightAdjustTeleport.layersToIgnore` is no longer used in the `VRTK_HeightAdjustTeleport` class, use the `customRaycast` parameter instead. This parameter will be removed in a future version of VRTK.")]
         public LayerMask layersToIgnore = Physics.IgnoreRaycastLayer;
 
         protected override void OnEnable()

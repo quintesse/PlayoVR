@@ -14,6 +14,7 @@ namespace VRTK
     /// `VRTK/Examples/034_Controls_InteractingWithUnityUI` demonstrates a collection of UI elements that are draggable
     /// </example>
     [RequireComponent(typeof(CanvasGroup))]
+    [AddComponentMenu("VRTK/Scripts/UI/VRTK_UIDraggableItem")]
     public class VRTK_UIDraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [Tooltip("If checked then the UI element can only be dropped in valid a VRTK_UIDropZone object and must start as a child of a VRTK_UIDropZone object. If unchecked then the UI element can be dropped anywhere on the canvas.")]
@@ -120,7 +121,7 @@ namespace VRTK
             if (restrictToDropZone && !GetComponentInParent<VRTK_UIDropZone>())
             {
                 enabled = false;
-                Debug.LogError("A VRTK_UIDraggableItem with a `freeDrop = false` is required to be a child of a VRTK_UIDropZone GameObject.");
+                VRTK_Logger.Error(VRTK_Logger.GetCommonMessage(VRTK_Logger.CommonMessageKeys.REQUIRED_COMPONENT_MISSING_FROM_GAMEOBJECT, "VRTK_UIDraggableItem", "VRTK_UIDropZone", "the parent", " if `freeDrop = false`"));
             }
         }
 
