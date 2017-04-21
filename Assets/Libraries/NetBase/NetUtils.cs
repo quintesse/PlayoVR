@@ -33,6 +33,94 @@
             }
         }
 
+        private static MonoBehaviour GetNetworkHandle(GameObject obj) {
+            if (obj.transform.parent != null) {
+                NetworkAttachment na = obj.transform.parent.GetComponentInParent<NetworkAttachment>();
+                if (na != null) {
+                    return na;
+                }
+                PhotonView pv = obj.transform.parent.GetComponentInParent<PhotonView>();
+                if (pv != null) {
+                    return pv;
+                }
+                PhotonViewLink pvl = obj.transform.parent.GetComponentInParent<PhotonViewLink>();
+                if (pvl != null) {
+                    return pvl;
+                }
+            }
+            return null;
+        }
+
+        private static int GetNetworkHandleId(MonoBehaviour script) {
+            if (script != null) {
+                if (script is NetworkAttachment) {
+                    NetworkAttachment na = (NetworkAttachment)script;
+                    return -na.id;
+                }
+                if (script is PhotonView) {
+                    PhotonView pv = (PhotonView)script;
+                    return pv.viewID;
+                }
+                if (script is PhotonViewLink) {
+                    PhotonViewLink pvl = (PhotonViewLink)script;
+                    return pvl.linkedView.viewID;
+                }
+            }
+            return 0;
+        }
+
+        private static string GetNetworkHandlePath(GameObject obj, MonoBehaviour script) {
+            if (script != null) {
+                if (script is NetworkAttachment) {
+                    NetworkAttachment na = (NetworkAttachment)script;
+                    return NetUtils.RelPath(obj.transform.parent, na.transform);
+                }
+                if (script is PhotonView) {
+                    PhotonView pv = (PhotonView)script;
+                    return NetUtils.RelPath(obj.transform.parent, pv.transform);
+                }
+                if (script is PhotonViewLink) {
+                    PhotonViewLink pvl = (PhotonViewLink)script;
+                    return null; // TODO see if we can return some path here
+                }
+            }
+            return NetUtils.GetPath(obj.transform.parent);
+        }
+
+        public static NetworkReference GetObjectNetworkReference(GameObject obj) {
+            NetworkReference nref;
+            if (obj != null) {
+                var handle = NetUtils.GetNetworkHandle(obj);
+                nref.parentHandleId = NetUtils.GetNetworkHandleId(handle);
+                nref.pathFromParent = NetUtils.GetNetworkHandlePath(obj, handle);
+            } else {
+                nref.parentHandleId = 0;
+                nref.pathFromParent = null;
+            }
+            return nref;
+        }
+
+        public static MonoBehaviour FindNetworkReferenceParent(int parentHandleId) {
+            MonoBehaviour parent;
+            if (parentHandleId > 0) {
+                PhotonView pv = PhotonView.Find(parentHandleId);
+                parent = pv;
+            } else if (parentHandleId < 0) {
+                NetworkAttachment na = NetworkAttachment.Find(parentHandleId);
+                parent = na;
+            } else {
+                parent = null;
+            }
+            return parent;
+        }
+
+        public static GameObject FindNetworkReferenceObject(ref NetworkReference nref) {
+            MonoBehaviour parentScript = FindNetworkReferenceParent(nref.parentHandleId);
+            Transform parent = (parentScript != null) ? parentScript.transform : null;
+            Transform child = NetUtils.Find(parent, nref.pathFromParent);
+            return (child != null) ? child.gameObject : null;
+        }
+
         public static GameObject Find(GameObject parent, string name) {
             Transform childTransform = Find(parent != null ? parent.transform : null, name);
             return childTransform != null ? childTransform.gameObject : null;
@@ -84,6 +172,74 @@
                 }
             }
             return null;
+        }
+
+    }
+
+    public struct NetworkReference {
+        public int parentHandleId;
+        public string pathFromParent;
+
+        public static NetworkReference INVALID {
+            get {
+                NetworkReference invalid;
+                invalid.parentHandleId = 0;
+                invalid.pathFromParent = null;
+                return invalid;
+            }
+        }
+
+        public static bool operator ==(NetworkReference nref1, NetworkReference nref2) {
+            if (ReferenceEquals(nref1, nref2)) {
+                return true;
+            }
+            if (ReferenceEquals(nref1, null)) {
+                return false;
+            }
+            if (ReferenceEquals(nref2, null)) {
+                return false;
+            }
+            return nref1.Equals(nref2);
+        }
+
+        public static bool operator !=(NetworkReference nref1, NetworkReference nref2) {
+            return !(nref1 == nref2);
+        }
+
+        public bool Equals(NetworkReference other) {
+            if (ReferenceEquals(null, other)) {
+                return false;
+            }
+            if (ReferenceEquals(this, other)) {
+                return true;
+            }
+            return parentHandleId == other.parentHandleId
+                   && pathFromParent == other.pathFromParent;
+        }
+
+        public override bool Equals(object obj) {
+            if (ReferenceEquals(null, obj)) {
+                return false;
+            }
+            if (ReferenceEquals(this, obj)) {
+                return true;
+            }
+            return obj.GetType() == GetType() && Equals((NetworkReference)obj);
+        }
+
+        public override int GetHashCode() {
+            unchecked {
+                int hash = 17;
+                hash = hash * 23 + parentHandleId.GetHashCode();
+                if (pathFromParent != null) {
+                    hash = hash * 23 + pathFromParent.GetHashCode();
+                }
+                return hash;
+            }
+        }
+
+        public override string ToString() {
+            return pathFromParent + "@" + parentHandleId + "[" + NetUtils.FindNetworkReferenceParent(parentHandleId) + "]";
         }
     }
 }
