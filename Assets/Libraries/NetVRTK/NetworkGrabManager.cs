@@ -24,6 +24,10 @@
             prevGrabOwner = grabOwner;
         }
 
+        public override void Apply() {
+            io.isGrabbable = (grabOwner == 0);
+        }
+
         private void InitState(int ownerId) {
             grabOwner = ownerId;
         }
