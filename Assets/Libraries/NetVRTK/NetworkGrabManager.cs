@@ -10,6 +10,8 @@
         private int grabOwner;
         private int prevGrabOwner;
 
+        private VRTK_InteractableObject io;
+
         public override bool HasChanged() {
             return !onChangeOnly || prevGrabOwner != grabOwner;
         }
@@ -22,24 +24,24 @@
             prevGrabOwner = grabOwner;
         }
 
-        private PhotonView GetAvatarHandView() {
-            if (transform.parent != null) {
-                PhotonView pv = GetComponentInParent<PhotonView>();
-                return pv;
-            }
-            return null;
-        }
-
         private void InitState(int ownerId) {
             grabOwner = ownerId;
         }
 
         void Awake() {
-            VRTK_InteractableObject obj = GetComponent<VRTK_InteractableObject>();
-            obj.InteractableObjectGrabbed += new InteractableObjectEventHandler(HandleGrab);
-            obj.InteractableObjectUngrabbed += new InteractableObjectEventHandler(HandleUngrab);
+            io = GetComponent<VRTK_InteractableObject>();
+        }
+
+        void OnEnable() {
+            io.InteractableObjectGrabbed += HandleGrab;
+            io.InteractableObjectUngrabbed += HandleUngrab;
             InitState(photonView.ownerId);
             Retain();
+        }
+
+        void OnDisable() {
+            io.InteractableObjectGrabbed -= HandleGrab;
+            io.InteractableObjectUngrabbed -= HandleUngrab;
         }
 
         private void HandleGrab(object sender, InteractableObjectEventArgs e) {
