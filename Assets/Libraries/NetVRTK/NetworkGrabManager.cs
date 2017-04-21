@@ -54,7 +54,7 @@
         }
 
         private void HandleUngrab(object sender, InteractableObjectEventArgs e) {
-            photonView.TransferOwnership(PhotonNetwork.player);
+            //photonView.TransferOwnership(PhotonNetwork.player);
             InitState(0);
         }
     }
