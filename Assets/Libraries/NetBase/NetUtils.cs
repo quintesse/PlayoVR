@@ -239,7 +239,13 @@
         }
 
         public override string ToString() {
-            return pathFromParent + "@" + parentHandleId + "[" + NetUtils.FindNetworkReferenceParent(parentHandleId) + "]";
+            if (parentHandleId != 0) {
+                return pathFromParent + "@" + parentHandleId + "[" + NetUtils.FindNetworkReferenceParent(parentHandleId) + "]";
+            } else if (pathFromParent != null) {
+                return pathFromParent;
+            } else {
+                return "INVALID";
+            }
         }
     }
 }
