@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 114293729372137782}
   - component: {fileID: 114101436865905092}
   - component: {fileID: 114434739499023912}
+  - component: {fileID: 111952444757785510}
   m_Layer: 0
   m_Name: ItemGun
   m_TagString: Holsterable
@@ -367,6 +368,21 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!111 &111952444757785510
+Animation:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1009108833589340}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 7400000, guid: f04dca8647d0cc146812c9142232d497, type: 2}
+  m_Animations:
+  - {fileID: 7400000, guid: f04dca8647d0cc146812c9142232d497, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 0
+  m_AnimatePhysics: 0
+  m_CullingType: 0
 --- !u!114 &114085065695772642
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -457,6 +473,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 184260, guid: cbd26eb7c6d51c14487b1120fff7844a, type: 2}
   bulletSpawn: {fileID: 4719475787863064}
   fireGunSound: {fileID: 8300000, guid: edc6dc12da6af43409913c1d4323ab14, type: 3}
+  fireAnimation: {fileID: 111952444757785510}
 --- !u!114 &114434739499023912
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -482,8 +499,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
-  OwnerShipWasTransfered: 0
   prefixBackup: -1
+  observed: {fileID: 0}
   synchronization: 1
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
@@ -495,7 +512,6 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
-  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114982492250686170
 MonoBehaviour:

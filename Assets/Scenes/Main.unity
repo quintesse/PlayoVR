@@ -1658,6 +1658,10 @@ Prefab:
       propertyPath: m_RootOrder
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 1143262253976884, guid: 8bc582d746fd51749bc21043d4135a80, type: 2}
+      propertyPath: m_Name
+      value: WallCube 1
+      objectReference: {fileID: 0}
     - target: {fileID: 114949168220737912, guid: 8bc582d746fd51749bc21043d4135a80,
         type: 2}
       propertyPath: viewIdField
@@ -1667,10 +1671,6 @@ Prefab:
         type: 2}
       propertyPath: instantiationId
       value: 14
-      objectReference: {fileID: 0}
-    - target: {fileID: 1143262253976884, guid: 8bc582d746fd51749bc21043d4135a80, type: 2}
-      propertyPath: m_Name
-      value: WallCube 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8bc582d746fd51749bc21043d4135a80, type: 2}

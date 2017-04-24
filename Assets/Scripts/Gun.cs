@@ -8,6 +8,7 @@ public class Gun : Photon.MonoBehaviour {
     public GameObject bulletPrefab;
     public Transform bulletSpawn;
     public AudioClip fireGunSound;
+    public Animation fireAnimation;
 
     private bool fired;
 
@@ -27,14 +28,23 @@ public class Gun : Photon.MonoBehaviour {
 
     void CmdFire() {
         // Create the Bullet from the Bullet Prefab
+        // (gets replicated automatically to all clients)
         var bullet = PhotonNetwork.Instantiate(
             "Bullet",
             bulletSpawn.position,
             bulletSpawn.rotation,
             0);
 
+        // Now play sound and animation locally and on all other clients
+        photonView.RPC("NetFire", PhotonTargets.All);
+    }
+
+    [PunRPC]
+    void NetFire() {
         // Play sound of gun shooting
-        NetworkAudio.SendPlayClipAtPoint(fireGunSound, transform.position, 1.0f);
+        AudioSource.PlayClipAtPoint(fireGunSound, transform.position, 1.0f);
+        // Play animation of gun shooting
+        fireAnimation.Play();
     }
 
     void DoFireGun(object sender, InteractableObjectEventArgs e) {
