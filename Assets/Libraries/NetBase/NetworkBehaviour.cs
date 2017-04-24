@@ -12,7 +12,7 @@
                 Obtain(); // Obtain the current state of the object
                 // FIXME PhotonNetwork doesn't make it at all easy to try to only send data when needed
                 // so for now we completely disable change detection :(
-                if (true /*HasChanged()*/) { // Determine if we should send it
+                if (true /*!onChangeOnly || HasChanged()*/) { // Determine if we should send it
                     Serialize(stream, info); // Send the new state
                     Retain(); // Remember the state for later
                 }

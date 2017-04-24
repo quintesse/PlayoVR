@@ -12,7 +12,7 @@
         }
 
         public override bool HasChanged() {
-            return !onChangeOnly || parentNetRef != prevParentNetRef;
+            return parentNetRef != prevParentNetRef;
         }
 
         public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {

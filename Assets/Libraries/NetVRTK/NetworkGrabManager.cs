@@ -13,7 +13,7 @@
         private VRTK_InteractableObject io;
 
         public override bool HasChanged() {
-            return !onChangeOnly || prevGrabOwner != grabOwner;
+            return prevGrabOwner != grabOwner;
         }
 
         public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {

@@ -41,7 +41,7 @@
         }
 
         public override bool HasChanged() {
-            bool changed = !onChangeOnly;
+            bool changed = false;
             foreach (ComponentInterpolator ci in cipols) {
                 changed = changed || ci.HasChanged();
             }
