@@ -175,8 +175,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
-  OwnerShipWasTransfered: 0
   prefixBackup: -1
+  observed: {fileID: 0}
   synchronization: 1
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
@@ -188,7 +188,6 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
-  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114740659021493392
 MonoBehaviour:
@@ -201,7 +200,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 1
+  onChangeOnly: 0
 --- !u!114 &114850760172276944
 MonoBehaviour:
   m_ObjectHideFlags: 1

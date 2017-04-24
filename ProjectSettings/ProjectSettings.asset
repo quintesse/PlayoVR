@@ -85,6 +85,7 @@ PlayerSettings:
   xboxEnableFitness: 0
   visibleInBackground: 1
   allowFullscreenSwitch: 1
+  graphicsJobMode: 0
   macFullscreenMode: 2
   d3d9FullscreenMode: 1
   d3d11FullscreenMode: 1
@@ -442,7 +443,7 @@ PlayerSettings:
   webGLUseWasm: 0
   webGLCompressionFormat: 1
   scriptingDefineSymbols:
-    1: VRTK_DEFINE_SDK_OCULUSVR;VRTK_DEFINE_SDK_STEAMVR;VRTK_DEFINE_STEAMVR_PLUGIN_1_2_1_OR_NEWER;CROSS_PLATFORM_INPUT
+    1: CROSS_PLATFORM_INPUT;VRTK_DEFINE_OCULUSVR_UTILITIES_1_12_0_OR_NEWER;VRTK_DEFINE_SDK_OCULUSVR;VRTK_DEFINE_SDK_STEAMVR;VRTK_DEFINE_STEAMVR_PLUGIN_1_2_1_OR_NEWER
     2: CROSS_PLATFORM_INPUT
     4: CROSS_PLATFORM_INPUT;MOBILE_INPUT
     7: CROSS_PLATFORM_INPUT;MOBILE_INPUT
@@ -499,7 +500,7 @@ PlayerSettings:
   tizenMicrophonePermissions: 0
   tizenDeploymentTarget: 
   tizenDeploymentTargetType: -252843268
-  tizenMinOSVersion: 0
+  tizenMinOSVersion: 1
   n3dsUseExtSaveData: 0
   n3dsCompressStaticMem: 1
   n3dsExtSaveDataNumber: 0x12345

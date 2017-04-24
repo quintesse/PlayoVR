@@ -43,7 +43,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1454027868175800}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2, y: 0.9, z: 0.8}
+  m_LocalPosition: {x: 0.8, y: 0.9, z: -0.2}
   m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
   m_Children: []
   m_Father: {fileID: 0}
@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 1
+  onChangeOnly: 0
 --- !u!114 &114070730526096524
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -139,8 +139,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
-  OwnerShipWasTransfered: 1
   prefixBackup: -1
+  observed: {fileID: 0}
   synchronization: 1
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
@@ -151,7 +151,6 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
-  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114280567253820244
 MonoBehaviour:
@@ -159,7 +158,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1454027868175800}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3abaf4521bf2344ea21ed3020b98eb2, type: 3}
   m_Name: 
