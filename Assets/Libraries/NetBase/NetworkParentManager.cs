@@ -18,6 +18,9 @@
         public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
             stream.Serialize(ref parentNetRef.parentHandleId);
             stream.Serialize(ref parentNetRef.pathFromParent);
+            //if (HasChanged() || stream.isReading) {
+            //    Debug.Log("PARENT " + (stream.isWriting ? "Sent " : "Recvd ") + this + " --> " + parentNetRef);
+            //}
         }
 
         public override void Retain() {

@@ -18,6 +18,9 @@
 
         public override void Serialize(PhotonStream stream, PhotonMessageInfo info) {
             stream.Serialize(ref grabOwner);
+            //if (HasChanged() || stream.isReading) {
+            //    Debug.Log("GRAB " + (stream.isWriting ? "Sent " : "Recvd ") + this + " --> " + grabOwner);
+            //}
         }
 
         public override void Retain() {
