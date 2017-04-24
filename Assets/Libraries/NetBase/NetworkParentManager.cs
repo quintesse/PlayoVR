@@ -8,7 +8,7 @@
         private NetworkReference prevParentNetRef;
 
         public override void Obtain() {
-            parentNetRef = NetUtils.GetObjectNetworkReference(gameObject);
+            parentNetRef = NetUtils.GetObjectNetworkReference(transform.parent);
         }
 
         public override bool HasChanged() {
@@ -25,8 +25,7 @@
         }
 
         public override void Apply() {
-            var actualNor = NetUtils.GetObjectNetworkReference(gameObject);
-            //Debug.Log("Recvd " + parentNetRef);
+            var actualNor = NetUtils.GetObjectNetworkReference(transform.parent);
             if (actualNor != parentNetRef) {
                 //Debug.Log("Reparenting from " + actualNor + " to " + parentNetRef);
                 GameObject newParent = NetUtils.FindNetworkReferenceObject(ref parentNetRef);

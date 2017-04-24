@@ -33,17 +33,17 @@
             }
         }
 
-        private static MonoBehaviour GetNetworkHandle(GameObject obj) {
+        private static MonoBehaviour GetNetworkHandle(Transform obj) {
             if (obj.transform.parent != null) {
-                NetworkAttachment na = obj.transform.parent.GetComponentInParent<NetworkAttachment>();
+                NetworkAttachment na = obj.parent.GetComponentInParent<NetworkAttachment>();
                 if (na != null) {
                     return na;
                 }
-                PhotonView pv = obj.transform.parent.GetComponentInParent<PhotonView>();
+                PhotonView pv = obj.parent.GetComponentInParent<PhotonView>();
                 if (pv != null) {
                     return pv;
                 }
-                PhotonViewLink pvl = obj.transform.parent.GetComponentInParent<PhotonViewLink>();
+                PhotonViewLink pvl = obj.parent.GetComponentInParent<PhotonViewLink>();
                 if (pvl != null) {
                     return pvl;
                 }
@@ -69,25 +69,25 @@
             return 0;
         }
 
-        private static string GetNetworkHandlePath(GameObject obj, MonoBehaviour script) {
+        private static string GetNetworkHandlePath(Transform obj, MonoBehaviour script) {
             if (script != null) {
                 if (script is NetworkAttachment) {
                     NetworkAttachment na = (NetworkAttachment)script;
-                    return NetUtils.RelPath(obj.transform.parent, na.transform);
+                    return NetUtils.RelPath(obj.parent, na.transform);
                 }
                 if (script is PhotonView) {
                     PhotonView pv = (PhotonView)script;
-                    return NetUtils.RelPath(obj.transform.parent, pv.transform);
+                    return NetUtils.RelPath(obj.parent, pv.transform);
                 }
                 if (script is PhotonViewLink) {
                     PhotonViewLink pvl = (PhotonViewLink)script;
                     return null; // TODO see if we can return some path here
                 }
             }
-            return NetUtils.GetPath(obj.transform.parent);
+            return NetUtils.GetPath(obj);
         }
 
-        public static NetworkReference GetObjectNetworkReference(GameObject obj) {
+        public static NetworkReference GetObjectNetworkReference(Transform obj) {
             NetworkReference nref;
             if (obj != null) {
                 var handle = NetUtils.GetNetworkHandle(obj);
