@@ -18,10 +18,6 @@ public class Gun : Photon.MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (!photonView.isMine) {
-            return;
-        }
-
         // Handle firing
         if (fired) {
             CmdFire();
