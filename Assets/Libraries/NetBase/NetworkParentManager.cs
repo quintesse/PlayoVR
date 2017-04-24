@@ -7,6 +7,12 @@
         private NetworkReference parentNetRef;
         private NetworkReference prevParentNetRef;
 
+        public NetworkReference currentParent {
+            get {
+                return parentNetRef;
+            }
+        }
+
         public override void Obtain() {
             parentNetRef = NetUtils.GetObjectNetworkReference(transform.parent);
         }

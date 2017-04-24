@@ -12,6 +12,12 @@
 
         private VRTK_InteractableObject io;
 
+        public int currentGrabOwner {
+            get {
+                return grabOwner;
+            }
+        }
+
         public override bool HasChanged() {
             return prevGrabOwner != grabOwner;
         }
