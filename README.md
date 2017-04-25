@@ -8,6 +8,11 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-04-25
+   - Added `NetworkSnapManager` script for syncing snap actions over the network
+   - The network scripts now have custom editors that show their current state which
+     makes debugging much easier
+   - The gun now animates (thanks jimthegrim)
  - 2017-03-23
    - Simplified project by removing DFVoice support and voice cli arguments
  - 2017-03-22
@@ -76,6 +81,20 @@ If you want to add networking to your VRTK interactable objects then you just ne
 This script handles the transfer of "ownership" that Photon imposes on object. Only an object's owner is allowed to send updates about it, other can only receive updates. So to be able to pick up an object and move it we must first tell Photon that we want ownership of the object. The `NetworkGrabManager` does this for us.
 
 ![NetworkGrabManager](Docs/Images/network-grab-manager.png)
+
+### Properties:
+
+ - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
+
+### Requirements/suggestions:
+
+ - must be registered with a `PhotonView`'s list of `Observed Components`
+ - best used with `PhotonView`'s `Reliable Delta Compressed` option and in that case leave `onChangeOnly` turned off
+ - an `VRTK_InteractableObject` must exist on the same object
+
+## NetworkSnapManager
+
+This script syncs the action of an object being snapped to a drop zone across the network. If you don't use this script it might *seem* that everything works fine but a) the VRTK on remote clients doesn't really know the object is being snapped and b) the moment the client that performed the snap disconnects the "illusion" disappears.
 
 ### Properties:
 
