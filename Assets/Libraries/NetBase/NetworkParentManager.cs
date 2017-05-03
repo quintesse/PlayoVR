@@ -14,7 +14,7 @@
         }
 
         public override void Obtain() {
-            parentNetRef = NetUtils.GetObjectNetworkReference(transform.parent);
+            parentNetRef = NetworkReference.FromTransform(transform.parent);
         }
 
         public override bool HasChanged() {
@@ -34,10 +34,10 @@
         }
 
         public override void Apply() {
-            var actualNor = NetUtils.GetObjectNetworkReference(transform.parent);
+            var actualNor = NetworkReference.FromTransform(transform.parent);
             if (actualNor != parentNetRef) {
                 //Debug.Log("Reparenting from " + actualNor + " to " + parentNetRef);
-                GameObject newParent = NetUtils.FindNetworkReferenceObject(ref parentNetRef);
+                GameObject newParent = parentNetRef.FindObject();
                 //Debug.Log("New parent " + newParent);
                 transform.parent = newParent != null ? newParent.transform : null;
             }

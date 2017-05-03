@@ -1,7 +1,8 @@
 ﻿namespace NetBase {
+    using System;
+    using System.Collections;
     using UnityEngine;
     using UnityEngine.SceneManagement;
-    using System.Collections;
 
     public class NetUtils {
 
@@ -31,94 +32,6 @@
             } else {
                 return null;
             }
-        }
-
-        private static MonoBehaviour GetNetworkHandle(Transform obj) {
-            if (obj.transform.parent != null) {
-                NetworkAttachment na = obj.parent.GetComponentInParent<NetworkAttachment>();
-                if (na != null) {
-                    return na;
-                }
-                PhotonView pv = obj.parent.GetComponentInParent<PhotonView>();
-                if (pv != null) {
-                    return pv;
-                }
-                PhotonViewLink pvl = obj.parent.GetComponentInParent<PhotonViewLink>();
-                if (pvl != null) {
-                    return pvl;
-                }
-            }
-            return null;
-        }
-
-        private static int GetNetworkHandleId(MonoBehaviour script) {
-            if (script != null) {
-                if (script is NetworkAttachment) {
-                    NetworkAttachment na = (NetworkAttachment)script;
-                    return -na.id;
-                }
-                if (script is PhotonView) {
-                    PhotonView pv = (PhotonView)script;
-                    return pv.viewID;
-                }
-                if (script is PhotonViewLink) {
-                    PhotonViewLink pvl = (PhotonViewLink)script;
-                    return pvl.linkedView.viewID;
-                }
-            }
-            return 0;
-        }
-
-        private static string GetNetworkHandlePath(Transform obj, MonoBehaviour script) {
-            if (script != null) {
-                if (script is NetworkAttachment) {
-                    NetworkAttachment na = (NetworkAttachment)script;
-                    return NetUtils.RelPath(obj.parent, na.transform);
-                }
-                if (script is PhotonView) {
-                    PhotonView pv = (PhotonView)script;
-                    return NetUtils.RelPath(obj.parent, pv.transform);
-                }
-                if (script is PhotonViewLink) {
-                    PhotonViewLink pvl = (PhotonViewLink)script;
-                    return null; // TODO see if we can return some path here
-                }
-            }
-            return NetUtils.GetPath(obj);
-        }
-
-        public static NetworkReference GetObjectNetworkReference(Transform obj) {
-            NetworkReference nref;
-            if (obj != null) {
-                var handle = NetUtils.GetNetworkHandle(obj);
-                nref.parentHandleId = NetUtils.GetNetworkHandleId(handle);
-                nref.pathFromParent = NetUtils.GetNetworkHandlePath(obj, handle);
-            } else {
-                nref.parentHandleId = 0;
-                nref.pathFromParent = null;
-            }
-            return nref;
-        }
-
-        public static MonoBehaviour FindNetworkReferenceParent(int parentHandleId) {
-            MonoBehaviour parent;
-            if (parentHandleId > 0) {
-                PhotonView pv = PhotonView.Find(parentHandleId);
-                parent = pv;
-            } else if (parentHandleId < 0) {
-                NetworkAttachment na = NetworkAttachment.Find(parentHandleId);
-                parent = na;
-            } else {
-                parent = null;
-            }
-            return parent;
-        }
-
-        public static GameObject FindNetworkReferenceObject(ref NetworkReference nref) {
-            MonoBehaviour parentScript = FindNetworkReferenceParent(nref.parentHandleId);
-            Transform parent = (parentScript != null) ? parentScript.transform : null;
-            Transform child = NetUtils.Find(parent, nref.pathFromParent);
-            return (child != null) ? child.gameObject : null;
         }
 
         public static GameObject Find(GameObject parent, string name) {
@@ -182,11 +95,15 @@
 
         public static NetworkReference INVALID {
             get {
-                NetworkReference invalid;
-                invalid.parentHandleId = 0;
-                invalid.pathFromParent = null;
-                return invalid;
+                return FromIdAndPath(0, null);
             }
+        }
+
+        public GameObject FindObject() {
+            MonoBehaviour parentScript = FindNetworkReferenceParent(parentHandleId);
+            Transform parent = (parentScript != null) ? parentScript.transform : null;
+            Transform child = NetUtils.Find(parent, pathFromParent);
+            return (child != null) ? child.gameObject : null;
         }
 
         public static bool operator ==(NetworkReference nref1, NetworkReference nref2) {
@@ -240,12 +157,104 @@
 
         public override string ToString() {
             if (parentHandleId != 0) {
-                return pathFromParent + "@" + parentHandleId + "[" + NetUtils.FindNetworkReferenceParent(parentHandleId) + "]";
+                return pathFromParent + "@" + parentHandleId + "[" + FindNetworkReferenceParent(parentHandleId) + "]";
             } else if (pathFromParent != null) {
                 return pathFromParent;
             } else {
                 return "INVALID";
             }
+        }
+
+        public static NetworkReference FromIdAndPath(int parentHandleId, string pathFromParent) {
+            NetworkReference nref;
+            nref.parentHandleId = parentHandleId;
+            nref.pathFromParent = pathFromParent;
+            return nref;
+        }
+
+        public static NetworkReference FromObject(GameObject obj) {
+            return FromTransform(obj != null ? obj.transform : null);
+        }
+
+        public static NetworkReference FromTransform(Transform transform) {
+            NetworkReference nref;
+            if (transform != null) {
+                var handle = GetNetworkHandle(transform);
+                nref.parentHandleId = GetNetworkHandleId(handle);
+                nref.pathFromParent = GetNetworkHandlePath(transform, handle);
+            } else {
+                nref.parentHandleId = 0;
+                nref.pathFromParent = null;
+            }
+            return nref;
+        }
+
+        private static MonoBehaviour GetNetworkHandle(Transform obj) {
+            if (obj.transform.parent != null) {
+                NetworkAttachment na = obj.parent.GetComponentInParent<NetworkAttachment>();
+                if (na != null) {
+                    return na;
+                }
+                PhotonView pv = obj.parent.GetComponentInParent<PhotonView>();
+                if (pv != null) {
+                    return pv;
+                }
+                PhotonViewLink pvl = obj.parent.GetComponentInParent<PhotonViewLink>();
+                if (pvl != null) {
+                    return pvl;
+                }
+            }
+            return null;
+        }
+
+        private static int GetNetworkHandleId(MonoBehaviour script) {
+            if (script != null) {
+                if (script is NetworkAttachment) {
+                    NetworkAttachment na = (NetworkAttachment)script;
+                    return -na.id;
+                }
+                if (script is PhotonView) {
+                    PhotonView pv = (PhotonView)script;
+                    return pv.viewID;
+                }
+                if (script is PhotonViewLink) {
+                    PhotonViewLink pvl = (PhotonViewLink)script;
+                    return pvl.linkedView.viewID;
+                }
+            }
+            return 0;
+        }
+
+        private static string GetNetworkHandlePath(Transform obj, MonoBehaviour script) {
+            if (script != null) {
+                if (script is NetworkAttachment) {
+                    NetworkAttachment na = (NetworkAttachment)script;
+                    return NetUtils.RelPath(obj.parent, na.transform);
+                }
+                if (script is PhotonView) {
+                    PhotonView pv = (PhotonView)script;
+                    return NetUtils.RelPath(obj.parent, pv.transform);
+                }
+                if (script is PhotonViewLink) {
+                    PhotonViewLink pvl = (PhotonViewLink)script;
+                    return null; // TODO see if we can return some path here
+                }
+            }
+            return NetUtils.GetPath(obj);
+        }
+
+        private static MonoBehaviour FindNetworkReferenceParent(int parentHandleId) {
+            MonoBehaviour parent;
+            if (parentHandleId > 0) {
+                PhotonView pv = PhotonView.Find(parentHandleId);
+                parent = pv;
+            } else if (parentHandleId < 0) {
+                NetworkAttachment na = NetworkAttachment.Find(parentHandleId);
+                parent = na;
+            } else {
+                parent = null;
+            }
+            return parent;
         }
     }
 }

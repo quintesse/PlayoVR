@@ -41,7 +41,7 @@
                     dropZone = null;
                 }
             } else {
-                GameObject dzobj = NetUtils.FindNetworkReferenceObject(ref dropZoneNetRef);
+                GameObject dzobj = dropZoneNetRef.FindObject();
                 if (dzobj != null) {
                     VRTK_SnapDropZone newDropZone = dzobj.GetComponent<VRTK_SnapDropZone>();
                     if (newDropZone != null) {
@@ -70,7 +70,7 @@
             io.InteractableObjectUnsnappedFromDropZone += HandleUnsnappedFromDropZone;
             if (io.IsInSnapDropZone()) {
                 dropZone = io.GetStoredSnapDropZone();
-                dropZoneNetRef = NetUtils.GetObjectNetworkReference(dropZone.transform);
+                dropZoneNetRef = NetworkReference.FromTransform(dropZone.transform);
             } else {
                 dropZone = null;
                 dropZoneNetRef = NetworkReference.INVALID;
@@ -84,7 +84,7 @@
 
         private void HandleSnappedToDropZone(object sender, InteractableObjectEventArgs e) {
             dropZone = io.GetStoredSnapDropZone();
-            dropZoneNetRef = NetUtils.GetObjectNetworkReference(dropZone.transform);
+            dropZoneNetRef = NetworkReference.FromTransform(dropZone.transform);
         }
 
         private void HandleUnsnappedFromDropZone(object sender, InteractableObjectEventArgs e) {
