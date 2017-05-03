@@ -31,6 +31,7 @@ GameObject:
   - component: {fileID: 114850760172276944}
   - component: {fileID: 114740659021493392}
   - component: {fileID: 114838327174307352}
+  - component: {fileID: 114818472260264558}
   m_Layer: 0
   m_Name: ItemSphere
   m_TagString: PanoramaSource
@@ -203,6 +204,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   onChangeOnly: 0
+--- !u!114 &114818472260264558
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1991625737178822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8491759534952049958ca990cca611c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  projectionSphere: {fileID: 0}
+  minDistance: 0.25
+  maxDistance: 0.5
 --- !u!114 &114838327174307352
 MonoBehaviour:
   m_ObjectHideFlags: 1
