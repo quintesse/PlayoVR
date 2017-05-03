@@ -8,6 +8,10 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-05-03
+   - Added a "sky dome" for 360 panoramic photos
+   - The spheres are now containers for 360 panoramic photos and when placed on the central
+   pedestal cause the sky dome to change for all connected players
  - 2017-04-25
    - Added `NetworkSnapManager` script for syncing snap actions over the network
    - The network scripts now have custom editors that show their current state which
