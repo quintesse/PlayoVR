@@ -32,7 +32,7 @@ GameObject:
   - component: {fileID: 114740659021493392}
   m_Layer: 0
   m_Name: ItemSphere
-  m_TagString: Untagged
+  m_TagString: PanoramaSource
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,7 +63,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 33af27359b49eda48829e2c0bf1e12b8, type: 2}
+  - {fileID: 2100000, guid: 402b0446dd2335346ae7f51a387239f4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -130,7 +130,7 @@ MonoBehaviour:
   holdButtonToUse: 1
   useOnlyIfGrabbed: 0
   pointerActivatesUseAction: 0
-  useOverrideButton: 8
+  useOverrideButton: 0
   allowedUseControllers: 0
   usingState: 0
 --- !u!114 &114461646444634442
