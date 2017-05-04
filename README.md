@@ -1,4 +1,4 @@
-# VRTK-PUN-Voice-Demo
+# Playpen VR, a VRTK-PUN-Voice Demo
 
 A small Unity demo project using VRTK for object interaction and VR controller handling,
 PhotonNetwork for allowing up to 4 people to join the same scene together and PUNVoice
@@ -8,6 +8,8 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-05-05
+   - Gave the project a proper name
  - 2017-05-04
    - Added a door to the scene
    - Fixed lighting problems with sky dome
