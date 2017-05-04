@@ -8,6 +8,9 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-05-04
+   - Added a door to the scene
+   - Fixed lighting problems with sky dome
  - 2017-05-03
    - Added a "sky dome" for 360 panoramic photos
    - The spheres are now containers for 360 panoramic photos
@@ -91,6 +94,7 @@ This script handles the transfer of "ownership" that Photon imposes on object. O
 ### Properties:
 
  - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
+ - **Own Additional Photonviews** : This can contain a list of additional `PhotonView` scripts that should change ownership when the player grabs the current object. This is useful for complex objects like for instance a door where the user might grab a door knob but the script for syncing the movement of the door is on the door, not the knob.
 
 ### Requirements/suggestions:
 
