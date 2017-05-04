@@ -7,6 +7,8 @@
 
     [RequireComponent(typeof(VRTK_InteractableObject)), RequireComponent(typeof(PhotonView))]
     public class NetworkGrabManager : NetworkBehaviour {
+        public PhotonView[] ownAdditionalPhotonviews;
+
         private int grabOwner;
         private int prevGrabOwner;
 
@@ -59,11 +61,17 @@
 
         private void HandleGrab(object sender, InteractableObjectEventArgs e) {
             photonView.TransferOwnership(PhotonNetwork.player);
+            foreach (PhotonView pv in ownAdditionalPhotonviews) {
+                pv.TransferOwnership(PhotonNetwork.player);
+            }
             InitState(PhotonNetwork.player.ID);
         }
 
         private void HandleUngrab(object sender, InteractableObjectEventArgs e) {
             //photonView.TransferOwnership(PhotonNetwork.player);
+            //foreach (PhotonView pv in ownAdditionalPhotonviews) {
+            //    pv.TransferOwnership(PhotonNetwork.player);
+            //}
             InitState(0);
         }
     }
