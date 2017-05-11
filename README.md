@@ -73,11 +73,10 @@ To test locally without another computer you can create a standalone Non-VR buil
 
 ## Command line arguments
 
- - `-novr` : start the program without VR support, will use the monitor plus mouse and keyboard
- - `-sdk:<NAME>` : force the program to use the specified SDK. Valid values for `<NAME>` are:
-    - `SteamVR`
-    - `Oculus`
-    - `Simulator`
+ - `-vrmode` : force the program to use the specified SDK. Valid values for `<NAME>` are:
+    - `openvr` (for SteamVR)
+    - `oculus`
+    - `none` (no VR support, will output to the monitor and use mouse and keyboard)
 
 ## Using networked interactable objects
 
