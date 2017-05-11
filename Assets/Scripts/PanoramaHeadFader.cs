@@ -27,7 +27,7 @@ public class PanoramaHeadFader : MonoBehaviour {
 
     void Update() {
         VRTK_SDKManager sdk = VRTK_SDKManager.instance;
-        Vector3 hmdPos = sdk.actualHeadset.transform.position;
+        Vector3 hmdPos = sdk.loadedSetup.actualHeadset.transform.position;
         Vector3 objPos = transform.position;
         float dist = Vector3.Distance(hmdPos, objPos);
         float alpha;
