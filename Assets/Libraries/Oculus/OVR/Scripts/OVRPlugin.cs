@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 
 internal static class OVRPlugin
 {
-	public static readonly System.Version wrapperVersion = OVRP_1_12_0.version;
+	public static readonly System.Version wrapperVersion = OVRP_1_14_0.version;
 
 	private static System.Version _version;
 	public static System.Version version
@@ -103,7 +103,7 @@ internal static class OVRPlugin
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	private struct GUID
+	private class GUID
 	{
 		public int a;
 		public short b;
@@ -553,80 +553,88 @@ internal static class OVRPlugin
 		}
 	}
 
+	private static GUID _nativeAudioOutGuid = new OVRPlugin.GUID();
 	private static Guid _cachedAudioOutGuid;
 	private static string _cachedAudioOutString;
 	public static string audioOutId
 	{
 		get
 		{
-				try
+			try
+			{
+				if (_nativeAudioOutGuid == null)
+					_nativeAudioOutGuid = new OVRPlugin.GUID();
+
+				IntPtr ptr = OVRP_1_1_0.ovrp_GetAudioOutId();
+				if (ptr != IntPtr.Zero)
 				{
-					IntPtr ptr = OVRP_1_1_0.ovrp_GetAudioOutId();
-					if (ptr != IntPtr.Zero)
+					Marshal.PtrToStructure(ptr, _nativeAudioOutGuid);
+					Guid managedGuid = new Guid(
+						_nativeAudioOutGuid.a,
+						_nativeAudioOutGuid.b,
+						_nativeAudioOutGuid.c,
+						_nativeAudioOutGuid.d0,
+						_nativeAudioOutGuid.d1,
+						_nativeAudioOutGuid.d2,
+						_nativeAudioOutGuid.d3,
+						_nativeAudioOutGuid.d4,
+						_nativeAudioOutGuid.d5,
+						_nativeAudioOutGuid.d6,
+						_nativeAudioOutGuid.d7);
+
+					if (managedGuid != _cachedAudioOutGuid)
 					{
-						GUID nativeGuid = (GUID)Marshal.PtrToStructure(ptr, typeof(OVRPlugin.GUID));
-						Guid managedGuid = new Guid(
-								nativeGuid.a,
-								nativeGuid.b,
-								nativeGuid.c,
-								nativeGuid.d0,
-								nativeGuid.d1,
-								nativeGuid.d2,
-								nativeGuid.d3,
-								nativeGuid.d4,
-								nativeGuid.d5,
-								nativeGuid.d6,
-								nativeGuid.d7);
-
-						if (managedGuid != _cachedAudioOutGuid)
-						{
-							_cachedAudioOutGuid = managedGuid;
-							_cachedAudioOutString = _cachedAudioOutGuid.ToString();
-						}
-
-						return _cachedAudioOutString;
+						_cachedAudioOutGuid = managedGuid;
+						_cachedAudioOutString = _cachedAudioOutGuid.ToString();
 					}
-				}
-			catch {}
 
-					return string.Empty;
+					return _cachedAudioOutString;
 				}
 			}
+			catch {}
 
+			return string.Empty;
+		}
+	}
+
+	private static GUID _nativeAudioInGuid = new OVRPlugin.GUID();
 	private static Guid _cachedAudioInGuid;
 	private static string _cachedAudioInString;
 	public static string audioInId
 	{
 		get
 		{
-				try
+			try
+			{
+				if (_nativeAudioInGuid == null)
+					_nativeAudioInGuid = new OVRPlugin.GUID();
+
+				IntPtr ptr = OVRP_1_1_0.ovrp_GetAudioInId();
+				if (ptr != IntPtr.Zero)
 				{
-					IntPtr ptr = OVRP_1_1_0.ovrp_GetAudioInId();
-					if (ptr != IntPtr.Zero)
+					Marshal.PtrToStructure(ptr, _nativeAudioInGuid);
+					Guid managedGuid = new Guid(
+						_nativeAudioInGuid.a,
+						_nativeAudioInGuid.b,
+						_nativeAudioInGuid.c,
+						_nativeAudioInGuid.d0,
+						_nativeAudioInGuid.d1,
+						_nativeAudioInGuid.d2,
+						_nativeAudioInGuid.d3,
+						_nativeAudioInGuid.d4,
+						_nativeAudioInGuid.d5,
+						_nativeAudioInGuid.d6,
+						_nativeAudioInGuid.d7);
+
+					if (managedGuid != _cachedAudioInGuid)
 					{
-						GUID nativeGuid = (GUID)Marshal.PtrToStructure(ptr, typeof(OVRPlugin.GUID));
-						Guid managedGuid = new Guid(
-								nativeGuid.a,
-								nativeGuid.b,
-								nativeGuid.c,
-								nativeGuid.d0,
-								nativeGuid.d1,
-								nativeGuid.d2,
-								nativeGuid.d3,
-								nativeGuid.d4,
-								nativeGuid.d5,
-								nativeGuid.d6,
-								nativeGuid.d7);
-
-						if (managedGuid != _cachedAudioInGuid)
-						{
-							_cachedAudioInGuid = managedGuid;
-							_cachedAudioInString = _cachedAudioInGuid.ToString();
-						}
-
-						return _cachedAudioInString;
+						_cachedAudioInGuid = managedGuid;
+						_cachedAudioInString = _cachedAudioInGuid.ToString();
 					}
+
+					return _cachedAudioInString;
 				}
+			}
 			catch {}
 
 			return string.Empty;
@@ -756,7 +764,7 @@ internal static class OVRPlugin
 	public static bool UpdateNodePhysicsPoses(int frameIndex, double predictionSeconds)
 	{
 		if (version >= OVRP_1_8_0.version)
-			return OVRP_1_8_0.ovrp_Update2(0, frameIndex, predictionSeconds) == Bool.True;
+			return OVRP_1_8_0.ovrp_Update2((int)Step.Physics, frameIndex, predictionSeconds) == Bool.True;
 
 		return false;
 	}
@@ -1522,5 +1530,15 @@ internal static class OVRPlugin
 
 		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
 		public static extern ControllerState2 ovrp_GetControllerState2(uint controllerMask);
+	}
+
+	private static class OVRP_1_13_0
+	{
+		public static readonly System.Version version = new System.Version(1, 13, 0);
+	}
+
+	private static class OVRP_1_14_0
+	{
+		public static readonly System.Version version = new System.Version(1, 14, 0);
 	}
 }

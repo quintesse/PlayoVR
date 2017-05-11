@@ -76,6 +76,13 @@ public class OVRCameraRig : MonoBehaviour
 	/// If true, separate cameras will be used for the left and right eyes.
 	/// </summary>
 	public bool usePerEyeCameras = false;
+
+	/// <summary>
+	/// If true, all tracked anchors are updated in FixedUpdate instead of Update to favor physics fidelity.
+	/// \note: If the fixed update rate doesn't match the rendering framerate (OVRManager.display.appFramerate), the anchors will visibly judder.
+	/// </summary>
+	public bool useFixedUpdateForTracking = false;
+
 	private bool _skipUpdate = false;
 
 	private readonly string trackingSpaceName = "TrackingSpace";
@@ -101,12 +108,16 @@ public class OVRCameraRig : MonoBehaviour
 
 	private void FixedUpdate()
 	{
-		UpdateAnchors();
+		if (useFixedUpdateForTracking)
+			UpdateAnchors();
 	}
 
 	private void Update()
 	{
 		_skipUpdate = false;
+
+		if (!useFixedUpdateForTracking)
+			UpdateAnchors();
 	}
 
 #endregion

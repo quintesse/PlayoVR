@@ -90,6 +90,7 @@ public class OVROverlay : MonoBehaviour
 	/// Specify overlay's shape
 	/// </summary>
 	public OverlayShape currentOverlayShape = OverlayShape.Quad;
+	private OverlayShape _prevOverlayShape = OverlayShape.Quad;
 
 	/// <summary>
 	/// Try to avoid setting texture frequently when app is running, texNativePtr updating is slow since rendering thread synchronization
@@ -159,7 +160,7 @@ public class OVROverlay : MonoBehaviour
 		if (layerIndex != -1)
 		{
 			// Turn off the overlay if it was on.
-			OVRPlugin.SetOverlayQuad(true, false, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, OVRPose.identity.ToPosef(), Vector3.one.ToVector3f(), layerIndex);
+			OVRPlugin.SetOverlayQuad(true, false, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, OVRPose.identity.ToPosef(), Vector3.one.ToVector3f(), layerIndex, (OVRPlugin.OverlayShape)_prevOverlayShape);
 			instances[layerIndex] = null;
 		}
 		layerIndex = -1;
@@ -244,6 +245,7 @@ public class OVROverlay : MonoBehaviour
 		}
 
 		bool isOverlayVisible = OVRPlugin.SetOverlayQuad(overlay, headLocked, texNativePtrs[0], texNativePtrs[1], IntPtr.Zero, pose.flipZ().ToPosef(), scale.ToVector3f(), layerIndex, (OVRPlugin.OverlayShape)currentOverlayShape);
+		_prevOverlayShape = currentOverlayShape;
 		if (rend)
 			rend.enabled = !isOverlayVisible;
 	}

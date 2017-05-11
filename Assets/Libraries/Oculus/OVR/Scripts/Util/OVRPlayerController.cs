@@ -461,7 +461,7 @@ public class OVRPlayerController : MonoBehaviour
 	/// </summary>
 	public void ResetOrientation()
 	{
-		if (HmdResetsY)
+		if (HmdResetsY && !HmdRotatesY)
 		{
 			Vector3 euler = transform.rotation.eulerAngles;
 			euler.y = InitialYRotation;
