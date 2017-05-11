@@ -269,10 +269,12 @@ namespace VRTK
                 {
                     value = 1;
 
+#pragma warning disable 0618
                     /// <obsolete>
                     /// This is an obsolete call that will be removed in a future version
                     /// </obsolete>
                     events.OnPush.Invoke();
+#pragma warning restore 0618
 
                     OnPushed(SetControlEvent());
                 }

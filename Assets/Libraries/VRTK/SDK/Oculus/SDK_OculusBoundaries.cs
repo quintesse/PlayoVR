@@ -1,28 +1,28 @@
-﻿// OculusVR Boundaries|SDK_OculusVR|005
+﻿// Oculus Boundaries|SDK_Oculus|005
 namespace VRTK
 {
-#if VRTK_DEFINE_SDK_OCULUSVR
+#if VRTK_DEFINE_SDK_OCULUS
     using UnityEngine;
 #endif
 
     /// <summary>
-    /// The OculusVR Boundaries SDK script provides a bridge to the OculusVR SDK play area.
+    /// The Oculus Boundaries SDK script provides a bridge to the Oculus SDK play area.
     /// </summary>
-    [SDK_Description(typeof(SDK_OculusVRSystem))]
-    public class SDK_OculusVRBoundaries
-#if VRTK_DEFINE_SDK_OCULUSVR
+    [SDK_Description(typeof(SDK_OculusSystem))]
+    public class SDK_OculusBoundaries
+#if VRTK_DEFINE_SDK_OCULUS
         : SDK_BaseBoundaries
 #else
         : SDK_FallbackBoundaries
 #endif
     {
-#if VRTK_DEFINE_SDK_OCULUSVR
+#if VRTK_DEFINE_SDK_OCULUS
         /// <summary>
         /// The InitBoundaries method is run on start of scene and can be used to initialse anything on game start.
         /// </summary>
         public override void InitBoundaries()
         {
-#if VRTK_DEFINE_SDK_OCULUSVR_AVATAR
+#if VRTK_DEFINE_SDK_OCULUS_AVATAR
             GetAvatar();
 #endif
         }
@@ -49,9 +49,8 @@ namespace VRTK
         /// <summary>
         /// The GetPlayAreaVertices method returns the points of the play area boundaries.
         /// </summary>
-        /// <param name="playArea">The GameObject containing the play area representation.</param>
         /// <returns>A Vector3 array of the points in the scene that represent the play area boundaries.</returns>
-        public override Vector3[] GetPlayAreaVertices(GameObject playArea)
+        public override Vector3[] GetPlayAreaVertices()
         {
             var area = new OVRBoundary();
             if (area.GetConfigured())
@@ -79,9 +78,8 @@ namespace VRTK
         /// <summary>
         /// The GetPlayAreaBorderThickness returns the thickness of the drawn border for the given play area.
         /// </summary>
-        /// <param name="playArea">The GameObject containing the play area representation.</param>
         /// <returns>The thickness of the drawn border.</returns>
-        public override float GetPlayAreaBorderThickness(GameObject playArea)
+        public override float GetPlayAreaBorderThickness()
         {
             return 0.1f;
         }
@@ -89,9 +87,8 @@ namespace VRTK
         /// <summary>
         /// The IsPlayAreaSizeCalibrated method returns whether the given play area size has been auto calibrated by external sensors.
         /// </summary>
-        /// <param name="playArea">The GameObject containing the play area representation.</param>
         /// <returns>Returns true if the play area size has been auto calibrated and set by external sensors.</returns>
-        public override bool IsPlayAreaSizeCalibrated(GameObject playArea)
+        public override bool IsPlayAreaSizeCalibrated()
         {
             return true;
         }
@@ -113,7 +110,7 @@ namespace VRTK
         {
         }
 
-#if VRTK_DEFINE_SDK_OCULUSVR_AVATAR
+#if VRTK_DEFINE_SDK_OCULUS_AVATAR
         private OvrAvatar avatarContainer;
 
         /// <summary>

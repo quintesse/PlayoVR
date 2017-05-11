@@ -1,22 +1,24 @@
-﻿// XimmerseVR Boundaries|SDK_XimmerseVR|005
+﻿// Ximmerse Boundaries|SDK_Ximmerse|005
 namespace VRTK
 {
-#if VRTK_DEFINE_SDK_XIMMERSEVR
+#if VRTK_DEFINE_SDK_XIMMERSE
     using UnityEngine;
+    using Ximmerse.VR;
 #endif
 
     /// <summary>
-    /// The XimmerseVR Boundaries SDK script provides a bridge to the XimmerseVR SDK play area.
+    /// The Ximmerse Boundaries SDK script provides a bridge to the Ximmerse SDK play area.
     /// </summary>
-    [SDK_Description(typeof(SDK_XimmerseVRSystem))]
-    public class SDK_XimmerseVRBoundaries
-#if VRTK_DEFINE_SDK_XIMMERSEVR
+    [SDK_Description(typeof(SDK_XimmerseSystem))]
+    [SDK_Description(typeof(SDK_XimmerseSystem), 1)]
+    public class SDK_XimmerseBoundaries
+#if VRTK_DEFINE_SDK_XIMMERSE
         : SDK_BaseBoundaries
 #else
         : SDK_FallbackBoundaries
 #endif
     {
-#if VRTK_DEFINE_SDK_XIMMERSEVR
+#if VRTK_DEFINE_SDK_XIMMERSE
         /// <summary>
         /// The InitBoundaries method is run on start of scene and can be used to initialse anything on game start.
         /// </summary>
@@ -33,7 +35,12 @@ namespace VRTK
             cachedPlayArea = GetSDKManagerPlayArea();
             if (cachedPlayArea == null)
             {
-                cachedPlayArea = Ximmerse.VR.VRContext.main.transform;
+                VRContext vrContext = VRTK_SharedMethods.FindEvenInactiveComponent<VRContext>();
+                if (Application.isPlaying)
+                {
+                    vrContext.InitVRContext();
+                }
+                cachedPlayArea = vrContext.transform;
             }
             return cachedPlayArea;
         }
@@ -41,11 +48,10 @@ namespace VRTK
         /// <summary>
         /// The GetPlayAreaVertices method returns the points of the play area boundaries.
         /// </summary>
-        /// <param name="playArea">The GameObject containing the play area representation.</param>
         /// <returns>A Vector3 array of the points in the scene that represent the play area boundaries.</returns>
-        public override Vector3[] GetPlayAreaVertices(GameObject playArea)
+        public override Vector3[] GetPlayAreaVertices()
         {
-            var area = playArea.GetComponentInChildren<PlayAreaRenderer>();
+            var area = GetPlayArea().GetComponentInChildren<PlayAreaRenderer>();
             if (area)
             {
                 return area.corners;
@@ -56,11 +62,10 @@ namespace VRTK
         /// <summary>
         /// The GetPlayAreaBorderThickness returns the thickness of the drawn border for the given play area.
         /// </summary>
-        /// <param name="playArea">The GameObject containing the play area representation.</param>
         /// <returns>The thickness of the drawn border.</returns>
-        public override float GetPlayAreaBorderThickness(GameObject playArea)
+        public override float GetPlayAreaBorderThickness()
         {
-            var area = playArea.GetComponentInChildren<PlayAreaRenderer>();
+            var area = GetPlayArea().GetComponentInChildren<PlayAreaRenderer>();
             if (area)
             {
                 return area.borderThickness;
@@ -71,9 +76,8 @@ namespace VRTK
         /// <summary>
         /// The IsPlayAreaSizeCalibrated method returns whether the given play area size has been auto calibrated by external sensors.
         /// </summary>
-        /// <param name="playArea">The GameObject containing the play area representation.</param>
         /// <returns>Returns true if the play area size has been auto calibrated and set by external sensors.</returns>
-        public override bool IsPlayAreaSizeCalibrated(GameObject playArea)
+        public override bool IsPlayAreaSizeCalibrated()
         {
             return true;
         }

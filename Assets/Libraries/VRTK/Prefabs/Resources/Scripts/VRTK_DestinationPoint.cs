@@ -69,6 +69,11 @@ namespace VRTK
             ResetPoint();
         }
 
+        protected virtual void Awake()
+        {
+            VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -105,6 +110,11 @@ namespace VRTK
             {
                 Destroy(pointRigidbody);
             }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
         }
 
         protected virtual void Update()
@@ -197,7 +207,7 @@ namespace VRTK
                 isActive = true;
                 ToggleCursor(sender, false);
                 EnablePoint();
-                OnDestinationMarkerEnter(SetDestinationMarkerEvent(0f, e.raycastHit.transform, e.raycastHit, e.raycastHit.transform.position, e.controllerIndex, false, GetRotation()));
+                OnDestinationMarkerEnter(SetDestinationMarkerEvent(0f, e.raycastHit.transform, e.raycastHit, e.raycastHit.transform.position, e.controllerReference, false, GetRotation()));
             }
         }
 
@@ -208,7 +218,7 @@ namespace VRTK
                 isActive = false;
                 ToggleCursor(sender, true);
                 ResetPoint();
-                OnDestinationMarkerExit(SetDestinationMarkerEvent(0f, e.raycastHit.transform, e.raycastHit, e.raycastHit.transform.position, e.controllerIndex, false, GetRotation()));
+                OnDestinationMarkerExit(SetDestinationMarkerEvent(0f, e.raycastHit.transform, e.raycastHit, e.raycastHit.transform.position, e.controllerReference, false, GetRotation()));
             }
         }
 
@@ -236,7 +246,7 @@ namespace VRTK
             {
                 e.raycastHit.point = destinationLocation.position;
                 DisablePoint();
-                OnDestinationMarkerSet(SetDestinationMarkerEvent(e.distance, transform, e.raycastHit, destinationLocation.position, e.controllerIndex, false, GetRotation()));
+                OnDestinationMarkerSet(SetDestinationMarkerEvent(e.distance, transform, e.raycastHit, destinationLocation.position, e.controllerReference, false, GetRotation()));
             }
         }
 

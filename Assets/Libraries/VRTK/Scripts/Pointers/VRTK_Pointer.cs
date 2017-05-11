@@ -80,7 +80,6 @@ namespace VRTK
         /// </summary>
         public event ControllerInteractionEventHandler SelectionButtonReleased;
 
-
         protected VRTK_ControllerEvents.ButtonAlias subscribedActivationButton = VRTK_ControllerEvents.ButtonAlias.Undefined;
         protected VRTK_ControllerEvents.ButtonAlias subscribedSelectionButton = VRTK_ControllerEvents.ButtonAlias.Undefined;
         protected bool currentSelectOnPress;
@@ -90,13 +89,14 @@ namespace VRTK
         protected int currentActivationState;
         protected bool willDeactivate;
         protected bool wasActivated;
-        protected uint controllerIndex;
+        protected VRTK_ControllerReference controllerReference;
         protected VRTK_InteractableObject pointerInteractableObject = null;
         protected Collider currentCollider;
         protected bool canClickOnHover;
         protected bool activationButtonPressed;
         protected bool selectionButtonPressed;
         protected bool attemptControllerSetup;
+        protected Transform originalCustomOrigin;
 
         public virtual void OnActivationButtonPressed(ControllerInteractionEventArgs e)
         {
@@ -154,10 +154,10 @@ namespace VRTK
         /// <param name="givenHit">The valid collision.</param>
         public virtual void PointerEnter(RaycastHit givenHit)
         {
-            if (enabled && givenHit.transform != null && controllerIndex < uint.MaxValue)
+            if (enabled && givenHit.transform != null && VRTK_ControllerReference.IsValid(controllerReference))
             {
                 SetHoverSelectionTimer(givenHit.collider);
-                DestinationMarkerEventArgs destinationEventArgs = SetDestinationMarkerEvent(givenHit.distance, givenHit.transform, givenHit, givenHit.point, controllerIndex, false, GetCursorRotation());
+                DestinationMarkerEventArgs destinationEventArgs = SetDestinationMarkerEvent(givenHit.distance, givenHit.transform, givenHit, givenHit.point, controllerReference, false, GetCursorRotation());
                 if (pointerRenderer != null && givenHit.collider != pointerRenderer.GetDestinationHit().collider)
                 {
                     OnDestinationMarkerEnter(destinationEventArgs);
@@ -177,9 +177,9 @@ namespace VRTK
         public virtual void PointerExit(RaycastHit givenHit)
         {
             ResetHoverSelectionTimer(givenHit.collider);
-            if (givenHit.transform != null && controllerIndex < uint.MaxValue)
+            if (givenHit.transform != null && VRTK_ControllerReference.IsValid(controllerReference))
             {
-                OnDestinationMarkerExit(SetDestinationMarkerEvent(givenHit.distance, givenHit.transform, givenHit, givenHit.point, controllerIndex, false, GetCursorRotation()));
+                OnDestinationMarkerExit(SetDestinationMarkerEvent(givenHit.distance, givenHit.transform, givenHit, givenHit.point, controllerReference, false, GetCursorRotation()));
                 StopUseAction();
             }
         }
@@ -249,6 +249,12 @@ namespace VRTK
             }
         }
 
+        protected virtual void Awake()
+        {
+            originalCustomOrigin = customOrigin;
+            VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -268,6 +274,11 @@ namespace VRTK
             UnsubscribeSelectionButton();
         }
 
+        protected virtual void OnDestroy()
+        {
+            VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
         protected virtual void Update()
         {
             AttemptControllerSetup();
@@ -278,7 +289,7 @@ namespace VRTK
 
         protected virtual void SetDefaultValues()
         {
-            customOrigin = (customOrigin == null ? VRTK_SDK_Bridge.GenerateControllerPointerOrigin(gameObject) : customOrigin);
+            customOrigin = (originalCustomOrigin == null ? VRTK_SDK_Bridge.GenerateControllerPointerOrigin(gameObject) : originalCustomOrigin);
             SetupRenderer();
             activateDelayTimer = 0f;
             selectDelayTimer = 0f;
@@ -482,7 +493,7 @@ namespace VRTK
             OnActivationButtonPressed(controller.SetControllerEvent(ref activationButtonPressed, true));
             if (EnabledPointerRenderer())
             {
-                controllerIndex = e.controllerIndex;
+                controllerReference = e.controllerReference;
                 Toggle(true);
             }
         }
@@ -491,7 +502,7 @@ namespace VRTK
         {
             if (EnabledPointerRenderer())
             {
-                controllerIndex = e.controllerIndex;
+                controllerReference = e.controllerReference;
                 if (IsPointerActive())
                 {
                     Toggle(false);
@@ -540,7 +551,7 @@ namespace VRTK
 
         protected virtual void SelectionButtonAction(object sender, ControllerInteractionEventArgs e)
         {
-            controllerIndex = e.controllerIndex;
+            controllerReference = e.controllerReference;
             ExecuteSelectionButtonAction();
         }
 
@@ -555,7 +566,7 @@ namespace VRTK
                 {
                     ResetHoverSelectionTimer(destinationHit.collider);
                     ResetSelectionTimer();
-                    OnDestinationMarkerSet(SetDestinationMarkerEvent(destinationHit.distance, destinationHit.transform, destinationHit, destinationHit.point, controllerIndex, false, GetCursorRotation()));
+                    OnDestinationMarkerSet(SetDestinationMarkerEvent(destinationHit.distance, destinationHit.transform, destinationHit, destinationHit.point, controllerReference, false, GetCursorRotation()));
                 }
             }
         }

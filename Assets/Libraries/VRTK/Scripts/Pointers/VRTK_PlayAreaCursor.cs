@@ -188,6 +188,11 @@ namespace VRTK
             }
         }
 
+        protected virtual void Awake()
+        {
+            VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
         protected virtual void OnEnable()
         {
             VRTK_PlayerObject.SetPlayerObject(gameObject, VRTK_PlayerObject.ObjectTypes.Pointer);
@@ -206,6 +211,11 @@ namespace VRTK
             }
         }
 
+        protected virtual void OnDestroy()
+        {
+            VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
         protected virtual void Update()
         {
             if (enabled && IsActive())
@@ -222,7 +232,7 @@ namespace VRTK
                 return;
             }
 
-            Vector3[] cursorDrawVertices = VRTK_SDK_Bridge.GetPlayAreaVertices(playArea.gameObject);
+            Vector3[] cursorDrawVertices = VRTK_SDK_Bridge.GetPlayAreaVertices();
             if (validLocationObject != null)
             {
                 GeneratePlayAreaCursorFromPrefab(cursorDrawVertices);
@@ -313,7 +323,7 @@ namespace VRTK
         {
             if (playAreaCursorDimensions != Vector2.zero)
             {
-                var customAreaPadding = VRTK_SDK_Bridge.GetPlayAreaBorderThickness(playArea.gameObject);
+                var customAreaPadding = VRTK_SDK_Bridge.GetPlayAreaBorderThickness();
 
                 cursorDrawVertices[btmRightOuter] = new Vector3(playAreaCursorDimensions.x / 2, 0f, (playAreaCursorDimensions.y / 2) * -1);
                 cursorDrawVertices[btmLeftOuter] = new Vector3((playAreaCursorDimensions.x / 2) * -1, 0f, (playAreaCursorDimensions.y / 2) * -1);
