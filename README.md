@@ -8,6 +8,9 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-05-11
+   - Updated to latest version of VRTK
+   - Updated to latest version of the Oculus Ultilities and Avatar (1.14.0)
  - 2017-05-09
    - Choose a less infamous name
  - 2017-05-05
