@@ -207,7 +207,7 @@ namespace VRTK
             }
 
             //get valid BuildTargetGroups
-            BuildTargetGroup[] targetGroups = GetValidBuildTargetGroups();
+            BuildTargetGroup[] targetGroups = VRTK_SharedMethods.GetValidBuildTargetGroups();
             Dictionary<BuildTargetGroup, HashSet<string>> newSymbolsByTargetGroup = new Dictionary<BuildTargetGroup, HashSet<string>>(targetGroups.Length);
 
             //get current non-removable scripting define symbols
@@ -332,7 +332,7 @@ namespace VRTK
                                                   .Except(new[] { "None" })
                                                   .ToArray());
 
-            foreach (BuildTargetGroup targetGroup in GetValidBuildTargetGroups())
+            foreach (BuildTargetGroup targetGroup in VRTK_SharedMethods.GetValidBuildTargetGroups())
             {
                 string[] deviceNames;
                 deviceNamesByTargetGroup.TryGetValue(targetGroup, out deviceNames);
@@ -534,11 +534,6 @@ namespace VRTK
 
             CreateInstance();
 
-            if (gameObject.GetComponent<VRTK_InstanceMethods>() == null)
-            {
-                gameObject.AddComponent<VRTK_InstanceMethods>();
-            }
-
             if (autoLoadSetup)
             {
                 int index = 0;
@@ -551,9 +546,24 @@ namespace VRTK
                         setups,
                         setup => setup.usedVRDeviceNames.Contains(VRSettings.loadedDeviceName)
                     );
-                    index = index == -1 ? 0 : index;
+                }
+                else
+                {
+                    // If '-vrmode none' was used try to load the respective SDK Setup
+                    string[] commandLineArgs = Environment.GetCommandLineArgs();
+                    int commandLineArgIndex = Array.IndexOf(commandLineArgs, "-vrmode", 1);
+                    if (commandLineArgIndex != -1
+                        && commandLineArgIndex + 1 < commandLineArgs.Length
+                        && commandLineArgs[commandLineArgIndex + 1].ToLowerInvariant() == "none")
+                    {
+                        index = Array.FindIndex(
+                            setups,
+                            setup => setup.usedVRDeviceNames.All(vrDeviceName => vrDeviceName == "None")
+                        );
+                    }
                 }
 
+                index = index == -1 ? 0 : index;
                 TryLoadSDKSetup(index, false, setups.ToArray());
             }
         }
@@ -769,22 +779,6 @@ namespace VRTK
         }
 
 #if UNITY_EDITOR
-        private static BuildTargetGroup[] GetValidBuildTargetGroups()
-        {
-            return Enum.GetValues(typeof(BuildTargetGroup)).Cast<BuildTargetGroup>().Where(group =>
-            {
-                if (group == BuildTargetGroup.Unknown)
-                {
-                    return false;
-                }
-
-                string targetGroupName = Enum.GetName(typeof(BuildTargetGroup), group);
-                FieldInfo targetGroupFieldInfo = typeof(BuildTargetGroup).GetField(targetGroupName, BindingFlags.Public | BindingFlags.Static);
-
-                return targetGroupFieldInfo != null && targetGroupFieldInfo.GetCustomAttributes(typeof(ObsoleteAttribute), false).Length == 0;
-            }).ToArray();
-        }
-
         /// <summary>
         /// Calls <see cref="ManageScriptingDefineSymbols"/> and <see cref="ManageVRSettings"/> (both without forcing) at the appropriate times when in the editor.
         /// </summary>

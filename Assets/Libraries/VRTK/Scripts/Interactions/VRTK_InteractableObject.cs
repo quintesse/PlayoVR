@@ -1,4 +1,4 @@
-﻿// Interactable Object|Interactions|30030
+﻿// Interactable Object|Interactions|30080
 namespace VRTK
 {
     using UnityEngine;
@@ -707,10 +707,10 @@ namespace VRTK
         /// <summary>
         /// The PerformSecondaryAction method returns whether the object has a secondary action that can be performed when grabbing the object with a secondary controller.
         /// </summary>
-        /// <returns>Returns true if the obejct has a secondary action, returns false if it has no secondary action or is swappable.</returns>
+        /// <returns>Returns true if the object has a secondary action, returns false if it has no secondary action or is swappable.</returns>
         public virtual bool PerformSecondaryAction()
         {
-            return (!GetSecondaryGrabbingObject() && secondaryGrabActionScript != null ? secondaryGrabActionScript.IsActionable() : false);
+            return (GetGrabbingObject() != null && GetSecondaryGrabbingObject() == null && secondaryGrabActionScript != null ? secondaryGrabActionScript.IsActionable() : false);
         }
 
         /// <summary>
