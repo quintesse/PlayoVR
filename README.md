@@ -8,6 +8,8 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-09-06
+   - Fixed creation of duplicate remote players
  - 2017-05-11
    - Updated to latest version of VRTK
    - Updated to latest version of the Oculus Ultilities and Avatar (1.14.0)
