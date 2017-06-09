@@ -48,11 +48,6 @@ public class MyNetworkManager : Photon.PunBehaviour {
 
     public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
         Debug.Log("Player connected");
-
-        if (PhotonNetwork.isMasterClient) {
-            var idx = PhotonNetwork.otherPlayers.Length;
-            photonView.RPC("NewPlayer", newPlayer, idx);
-        }
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer) {
