@@ -12,6 +12,8 @@
 /Assets/Libraries/VRTK/Examples*
 /Assets/Libraries/DFVoice/*
 /Assets/Libraries/DFVoice.meta
+/Assets/Libraries/Oculus/*
+/Assets/Libraries/Oculus.meta
 
 # Don't store the Photon network settings, they contain private info
 /Assets/Libraries/Photon/Photon Unity Networking/Resources/PhotonServerSettings.asset*
