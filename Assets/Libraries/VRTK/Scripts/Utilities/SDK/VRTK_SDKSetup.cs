@@ -395,6 +395,16 @@ namespace VRTK
             }
         }
 
+        private void OnEnable()
+        {
+#pragma warning disable 618
+            if (!VRTK_SDKManager.instance.persistOnLoad)
+#pragma warning restore 618
+            {
+                PopulateObjectReferences(false);
+            }
+        }
+
 #if UNITY_EDITOR
         static VRTK_SDKSetup()
         {
@@ -480,7 +490,7 @@ namespace VRTK
 
         private void SetupHeadset()
         {
-            if (!actualHeadset.GetComponent<VRTK_TrackedHeadset>())
+            if (actualHeadset != null && !actualHeadset.GetComponent<VRTK_TrackedHeadset>())
             {
                 actualHeadset.AddComponent<VRTK_TrackedHeadset>();
             }

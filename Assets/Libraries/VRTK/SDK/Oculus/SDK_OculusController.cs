@@ -10,6 +10,7 @@ namespace VRTK
     /// The Oculus Controller SDK script provides a bridge to SDK methods that deal with the input devices.
     /// </summary>
     [SDK_Description(typeof(SDK_OculusSystem))]
+    [SDK_Description(typeof(SDK_OculusSystem), 1)]
     public class SDK_OculusController
 #if VRTK_DEFINE_SDK_OCULUS
         : SDK_BaseController
@@ -81,6 +82,15 @@ namespace VRTK
 #if VRTK_DEFINE_OCULUS_UTILITIES_1_12_0_OR_NEWER
             CalculateAngularVelocity(controllerReference);
 #endif
+        }
+
+        /// <summary>
+        /// The GetCurrentControllerType method returns the current used ControllerType based on the SDK and headset being used.
+        /// </summary>
+        /// <returns>The ControllerType based on the SDK and headset being used.</returns>
+        public override ControllerType GetCurrentControllerType()
+        {
+            return ControllerType.Oculus_OculusTouch;
         }
 
         /// <summary>

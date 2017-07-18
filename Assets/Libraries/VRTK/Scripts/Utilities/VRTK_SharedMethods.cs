@@ -445,6 +445,40 @@ namespace VRTK
             return (percent == 0f ? value : (value - (percent / 100f)));
         }
 
+        /// <summary>
+        /// The SetGlobalScale method is used to set a transform scale based on a global scale instead of a local scale.
+        /// </summary>
+        /// <param name="transform">The reference to the transform to scale.</param>
+        /// <param name="globalScale">A Vector3 of a global scale to apply to the given transform.</param>
+        public static void SetGlobalScale(this Transform transform, Vector3 globalScale)
+        {
+            transform.localScale = Vector3.one;
+            transform.localScale = new Vector3(globalScale.x / transform.lossyScale.x, globalScale.y / transform.lossyScale.y, globalScale.z / transform.lossyScale.z);
+        }
+
+        /// <summary>
+        /// The GetTypeUnknownAssembly method is used to find a Type without knowing the exact assembly it is in.
+        /// </summary>
+        /// <param name="typeName">The name of the type to get.</param>
+        /// <returns>The Type, or null if none is found.</returns>
+        public static Type GetTypeUnknownAssembly(string typeName)
+        {
+            Type type = Type.GetType(typeName);
+            if (type != null)
+            {
+                return type;
+            }
+            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = a.GetType(typeName);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
+            return null;
+        }
+
 #if UNITY_EDITOR
         public static BuildTargetGroup[] GetValidBuildTargetGroups()
         {

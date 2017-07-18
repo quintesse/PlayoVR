@@ -51,6 +51,15 @@ namespace VRTK
         }
 
         /// <summary>
+        /// The GetCurrentControllerType method returns the current used ControllerType based on the SDK and headset being used.
+        /// </summary>
+        /// <returns>The ControllerType based on the SDK and headset being used.</returns>
+        public override ControllerType GetCurrentControllerType()
+        {
+            return ControllerType.Simulator_Hand;
+        }
+
+        /// <summary>
         /// The GetControllerDefaultColliderPath returns the path to the prefab that contains the collider objects for the default controller of this SDK.
         /// </summary>
         /// <param name="hand">The controller hand to check for</param>
@@ -118,13 +127,14 @@ namespace VRTK
         /// <returns>The GameObject of the controller</returns>
         public override GameObject GetControllerByIndex(uint index, bool actual = false)
         {
+            SetupPlayer();
             VRTK_SDKManager sdkManager = VRTK_SDKManager.instance;
             switch (index)
             {
                 case 1:
-                    return (sdkManager != null && !actual ? sdkManager.scriptAliasRightController : rightController.gameObject);
+                    return (sdkManager != null && !actual ? sdkManager.scriptAliasRightController : (rightController != null ? rightController.gameObject : null));
                 case 2:
-                    return (sdkManager != null && !actual ? sdkManager.scriptAliasLeftController : leftController.gameObject);
+                    return (sdkManager != null && !actual ? sdkManager.scriptAliasLeftController : (leftController != null ? leftController.gameObject : null));
                 default:
                     return null;
             }
@@ -137,7 +147,7 @@ namespace VRTK
         /// <returns>A Transform containing the origin of the controller.</returns>
         public override Transform GetControllerOrigin(VRTK_ControllerReference controllerReference)
         {
-            return controllerReference.actual.transform;
+            return (controllerReference != null && controllerReference.actual != null ? controllerReference.actual.transform : null);
         }
 
         /// <summary>
@@ -252,10 +262,10 @@ namespace VRTK
                 switch (hand)
                 {
                     case ControllerHand.Left:
-                        model = simPlayer.transform.FindChild(string.Format("{0}/Hand", LEFT_HAND_CONTROLLER_NAME)).gameObject;
+                        model = simPlayer.transform.Find(string.Format("{0}/Hand", LEFT_HAND_CONTROLLER_NAME)).gameObject;
                         break;
                     case ControllerHand.Right:
-                        model = simPlayer.transform.FindChild(string.Format("{0}/Hand", RIGHT_HAND_CONTROLLER_NAME)).gameObject;
+                        model = simPlayer.transform.Find(string.Format("{0}/Hand", RIGHT_HAND_CONTROLLER_NAME)).gameObject;
                         break;
                 }
             }
@@ -269,7 +279,7 @@ namespace VRTK
         /// <returns>A GameObject containing the object that has a render model for the controller.</returns>
         public override GameObject GetControllerRenderModel(VRTK_ControllerReference controllerReference)
         {
-            return controllerReference.scriptAlias.transform.parent.FindChild("Hand").gameObject;
+            return controllerReference.scriptAlias.transform.parent.Find("Hand").gameObject;
         }
 
         /// <summary>
@@ -317,13 +327,14 @@ namespace VRTK
         /// <returns>A Vector3 containing the current velocity of the tracked object.</returns>
         public override Vector3 GetVelocity(VRTK_ControllerReference controllerReference)
         {
+            SetupPlayer();
             uint index = VRTK_ControllerReference.GetRealIndex(controllerReference);
             switch (index)
             {
                 case 1:
-                    return rightController.GetVelocity();
+                    return (rightController != null ? rightController.GetVelocity() : Vector3.zero);
                 case 2:
-                    return leftController.GetVelocity();
+                    return (leftController != null ? leftController.GetVelocity() : Vector3.zero);
                 default:
                     return Vector3.zero;
             }
@@ -336,13 +347,14 @@ namespace VRTK
         /// <returns>A Vector3 containing the current angular velocity of the tracked object.</returns>
         public override Vector3 GetAngularVelocity(VRTK_ControllerReference controllerReference)
         {
+            SetupPlayer();
             uint index = VRTK_ControllerReference.GetRealIndex(controllerReference);
             switch (index)
             {
                 case 1:
-                    return rightController.GetAngularVelocity();
+                    return (rightController != null ? rightController.GetAngularVelocity() : Vector3.zero);
                 case 2:
-                    return leftController.GetAngularVelocity();
+                    return (leftController != null ? leftController.GetAngularVelocity() : Vector3.zero);
                 default:
                     return Vector3.zero;
             }
@@ -414,11 +426,19 @@ namespace VRTK
 
         protected virtual void OnEnable()
         {
-            GameObject simPlayer = SDK_InputSimulator.FindInScene();
-            if (simPlayer != null)
+            SetupPlayer();
+        }
+
+        protected virtual void SetupPlayer()
+        {
+            if (rightController == null || leftController == null)
             {
-                rightController = simPlayer.transform.FindChild(RIGHT_HAND_CONTROLLER_NAME).GetComponent<SDK_ControllerSim>();
-                leftController = simPlayer.transform.FindChild(LEFT_HAND_CONTROLLER_NAME).GetComponent<SDK_ControllerSim>();
+                GameObject simPlayer = SDK_InputSimulator.FindInScene();
+                if (simPlayer != null)
+                {
+                    rightController = (rightController == null ? simPlayer.transform.Find(RIGHT_HAND_CONTROLLER_NAME).GetComponent<SDK_ControllerSim>() : rightController);
+                    leftController = (leftController == null ? simPlayer.transform.Find(LEFT_HAND_CONTROLLER_NAME).GetComponent<SDK_ControllerSim>() : leftController);
+                }
             }
         }
 
@@ -512,6 +532,7 @@ namespace VRTK
         /// <returns>Returns true if the button is being pressed.</returns>
         protected virtual bool IsButtonPressed(uint index, ButtonPressTypes type, KeyCode button)
         {
+            SetupPlayer();
             if (index >= uint.MaxValue)
             {
                 return false;
@@ -519,14 +540,14 @@ namespace VRTK
 
             if (index == 1)
             {
-                if (!rightController.Selected)
+                if (rightController == null || !rightController.Selected)
                 {
                     return false;
                 }
             }
             else if (index == 2)
             {
-                if (!leftController.Selected)
+                if (leftController == null || !leftController.Selected)
                 {
                     return false;
                 }
@@ -563,10 +584,10 @@ namespace VRTK
                 switch (hand)
                 {
                     case ControllerHand.Right:
-                        controller = simPlayer.transform.FindChild(RIGHT_HAND_CONTROLLER_NAME).gameObject;
+                        controller = simPlayer.transform.Find(RIGHT_HAND_CONTROLLER_NAME).gameObject;
                         break;
                     case ControllerHand.Left:
-                        controller = simPlayer.transform.FindChild(LEFT_HAND_CONTROLLER_NAME).gameObject;
+                        controller = simPlayer.transform.Find(LEFT_HAND_CONTROLLER_NAME).gameObject;
                         break;
                     default:
                         break;

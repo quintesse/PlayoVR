@@ -26,7 +26,7 @@ namespace VRTK
 
         protected virtual void OnEnable()
         {
-            VRTK_SDKManager sdkManager = VRTK_SDKManager.instance;
+            sdkManager = VRTK_SDKManager.instance;
             if (sdkManager != null)
             {
                 sdkManager.LoadedSetupChanged += LoadedSetupChanged;
@@ -36,7 +36,7 @@ namespace VRTK
 
         protected virtual void OnDisable()
         {
-            if (sdkManager != null)
+            if (sdkManager != null && !gameObject.activeSelf)
             {
                 sdkManager.LoadedSetupChanged -= LoadedSetupChanged;
             }
@@ -44,7 +44,10 @@ namespace VRTK
 
         protected virtual void LoadedSetupChanged(VRTK_SDKManager sender, VRTK_SDKManager.LoadedSetupChangeEventArgs e)
         {
-            ChildToSDKObject();
+            if (sdkManager != null)
+            {
+                ChildToSDKObject();
+            }
         }
 
         protected virtual void ChildToSDKObject()

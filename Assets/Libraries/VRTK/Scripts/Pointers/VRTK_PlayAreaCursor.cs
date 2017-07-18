@@ -4,6 +4,22 @@ namespace VRTK
     using UnityEngine;
 
     /// <summary>
+    /// Event Payload
+    /// </summary>
+    /// <param name="collidedWith">The collider that is/was being collided with.</param>
+    public struct PlayAreaCursorEventArgs
+    {
+        public Collider collider;
+    }
+
+    /// <summary>
+    /// Event Payload
+    /// </summary>
+    /// <param name="sender">this object</param>
+    /// <param name="e"><see cref="PlayAreaCursorEventArgs"/></param>
+    public delegate void PlayAreaCursorEventHandler(object sender, PlayAreaCursorEventArgs e);
+
+    /// <summary>
     /// The Play Area Cursor is used in conjunction with a Pointer script and displays a representation of the play area where the pointer cursor hits.
     /// </summary>
     /// <example>
@@ -12,6 +28,10 @@ namespace VRTK
     [AddComponentMenu("VRTK/Scripts/Pointers/VRTK_PlayAreaCursor")]
     public class VRTK_PlayAreaCursor : MonoBehaviour
     {
+        [Header("Appearance Settings")]
+
+        [Tooltip("If this is checked then the pointer valid/invalid colours will also be used to change the colour of the play area cursor when colliding/not colliding.")]
+        public bool usePointerColor = true;
         [Tooltip("Determines the size of the play area cursor and collider. If the values are left as zero then the Play Area Cursor will be sized to the calibrated Play Area space.")]
         public Vector2 playAreaCursorDimensions = Vector2.zero;
         [Tooltip("If this is checked then if the play area cursor is colliding with any other object then the pointer colour will change to the `Pointer Miss Color` and the `DestinationMarkerSet` event will not be triggered, which will prevent teleporting into areas where the play area will collide.")]
@@ -24,12 +44,20 @@ namespace VRTK
         public VRTK_PolicyList targetListPolicy;
 
         [Header("Custom Settings")]
-        [Tooltip("If this is checked then the pointer hit/miss colours will also be used to change the colour of the play area cursor when colliding/not colliding.")]
-        public bool usePointerColor = true;
+
         [Tooltip("A custom GameObject to use for the play area cursor representation for when the location is valid.")]
         public GameObject validLocationObject;
         [Tooltip("A custom GameObject to use for the play area cursor representation for when the location is invalid.")]
         public GameObject invalidLocationObject;
+
+        /// <summary>
+        /// Emitted when the play area collides with another object.
+        /// </summary>
+        public event PlayAreaCursorEventHandler PlayAreaCursorStartCollision;
+        /// <summary>
+        /// Emitted when the play area stops colliding with another object.
+        /// </summary>
+        public event PlayAreaCursorEventHandler PlayAreaCursorEndCollision;
 
         protected bool headsetPositionCompensation;
         protected bool playAreaCursorCollided = false;
@@ -51,6 +79,22 @@ namespace VRTK
         protected int btmLeftOuter = 5;
         protected int topLeftOuter = 6;
         protected int topRightOuter = 7;
+
+        public virtual void OnPlayAreaCursorStartCollision(PlayAreaCursorEventArgs e)
+        {
+            if (PlayAreaCursorStartCollision != null)
+            {
+                PlayAreaCursorStartCollision(this, e);
+            }
+        }
+
+        public virtual void OnPlayAreaCursorEndCollision(PlayAreaCursorEventArgs e)
+        {
+            if (PlayAreaCursorEndCollision != null)
+            {
+                PlayAreaCursorEndCollision(this, e);
+            }
+        }
 
         /// <summary>
         /// The HasCollided method returns the state of whether the play area cursor has currently collided with another valid object.
@@ -74,12 +118,14 @@ namespace VRTK
         /// The SetPlayAreaCursorCollision method determines whether play area collisions should be taken into consideration with the play area cursor.
         /// </summary>
         /// <param name="state">The state of whether to check for play area collisions.</param>
-        public virtual void SetPlayAreaCursorCollision(bool state)
+        /// <param name="collider">The state of whether to check for play area collisions.</param>
+        public virtual void SetPlayAreaCursorCollision(bool state, Collider collider = null)
         {
             playAreaCursorCollided = false;
             if (handlePlayAreaCursorCollisions)
             {
                 playAreaCursorCollided = (!enabled ? false : state);
+                EmitEvent(collider);
             }
         }
 
@@ -189,7 +235,10 @@ namespace VRTK
 
             for (int i = 0; i < boundaryRenderers.Length; i++)
             {
-                boundaryRenderers[i].enabled = state;
+                if (boundaryRenderers[i] != null)
+                {
+                    boundaryRenderers[i].enabled = state;
+                }
             }
         }
 
@@ -229,6 +278,28 @@ namespace VRTK
             }
         }
 
+        protected virtual PlayAreaCursorEventArgs SetEventPayload(Collider collider)
+        {
+            PlayAreaCursorEventArgs e;
+            e.collider = collider;
+            return e;
+        }
+
+        protected virtual void EmitEvent(Collider collider)
+        {
+            if (collider != null)
+            {
+                if (playAreaCursorCollided)
+                {
+                    OnPlayAreaCursorStartCollision(SetEventPayload(collider));
+                }
+                else
+                {
+                    OnPlayAreaCursorEndCollision(SetEventPayload(collider));
+                }
+            }
+        }
+
         protected virtual void InitPlayAreaCursor()
         {
             if (playArea == null)
@@ -244,6 +315,18 @@ namespace VRTK
             }
             else
             {
+                if (cursorDrawVertices == null || cursorDrawVertices.Length < 8)
+                {
+                    cursorDrawVertices = new Vector3[] {
+                        new Vector3(0.8f, 0f, -0.8f),
+                        new Vector3(-0.8f, 0f, -0.8f),
+                        new Vector3(-0.8f, 0f, 0.8f),
+                        new Vector3(0.8f, 0f, 0.8f),
+                        new Vector3(1f, 0f, -1f),
+                        new Vector3(-1f, 0f, -1f),
+                        new Vector3(-1f, 0f, 1f),
+                        new Vector3(1f, 0f, 1f) };
+                }
                 GeneratePlayAreaCursor(cursorDrawVertices);
             }
 
@@ -415,7 +498,7 @@ namespace VRTK
 
         protected virtual void OnDisable()
         {
-            if (parent)
+            if (parent != null)
             {
                 parent.SetPlayAreaCursorCollision(false);
             }
@@ -423,17 +506,17 @@ namespace VRTK
 
         protected virtual void OnTriggerStay(Collider collider)
         {
-            if (parent && parent.enabled && parent.gameObject.activeInHierarchy && ValidTarget(collider))
+            if (parent != null && parent.enabled && parent.gameObject.activeInHierarchy && ValidTarget(collider))
             {
-                parent.SetPlayAreaCursorCollision(true);
+                parent.SetPlayAreaCursorCollision(true, collider);
             }
         }
 
         protected virtual void OnTriggerExit(Collider collider)
         {
-            if (parent && ValidTarget(collider))
+            if (parent != null && ValidTarget(collider))
             {
-                parent.SetPlayAreaCursorCollision(false);
+                parent.SetPlayAreaCursorCollision(false, collider);
             }
         }
 
