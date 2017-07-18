@@ -7,10 +7,14 @@ using Voice = ExitGames.Client.Photon.Voice;
 /// </summary>
 [RequireComponent(typeof(PhotonVoiceSpeaker))]
 [DisallowMultipleComponent]
+[AddComponentMenu("Photon Voice/Photon Voice Recorder")]
+[HelpURL("https://doc.photonengine.com/en-us/voice/current/getting-started/voice-for-pun#the__audio_source__prefab")]
 public class PhotonVoiceRecorder : Photon.MonoBehaviour
 {
-    private Voice.LocalVoice voice = Voice.LocalVoice.Dummy;
-    
+    private Voice.LocalVoice voice = Voice.LocalVoiceAudio.Dummy;
+
+    protected Voice.ILocalVoiceAudio voiceAudio { get { return (Voice.ILocalVoiceAudio)this.voice; } }
+
     private string microphoneDevice = null;
 
     /// <summary>
@@ -26,9 +30,9 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
     /// <summary>
     /// Returns voice activity detector for recorder's audio stream.
     /// </summary>
-    public Voice.VoiceDetector VoiceDetector
+    public Voice.AudioUtil.IVoiceDetector VoiceDetector
     {
-        get { return this.photonView.isMine ? this.voice.VoiceDetector : null; }
+        get { return this.photonView.isMine ? this.voiceAudio.VoiceDetector : null; }
     }
 
     /// <summary>
@@ -51,7 +55,7 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
             this.microphoneDevice = value;
 
             // update local voice's mic audio source
-            if (this.voice != Voice.LocalVoice.Dummy && AudioClip == null)
+            if (this.voice != Voice.LocalVoiceAudio.Dummy && AudioClip == null)
             {
                 var pvs = PhotonVoiceSettings.Instance;
 
@@ -66,18 +70,19 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
                 this.voice.RemoveSelf();
                 var mic = new MicWrapper(micDev, (int)pvs.SamplingRate);
 
-                var debugEchoMode = PhotonVoiceNetwork.Client.DebugEchoMode;
-                PhotonVoiceNetwork.Client.DebugEchoMode = false;
+                var debugEchoMode = this.DebugEchoMode;
+                this.DebugEchoMode = false;
 
-                Voice.VoiceInfo voiceInfo = new Voice.VoiceInfo((int)pvs.SamplingRate, mic.Channels, (int)pvs.FrameDuration, pvs.Bitrate, photonView.viewID);                
+                Voice.VoiceInfo voiceInfo = Voice.VoiceInfo.CreateAudioOpus(pvs.SamplingRate, mic.SourceSamplingRate, mic.Channels, pvs.FrameDuration, pvs.Bitrate, photonView.viewID);
                 var prevVoice = this.voice;
-                this.voice = PhotonVoiceNetwork.CreateLocalVoice(mic, voiceInfo);
-                this.voice.AudioGroup = prevVoice.AudioGroup;
+                this.voice = createLocalVoice(voiceInfo, mic);
+                this.voice.Group = prevVoice.Group;
                 this.voice.Transmit = prevVoice.Transmit;
-                this.voice.VoiceDetector.On = prevVoice.VoiceDetector.On;
-                this.voice.VoiceDetector.Threshold = prevVoice.VoiceDetector.Threshold;
+                this.voiceAudio.VoiceDetector.On = voiceAudio.VoiceDetector.On;
+                this.voiceAudio.VoiceDetector.Threshold = voiceAudio.VoiceDetector.Threshold;
+                sendVoiceCreatedMessage(voiceInfo);
 
-                PhotonVoiceNetwork.Client.DebugEchoMode = debugEchoMode;
+                this.DebugEchoMode = debugEchoMode;
             }
         }
     }
@@ -86,8 +91,8 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
     /// <see PhotonVoiceNetwork.Client.ChangeAudioGroups/>
     public byte AudioGroup
     {
-        get { return voice.AudioGroup; }
-        set { voice.AudioGroup = value; }
+        get { return voice.Group; }
+        set { voice.Group = value; }
     }
 
     /// <summary>Returns true if audio stream broadcasts.</summary>
@@ -99,40 +104,45 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
     /// <summary>
     /// Level meter utility.
     /// </summary>
-    public Voice.LevelMeter LevelMeter
+    public Voice.AudioUtil.ILevelMeter LevelMeter
     {
-        get { return voice.LevelMeter; }
+        get { return voiceAudio.LevelMeter; }
     }
 
     // give user a chance to change MicrophoneDevice in Awake()
     void Start()
     {
-        if (Microphone.devices.Length < 1)
-        {
-            return;
-        }
         if (photonView.isMine)
         {
             var pvs = PhotonVoiceSettings.Instance;
 
             Application.RequestUserAuthorization(UserAuthorization.Microphone);
             // put required sample rate into audio source and encoder - both adjust it if needed
-            Voice.IAudioStreamFloat audioStream;
+            Voice.IBufferReader<float> audioStream;
             int channels = 0;
+            int sourceSamplingRate = 0;
             if (AudioClip == null)
             {
+                if (Microphone.devices.Length < 1)
+                {
+                    // Error already logged in PhotonVoiceNetwork.Awake()
+                    return;
+                }
+
                 var micDev = this.MicrophoneDevice != null ? this.MicrophoneDevice : PhotonVoiceNetwork.MicrophoneDevice;
                 if (PhotonVoiceSettings.Instance.DebugInfo)
                 {
                     Debug.LogFormat("PUNVoice: Setting recorder's microphone device to {0}", micDev);
                 }
                 var mic = new MicWrapper(micDev, (int)pvs.SamplingRate);
+                sourceSamplingRate = mic.SourceSamplingRate;
                 channels = mic.Channels;
-                audioStream = mic;                
+                audioStream = mic;
             }
             else
             {
                 audioStream = new AudioClipWrapper(AudioClip);
+                sourceSamplingRate = AudioClip.frequency;
                 channels = AudioClip.channels;
                 if (this.LoopAudioClip)
                 {
@@ -140,26 +150,44 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
                 }
             }
 
-            Voice.VoiceInfo voiceInfo = new Voice.VoiceInfo((int)pvs.SamplingRate, channels, (int)pvs.FrameDuration, pvs.Bitrate, photonView.viewID);            
-            this.voice = PhotonVoiceNetwork.CreateLocalVoice(audioStream, voiceInfo);
-
+            Voice.VoiceInfo voiceInfo = Voice.VoiceInfo.CreateAudioOpus(pvs.SamplingRate, sourceSamplingRate, channels, pvs.FrameDuration, pvs.Bitrate, photonView.viewID);
+            this.voice = createLocalVoice(voiceInfo, audioStream);
             this.VoiceDetector.On = PhotonVoiceSettings.Instance.VoiceDetection;
-            this.VoiceDetector.Threshold = PhotonVoiceSettings.Instance.VoiceDetectionThreshold;
-
-            if (this.voice != Voice.LocalVoice.Dummy)
+            this.VoiceDetector.Threshold = PhotonVoiceSettings.Instance.VoiceDetectionThreshold;            
+            if (this.voice != Voice.LocalVoiceAudio.Dummy)
             {
                 this.voice.Transmit = PhotonVoiceSettings.Instance.AutoTransmit;
-            } 
+            }
             else if (PhotonVoiceSettings.Instance.AutoTransmit)
             {
                 Debug.LogWarning("PUNVoice: Cannot Transmit.");
             }
+            sendVoiceCreatedMessage(voiceInfo);
         }
     }
 
+    protected virtual Voice.LocalVoice createLocalVoice(Voice.VoiceInfo voiceInfo, Voice.IBufferReader<float> reader)
+    {
+        return PhotonVoiceNetwork.CreateLocalVoice(voiceInfo, reader);
+    }
+    protected virtual void sendVoiceCreatedMessage(Voice.VoiceInfo voiceInfo)
+    {
+        gameObject.SendMessage("VoiceCreated", new VoiceCreatedParams(this.voice, voiceInfo), SendMessageOptions.DontRequireReceiver);
+    }
+
+    public struct VoiceCreatedParams
+    {
+        public Voice.LocalVoice Voice;
+        public Voice.VoiceInfo Info;
+        public VoiceCreatedParams(Voice.LocalVoice voice, Voice.VoiceInfo info)
+        {
+            Voice = voice;
+            Info = info;
+        }
+    }
     void OnDestroy()
     {
-        if (this.voice != Voice.LocalVoice.Dummy) // photonView.isMine does not work
+        if (this.voice != Voice.LocalVoiceAudio.Dummy) // photonView.isMine does not work
         {
             this.voice.RemoveSelf();
         }
@@ -170,17 +198,14 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
         Application.RequestUserAuthorization(UserAuthorization.Microphone);
     }
 
-    // message sent by Voice client
-    void OnJoinedVoiceRoom()
-    {
-    }
-
     /// <summary>If true, stream data broadcasted unconditionally.</summary>        
     public bool Transmit { get { return voice.Transmit; } set { voice.Transmit = value; } }
 
     /// <summary>If true, voice detection enabled.</summary>
-    public bool Detect { get { return voice.VoiceDetector.On; } set { voice.VoiceDetector.On = value; } }
+    public bool Detect { get { return voiceAudio.VoiceDetector.On; } set { voiceAudio.VoiceDetector.On = value; } }
 
+    /// <summary>If true, outgoing stream routed back to client via server same way as for remote client's streams.</summary>
+    public bool DebugEchoMode { get { return voice.DebugEchoMode; } set { voice.DebugEchoMode = value; } }
     /// <summary>Trigger voice detector calibration process.
     /// While calibrating, keep silence. Voice detector sets threshold basing on measured backgroud noise level.
     /// </summary>
@@ -189,15 +214,12 @@ public class PhotonVoiceRecorder : Photon.MonoBehaviour
     {
         if (photonView.isMine)
         {
-            this.voice.VoiceDetectorCalibrate(durationMs);
+            this.voiceAudio.VoiceDetectorCalibrate(durationMs);
         }
     }
 
     /// <summary>If true, voice detector calibration is in progress.</summary>
-    public bool VoiceDetectorCalibrating { get { return voice.VoiceDetectorCalibrating; } }
-
-    private string log0;
-    private string log1;
+    public bool VoiceDetectorCalibrating { get { return voiceAudio.VoiceDetectorCalibrating; } }
 
     private string tostr<T>(T[] x, int lim = 10)
     {

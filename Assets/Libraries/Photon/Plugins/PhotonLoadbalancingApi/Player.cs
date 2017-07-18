@@ -10,7 +10,7 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
 
@@ -21,6 +21,9 @@ namespace ExitGames.Client.Photon.LoadBalancing
     using System.Collections.Generic;
     using ExitGames.Client.Photon;
 
+    #if UNITY
+    using UnityEngine;
+    #endif
     #if UNITY || NETFX_CORE
     using Hashtable = ExitGames.Client.Photon.Hashtable;
     using SupportClass = ExitGames.Client.Photon.SupportClass;
@@ -87,11 +90,16 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
         }
 
+        /// <summary>UserId of the player, available when the room got created with RoomOptions.PublishUserId = true.</summary>
+        /// <remarks>Useful for PhotonNetwork.FindFriends and blocking slots in a room for expected players (e.g. in PhotonNetwork.CreateRoom).</remarks>
+        public string UserId { get; internal set; }
 
         /// <summary>
-        /// The player with the lowest actorID is the master and could be used for special tasks.
-        /// The LoadBalancingClient.LocalPlayer is not master unless in a room (this is the only player which exists outside of rooms, to store a nickname).
+        /// True if this player is the Master Client of the current room.
         /// </summary>
+        /// <remarks>
+        /// See also: PhotonNetwork.masterClient.
+        /// </remarks>
         public bool IsMasterClient
         {
             get
@@ -105,7 +113,12 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
         }
 
-        /// <summary>In turnbased games, other players might be inactive in a room. True when another player is not in the current room.</summary>
+        /// <summary>If this player is active in the room (and getting events which are currently being sent).</summary>
+        /// <remarks>
+        /// Inactive players keep their spot in a room but otherwise behave as if offline (no matter what their actual connection status is).
+        /// The room needs a PlayerTTL > 0. If a player is inactive for longer than PlayerTTL, the server will remove this player from the room.
+        /// For a client "rejoining" a room, is the same as joining it: It gets properties, cached events and then the live events.
+        /// </remarks>
         public bool IsInactive { get; set; }
 
         /// <summary>Read-only cache for custom properties of player. Set via Player.SetCustomProperties.</summary>
@@ -114,6 +127,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// properties of this class to modify values. When you use those, the client will
         /// sync values with the server.
         /// </remarks>
+        /// <see cref="SetCustomProperties"/>
         public Hashtable CustomProperties { get; private set; }
 
         /// <summary>Creates a Hashtable with all properties (custom and "well known" ones).</summary>
@@ -129,8 +143,39 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
         }
 
-		/// <summary>Custom object associated with this Player. Not synchronized!</summary>
-		public object Tag;
+        /// <summary>Can be used to store a reference that's useful to know "by player".</summary>
+        /// <remarks>Example: Set a player's character as Tag by assigning the GameObject on Instantiate.</remarks>
+        public object TagObject;
+
+
+        /// <summary>
+        /// Creates a player instance.
+        /// To extend and replace this Player, override LoadBalancingPeer.CreatePlayer().
+        /// </summary>
+        /// <param name="nickName">NickName of the player (a "well known property").</param>
+        /// <param name="actorID">ID or ActorNumber of this player in the current room (a shortcut to identify each player in room)</param>
+        /// <param name="isLocal">If this is the local peer's player (or a remote one).</param>
+        protected internal Player(string nickName, int actorID, bool isLocal) : this(nickName, actorID, isLocal, null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a player instance.
+        /// To extend and replace this Player, override LoadBalancingPeer.CreatePlayer().
+        /// </summary>
+        /// <param name="nickName">NickName of the player (a "well known property").</param>
+        /// <param name="actorID">ID or ActorNumber of this player in the current room (a shortcut to identify each player in room)</param>
+        /// <param name="isLocal">If this is the local peer's player (or a remote one).</param>
+        /// <param name="playerProperties">A Hashtable of custom properties to be synced. Must use String-typed keys and serializable datatypes as values.</param>
+        protected internal Player(string nickName, int actorID, bool isLocal, Hashtable playerProperties)
+        {
+            this.IsLocal = isLocal;
+            this.actorID = actorID;
+            this.NickName = nickName;
+
+            this.CustomProperties = new Hashtable();
+            this.InternalCacheProperties(playerProperties);
+        }
 
 
         /// <summary>
@@ -203,41 +248,12 @@ namespace ExitGames.Client.Photon.LoadBalancing
         }
 
 
-        /// <summary>
-        /// Creates a player instance.
-        /// To extend and replace this Player, override LoadBalancingPeer.CreatePlayer().
-        /// </summary>
-        /// <param name="nickName">NickName of the player (a "well known property").</param>
-        /// <param name="actorID">ID or ActorNumber of this player in the current room (a shortcut to identify each player in room)</param>
-        /// <param name="isLocal">If this is the local peer's player (or a remote one).</param>
-        protected internal Player(string nickName, int actorID, bool isLocal) : this(nickName, actorID, isLocal, null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a player instance.
-        /// To extend and replace this Player, override LoadBalancingPeer.CreatePlayer().
-        /// </summary>
-        /// <param name="nickName">NickName of the player (a "well known property").</param>
-        /// <param name="actorID">ID or ActorNumber of this player in the current room (a shortcut to identify each player in room)</param>
-        /// <param name="isLocal">If this is the local peer's player (or a remote one).</param>
-        /// <param name="playerProperties">A Hashtable of custom properties to be synced. Must use String-typed keys and serializable datatypes as values.</param>
-        protected internal Player(string nickName, int actorID, bool isLocal, Hashtable playerProperties)
-        {
-            this.IsLocal = isLocal;
-            this.actorID = actorID;
-            this.NickName = nickName;
-
-            this.CustomProperties = new Hashtable();
-            this.CacheProperties(playerProperties);
-        }
-
         /// <summary>Caches properties for new Players or when updates of remote players are received. Use SetCustomProperties() for a synced update.</summary>
         /// <remarks>
         /// This only updates the CustomProperties and doesn't send them to the server.
         /// Mostly used when creating new remote players, where the server sends their properties.
         /// </remarks>
-        public virtual void CacheProperties(Hashtable properties)
+        public virtual void InternalCacheProperties(Hashtable properties)
         {
             if (properties == null || properties.Count == 0 || this.CustomProperties.Equals(properties))
             {
@@ -265,21 +281,38 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     }
                 }
             }
-
+            if (properties.ContainsKey(ActorProperties.UserId))
+            {
+                this.UserId = (string)properties[ActorProperties.UserId];
+            }
             if (properties.ContainsKey(ActorProperties.IsInactive))
             {
                 this.IsInactive = (bool)properties[ActorProperties.IsInactive]; //TURNBASED new well-known propery for players
             }
 
             this.CustomProperties.MergeStringKeys(properties);
+            this.CustomProperties.StripKeysWithNullValues();
         }
 
+
         /// <summary>
-        /// This Player's NickName and custom properties as string.
+        /// Brief summary string of the Player. Includes name or player.ID and if it's the Master Client.
         /// </summary>
         public override string ToString()
         {
             return this.NickName + " " + SupportClass.DictionaryToString(this.CustomProperties);
+        }
+
+        /// <summary>
+        /// String summary of the Player: player.ID, name and all custom properties of this user.
+        /// </summary>
+        /// <remarks>
+        /// Use with care and not every frame!
+        /// Converts the customProperties to a String on every single call.
+        /// </remarks>
+        public string ToStringFull()
+        {
+            return string.Format("#{0:00} '{1}'{2} {3}", this.ID, this.NickName, this.IsInactive ? " (inactive)" : "", this.CustomProperties.ToStringFull());
         }
 
         /// <summary>
@@ -312,6 +345,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
             this.actorID = newID;
         }
+
+
 
         /// <summary>
         /// Updates and synchronizes this Player's Custom Properties. Optionally, expectedProperties can be provided as condition.
@@ -351,15 +386,25 @@ namespace ExitGames.Client.Photon.LoadBalancing
         ///
         /// Properties get saved with the game state for Turnbased games (which use IsPersistent = true).
         /// </remarks>
-        /// <param name="propertiesToSet">Hashtable of Custom Properties that changes.</param>
-        /// <param name="expectedProperties">Provide some keys/values to use as condition for setting the new values. Client must be in room.</param>
+        /// <param name="propertiesToSet">Hashtable of Custom Properties to be set. </param>
+        /// <param name="expectedValues">If non-null, these are the property-values the server will check as condition for this update.</param>
         /// <param name="webFlags">Defines if this SetCustomProperties-operation gets forwarded to your WebHooks. Client must be in room.</param>
-        public void SetCustomProperties(Hashtable propertiesToSet, Hashtable expectedProperties = null, WebFlags webFlags = null)
+        public void SetCustomProperties(Hashtable propertiesToSet, Hashtable expectedValues = null, WebFlags webFlags = null)
         {
-            Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;
+            if (propertiesToSet == null)
+            {
+                return;
+            }
 
-            // merge (and delete null-values), unless we use CAS (expected props)
-            if (expectedProperties == null)
+            Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;
+            Hashtable customPropsToCheck = expectedValues.StripToStringKeys() as Hashtable;
+
+
+            // no expected values -> set and callback
+            bool noCas = customPropsToCheck == null || customPropsToCheck.Count == 0;
+
+
+            if (noCas)
             {
                 this.CustomProperties.Merge(customProps);
                 this.CustomProperties.StripKeysWithNullValues();
@@ -368,7 +413,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             // send (sync) these new values if in room
             if (this.RoomReference != null && this.RoomReference.IsLocalClientInside)
             {
-                this.RoomReference.LoadBalancingClient.loadBalancingPeer.OpSetPropertiesOfActor(this.actorID, customProps, expectedProperties, webFlags);
+                this.RoomReference.LoadBalancingClient.loadBalancingPeer.OpSetPropertiesOfActor(this.actorID, customProps, customPropsToCheck, webFlags);
             }
         }
 

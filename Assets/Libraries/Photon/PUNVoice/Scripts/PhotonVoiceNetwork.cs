@@ -1,10 +1,7 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExitGames.Client.Photon;
-using POpusCodec;
-using POpusCodec.Enums;
 using UnityEngine;
 using Voice = ExitGames.Client.Photon.Voice;
 using LoadBalancing = ExitGames.Client.Photon.LoadBalancing;
@@ -18,6 +15,7 @@ using VoiceIdPair = System.Collections.Generic.KeyValuePair<int, byte>;
 /// <remarks>
 /// Extends MonoBehaviour and attached to an object in scene to call Photon Voice Client Service() in Update().
 /// </remarks>
+[DisallowMultipleComponent]
 public class PhotonVoiceNetwork : MonoBehaviour
 {
     private static PhotonVoiceNetwork _instance;
@@ -52,7 +50,37 @@ public class PhotonVoiceNetwork : MonoBehaviour
 			return _instance;
 		}
 	}
-	
+
+    /// <summary>
+    /// Defines how many seconds Voice Unity Client keeps the connection, after Unity's OnApplicationPause(true) call. Default: 60 seconds.
+    /// </summary>
+    /// <remarks>
+    /// It's best practice to disconnect inactive apps/connections after a while but to also allow users to take calls, etc..
+    /// We think a reasonable backgroung timeout is 60 seconds.
+    ///
+    /// To handle the timeout, implement: OnDisconnectedFromPhoton(), as usual.
+    /// Your application will "notice" the background disconnect when it becomes active again (running the Update() loop).
+    ///
+    /// If you need to separate this case from others, you need to track if the app was in the background
+    /// (there is no special callback).
+    ///
+    /// A value below 0.1 seconds will disable this timeout (careful: connections can be kept indefinitely).
+    ///
+    ///
+    /// Info:
+    /// Voice Unity Client is running a "fallback thread" to send ACKs to the server, even when Unity is not calling Update() regularly.
+    /// This helps keeping the connection while loading scenes and assets and when the app is in the background.
+    ///
+    /// Note:
+    /// Some platforms (e.g. iOS) don't allow to keep a connection while the app is in background.
+    /// In those cases, this value does not change anything, the app immediately loses connection in background.
+    ///
+    /// Unity's OnApplicationPause() callback is broken in some exports (Android) of some Unity versions.
+    /// Make sure OnApplicationPause() gets the callbacks you'd expect on the platform you target!
+    /// Check PhotonHandler.OnApplicationPause(bool pause), to see the implementation.
+    /// </remarks>
+    public static float BackgroundTimeout = 60.0f;
+
     void OnDestroy()
     {
         if (this != _instance)
@@ -67,20 +95,11 @@ public class PhotonVoiceNetwork : MonoBehaviour
     internal UnityVoiceFrontend client;
     PhotonVoiceNetwork()
     {
-        client = new UnityVoiceFrontend(this);
-        //client.loadBalancingPeer.DebugOut = DebugLevel.ALL;
-        //PhotonNetwork.logLevel = PhotonLogLevel.Full;
-                
-		// client.loadBalancingPeer.QuickResendAttempts = 3;
-        // client.loadBalancingPeer.SentCountAllowance = 7;
-        // PhotonNetwork.networkingPeer.QuickResendAttempts = 3;
-        // PhotonNetwork.networkingPeer.SentCountAllowance = 7;
-        
-        //client.loadBalancingPeer.DebugOut = PhotonVoiceSettings.Instance.DebugLevel; // null ref while PhotonVoiceSettings is object's script
+        client = new UnityVoiceFrontend(ConnectionProtocol.Udp);
     }
 
     [RuntimeInitializeOnLoadMethod]
-    static public void RuntimeInitializeOnLoad()
+    public static void RuntimeInitializeOnLoad()
     {
         getInstance();
     }
@@ -100,13 +119,14 @@ public class PhotonVoiceNetwork : MonoBehaviour
     public static bool Connect()
     {
         instance.client.AppId = PhotonNetwork.PhotonServerSettings.VoiceAppID;
-        instance.client.AppVersion = "1.0"; // hardcoded, customization does not make sense?
+        instance.client.AppVersion = PhotonNetwork.gameVersion;
 
         if (PhotonNetwork.PhotonServerSettings.HostType == ServerSettings.HostingOption.SelfHosted)
         {
             string voiceMasterAddress = string.Format("{0}:{1}",PhotonNetwork.PhotonServerSettings.ServerAddress,
                 PhotonNetwork.PhotonServerSettings.VoiceServerPort);
             Debug.LogFormat("PUNVoice: connecting to master {0}", voiceMasterAddress);
+  
             return instance.client.Connect(voiceMasterAddress, null, null, null, null);
         }
         else {
@@ -121,8 +141,10 @@ public class PhotonVoiceNetwork : MonoBehaviour
         instance.client.Disconnect();
     }
 
-    /// <summary>Returns underlying Photon Voice client.</summary>
+    /// <summary>Returns underlying Photon LoadBalancing client.</summary>
     public static UnityVoiceFrontend Client { get { return instance.client; } }
+    /// <summary>Returns underlying Photon Voice client.</summary>
+    public static Voice.VoiceClient VoiceClient { get { return instance.client.VoiceClient; } }
 
     /// <summary>Returns Photon Voice client state.</summary>
     public static LoadBalancing.ClientState ClientState { get { return instance.client.State; } }
@@ -186,6 +208,7 @@ public class PhotonVoiceNetwork : MonoBehaviour
         }
 
         client.Disconnect();
+        client.Dispose();
     }
 
     protected void Update()
@@ -196,7 +219,7 @@ public class PhotonVoiceNetwork : MonoBehaviour
         }
 
         // to be able change percentage in runtime
-        this.client.DebugLostPercent = PhotonVoiceSettings.Instance.DebugLostPercent;
+        this.client.VoiceClient.DebugLostPercent = PhotonVoiceSettings.Instance.DebugLostPercent;
 
         client.Service();
     }
@@ -204,17 +227,52 @@ public class PhotonVoiceNetwork : MonoBehaviour
     /// <summary>
     /// Creates new local voice (outgoing audio stream).
     /// </summary>
-    /// <param name="audioStream">Object providing audio data for the outgoing stream.</param>
     /// <param name="voiceInfo">Outgoing audio stream parameters (should be set according to Opus encoder restrictions).</param>
+    /// <param name="serviceableFactory">Optional factory called after LovalVoice<T> initialized to create ILocalVoiceServiceable instance attached to the LocalVoice"/>.</param>
     /// <returns>Outgoing stream handler.</returns>
     /// <remarks>
     /// audioStream.SamplingRate and voiceInfo.SamplingRate may do not match. Automatic resampling will occur in this case.
     /// </remarks>
-    public static Voice.LocalVoice CreateLocalVoice(Voice.IAudioStreamFloat audioClip, Voice.VoiceInfo voiceInfo)
+    public static Voice.LocalVoice CreateLocalVoice(Voice.VoiceInfo voiceInfo, Voice.IBufferReader<float> reader)
     {
-        return instance.client.CreateLocalVoice(audioClip, voiceInfo);
+        var localVoice = instance.client.VoiceClient.CreateLocalVoiceAudio<float>(voiceInfo);
+        localVoice.LocalUserServiceable = new Voice.BufferReaderPushAdapterAsyncPool<float>(localVoice, reader);
+        return localVoice;
     }
 
+    // Reads float buffers. Converts them to short and pushes to LocalVoiceAudioShort
+    class BufferReaderPushAdapterAsyncPoolFloatToShort : Voice.BufferReaderPushAdapterBase<float>
+    {
+        float[] buffer;
+        public BufferReaderPushAdapterAsyncPoolFloatToShort(Voice.LocalVoice localVoice, Voice.IBufferReader<float> reader) : base(reader)
+        {
+            buffer = new float[((Voice.LocalVoiceFramed<short>)localVoice).FrameSize];
+        }
+
+        public override void Service(Voice.LocalVoice localVoice)
+        {
+            var v = ((Voice.LocalVoiceFramed<short>)localVoice);
+            short[] buf = v.PushDataBufferPool.AcquireOrCreate();
+            while (this.reader.Read(buffer))
+            {
+                for (int i = 0;i < buf.Length; i++)
+                {
+                    buf[i] = (short)(buffer[i]*(float)short.MaxValue);
+                }
+                v.PushDataAsync(buf);
+                buf = v.PushDataBufferPool.AcquireOrCreate();
+            }
+            // release unused buffer
+            v.PushDataBufferPool.Release(buf, buf.Length);
+        }
+    }
+
+    public static Voice.LocalVoice CreateLocalVoiceShort(Voice.VoiceInfo voiceInfo, Voice.IBufferReader<float> reader)
+    {
+        var localVoice = instance.client.VoiceClient.CreateLocalVoiceAudio<short>(voiceInfo);
+        localVoice.LocalUserServiceable = new BufferReaderPushAdapterAsyncPoolFloatToShort(localVoice, reader);
+        return localVoice;
+    }
     // PUN room joined
     void OnJoinedRoom()
     {
@@ -297,12 +355,10 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
     new public Action<LoadBalancing.ClientState> OnStateChangeAction { get; set; }
     new public Action<OperationResponse> OnOpResponseAction { get; set; }
 
-    internal UnityVoiceFrontend(PhotonVoiceNetwork network)
+    internal UnityVoiceFrontend(ConnectionProtocol connetProtocol) : base(connetProtocol)
     {
         this.voiceClient.OnRemoteVoiceInfoAction += OnRemoteVoiceInfo;
-        this.voiceClient.OnRemoteVoiceRemoveAction += OnRemoteVoiceRemove;
-        this.voiceClient.OnAudioFrameFloatAction += OnAudioFrame;
-
+        this.AutoJoinLobby = false;
         base.OnStateChangeAction += OnStateChange;
         base.OnOpResponseAction += OnOpResponse;
 
@@ -319,7 +375,7 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
     /// </remarks>
     public void Reconnect()
     {
-        if (this.State == LoadBalancing.ClientState.Disconnected || this.State == LoadBalancing.ClientState.Uninitialized)
+        if (this.State == LoadBalancing.ClientState.Disconnected || this.State == LoadBalancing.ClientState.PeerCreated)
         {
             PhotonVoiceNetwork.Connect();
         }
@@ -353,20 +409,6 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
 
     public void OnOpResponse(OperationResponse resp)
     {
-        if (resp.ReturnCode == 0)
-        {
-            switch (resp.OperationCode)
-            {
-                case LoadBalancing.OperationCode.JoinGame:
-                    PhotonVoiceRecorder[] recs = GameObject.FindObjectsOfType<PhotonVoiceRecorder>();
-                    foreach (var r in recs)
-                    {
-                        r.SendMessage("OnJoinedVoiceRoom");
-                    }
-                    break;
-            }
-        }
-
         if (this.OnOpResponseAction != null) this.OnOpResponseAction(resp);
     }
 
@@ -393,8 +435,11 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
         this.voiceSpeakers[key] = speaker;
     }
 
-    public void OnRemoteVoiceInfo(int channelId, int playerId, byte voiceId, Voice.VoiceInfo voiceInfo, out object localUserObject)
+    public void OnRemoteVoiceInfo(int channelId, int playerId, byte voiceId, Voice.VoiceInfo voiceInfo, ref Voice.RemoteVoiceOptions options)
     {
+        options.OnDecodedFrameFloatAction += (frame) => OnAudioFrame(playerId, voiceId, frame);
+        options.OnRemoteVoiceRemoveAction += () => OnRemoteVoiceRemove(playerId, voiceId);
+
         var key = new VoiceIdPair(playerId, voiceId);
         if (this.voiceSpeakers.ContainsKey(key))
         {
@@ -421,16 +466,16 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
             this.linkVoice(playerId, voiceId, voiceInfo, speaker);
         }
 
+        // do not expose options to user code
         if (this.OnRemoteVoiceInfoAction != null) this.OnRemoteVoiceInfoAction(playerId, voiceId, voiceInfo);
 
-        localUserObject = null;
     }
 
     // Try to link new PUN object with Speaker attached to remote voice.
     // If remote voice is not available yet, will link as soon as remote voice info arrives in OnRemoteVoiceInfo.
     public void LinkSpeakerToRemoteVoice(PhotonVoiceSpeaker speaker)
     {
-        foreach (var i in this.RemoteVoiceInfos)
+        foreach (var i in this.VoiceClient.RemoteVoiceInfos)
         {
             if (speaker.photonView.viewID == (int)i.Info.UserData)
             {
@@ -439,7 +484,7 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
         }
     }
 
-    public void OnRemoteVoiceRemove(int channelId, int playerId, byte voiceId, object localUserObject)
+    public void OnRemoteVoiceRemove(int playerId, byte voiceId)
     {
         var key = new VoiceIdPair(playerId, voiceId);
         if (!this.unlinkSpeaker(key))
@@ -482,7 +527,7 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
         }
     }
 
-    public void OnAudioFrame(int channelId, int playerId, byte voiceId, float[] frame, object localUserObject)
+    public void OnAudioFrame(int playerId, byte voiceId, float[] frame)
     {
         PhotonVoiceSpeaker voiceSpeaker = null;
         if (this.voiceSpeakers.TryGetValue(new VoiceIdPair(playerId, voiceId), out voiceSpeaker))
@@ -506,10 +551,10 @@ public class UnityVoiceFrontend : Voice.LoadBalancingFrontend
         }
         switch (state)
         {
-            case LoadBalancing.ClientState.JoinedLobby:
+            case LoadBalancing.ClientState.ConnectedToMasterserver:
                 if (PhotonNetwork.inRoom)
                 {
-                    this.OpJoinOrCreateRoom(string.Format("{0}_voice_", PhotonNetwork.room.name), 
+                    this.OpJoinOrCreateRoom(string.Format("{0}_voice_", PhotonNetwork.room.Name), 
                         new LoadBalancing.RoomOptions() { IsVisible = false }, null);
                 }
                 else

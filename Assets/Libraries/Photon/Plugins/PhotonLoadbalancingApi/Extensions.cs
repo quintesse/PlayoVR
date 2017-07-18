@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------------
 // <copyright file="Extensions.cs" company="Exit Games GmbH">
-//   Loadbalancing Framework for Photon - Copyright (C) 2011 Exit Games GmbH
+//   Photon Extensions - Copyright (C) 2017 Exit Games GmbH
 // </copyright>
 // <summary>
 //   Provides some helpful methods and extensions for Hashtables, etc.
@@ -8,20 +8,28 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
+
 
 namespace ExitGames.Client.Photon.LoadBalancing
 {
     using System.Collections;
 
+    #if UNITY
+    using UnityEngine;
+    using Debug = UnityEngine.Debug;
+    #endif
     #if UNITY || NETFX_CORE
     using Hashtable = ExitGames.Client.Photon.Hashtable;
     using SupportClass = ExitGames.Client.Photon.SupportClass;
     #endif
 
 
+    /// <summary>
+    /// This static class defines some useful extension methods for several existing classes (e.g. Vector3, float and others).
+    /// </summary>
     public static class Extensions
     {
         /// <summary>
@@ -67,6 +75,35 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
         }
 
+        /// <summary>Helper method for debugging of IDictionary content, inlcuding type-information. Using this is not performant.</summary>
+        /// <remarks>Should only be used for debugging as necessary.</remarks>
+        /// <param name="origin">Some Dictionary or Hashtable.</param>
+        /// <returns>String of the content of the IDictionary.</returns>
+        public static string ToStringFull(this IDictionary origin)
+        {
+            return SupportClass.DictionaryToString(origin, false);
+        }
+
+
+        /// <summary>Helper method for debugging of object[] content. Using this is not performant.</summary>
+        /// <remarks>Should only be used for debugging as necessary.</remarks>
+        /// <param name="data">Any object[].</param>
+        /// <returns>A comma-separated string containing each value's ToString().</returns>
+        public static string ToStringFull(this object[] data)
+        {
+            if (data == null) return "null";
+
+            string[] sb = new string[data.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                object o = data[i];
+                sb[i] = (o != null) ? o.ToString() : "null";
+            }
+
+            return string.Join(", ", sb);
+        }
+
+
         /// <summary>
         /// This method copies all string-typed keys of the original into a new Hashtable.
         /// </summary>
@@ -75,7 +112,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// This does not modify the original.
         /// </remarks>
         /// <param name="original">The original IDictonary to get string-typed keys from.</param>
-        /// <returns>New Hashtable containing parts ot fht original.</returns>
+        /// <returns>New Hashtable containing only string-typed keys of the original.</returns>
         public static Hashtable StripToStringKeys(this IDictionary original)
         {
             Hashtable target = new Hashtable();
@@ -140,3 +177,4 @@ namespace ExitGames.Client.Photon.LoadBalancing
         }
     }
 }
+

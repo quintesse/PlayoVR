@@ -415,6 +415,36 @@ public enum PhotonNetworkingMessage
     /// And the client has to be connected to the Master Server, which is providing the info about lobbies.
     /// </remarks>
     OnLobbyStatisticsUpdate,
+
+
+	/// <summary>
+	/// Called when a remote Photon Player activity changed. This will be called ONLY is PlayerTtl is greater then 0.
+	///
+	/// Use PhotonPlayer.IsInactive to check the current activity state
+	///
+	/// Example: void OnPhotonPlayerActivityChanged(PhotonPlayer otherPlayer) {...}
+	/// </summary>
+	/// <remarks>
+	/// This callback has precondition:
+	/// PlayerTtl must be greater then 0
+	/// </remarks>
+	OnPhotonPlayerActivityChanged,
+
+
+	/// <summary>
+	/// Called when a PhotonView Owner is transfered to a Player.
+	/// </summary>
+	/// <remarks>
+	/// The parameter viewAndPlayers contains:
+	///
+	/// PhotonView view = viewAndPlayers[0] as PhotonView;
+	///
+	/// PhotonPlayer newOwner = viewAndPlayers[1] as PhotonPlayer;
+	///
+	/// PhotonPlayer oldOwner = viewAndPlayers[2] as PhotonPlayer;
+	/// </remarks>
+	/// <example>void OnOwnershipTransfered(object[] viewAndPlayers) {} //</example>
+	OnOwnershipTransfered,
 }
 
 
@@ -478,10 +508,14 @@ public enum CloudRegionCode
     au = 5,
     ///<summary>USA West, San José, usw</summary>
     usw = 6,
-    ///<summary>South America	, Sao Paulo, sa</summary>
+    ///<summary>South America, Sao Paulo, sa</summary>
     sa = 7,
     ///<summary>Canada East, Montreal, cae</summary>
     cae = 8,
+    ///<summary>South Korea, Seoul, kr</summary>
+    kr = 9,
+    ///<summary>India, Chennai, in</summary>
+    @in = 10,
 
     /// <summary>No region selected.</summary>
     none = 4
@@ -502,7 +536,9 @@ public enum CloudRegionFlag
     au =    1 << 4,
     usw =   1 << 5,
     sa =    1 << 6,
-    cae =   1 << 7
+    cae =   1 << 7,
+    kr =    1 << 8,
+    @in =   1 << 9,
 };
 
 
@@ -531,6 +567,9 @@ public enum EncryptionMode
     /// <summary>
     /// With this encryption mode for UDP, the connection gets setup and all further datagrams get encrypted almost entirely. On-demand message encryption (like in PayloadEncryption) is skipped.
     /// </summary>
+    /// <remarks>
+    /// This mode requires AuthOnce or AuthOnceWss as AuthMode!
+    /// </remarks>
     DatagramEncryption = 10,
 }
 

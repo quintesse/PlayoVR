@@ -49,6 +49,10 @@ PluginImporter:
     PS4:
       enabled: 1
       settings: {}
+    SamsungTV:
+      enabled: 0
+      settings:
+        STV_MODEL: STANDARD_13
     WP8:
       enabled: 0
       settings:
@@ -73,7 +77,7 @@ PluginImporter:
       settings:
         CPU: AnyCPU
     WindowsStoreApps:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
         DontProcess: False

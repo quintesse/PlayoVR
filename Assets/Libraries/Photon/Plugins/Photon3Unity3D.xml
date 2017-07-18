@@ -40,18 +40,32 @@
             </remarks>
             <returns>Fraction of the current time in Milliseconds (this is not a proper datetime timestamp).</returns>
         </member>
-        <member name="M:ExitGames.Client.Photon.SupportClass.CallInBackground(System.Func{System.Boolean})">
+        <member name="M:ExitGames.Client.Photon.SupportClass.CallInBackground(System.Func{System.Boolean},System.Int32,System.String)">
             <summary>
             Creates a background thread that calls the passed function in 100ms intervals, as long as that returns true.
             </summary>
-            <param name="myThread"></param>
         </member>
-        <member name="M:ExitGames.Client.Photon.SupportClass.CallInBackground(System.Func{System.Boolean},System.Int32)">
+        <member name="M:ExitGames.Client.Photon.SupportClass.StartBackgroundCalls(System.Func{System.Boolean},System.Int32,System.String)">
             <summary>
-            Creates a background thread that calls the passed function in 100ms intervals, as long as that returns true.
+            Creates a background thread that calls the passed function in intervals, as long as that returns true.
             </summary>
-            <param name="myThread"></param>
-            <param name="millisecondsInterval">Milliseconds to sleep between calls of myThread.</param>
+            <param name="myThread">The function to call. Must return true, if it should be called again.</param>
+            <param name="millisecondsInterval">Milliseconds to sleep between calls of myThread. Default: 100ms.</param>
+            <param name="taskName">An optional name for the task for eased debugging.</param>
+        </member>
+        <member name="M:ExitGames.Client.Photon.SupportClass.StopBackgroundCalls(System.Byte)">
+            <summary>
+            Ends the thread with the given id (= index of the thread list).
+            </summary>
+            <param name="id">The unique ID of the thread.</param>
+            <returns>True if the thread is canceled and false otherwise, e.g. if the thread with the given ID does not exist.</returns>
+        </member>
+        <member name="M:ExitGames.Client.Photon.SupportClass.StopAllBackgroundCalls">
+            <summary>
+            Ends the thread with the given id (= index of the thread list).
+            </summary>
+            <param name="id">The unique ID of the thread.</param>
+            <returns>True if the thread is canceled and false otherwise, e.g. if the thread with the given ID does not exist.</returns>
         </member>
         <member name="M:ExitGames.Client.Photon.SupportClass.WriteStackTrace(System.Exception,System.IO.TextWriter)">
             <summary>
@@ -118,7 +132,7 @@
         </member>
         <member name="T:ExitGames.Client.Photon.StatusCode">
             <summary>
-            Enumeration of situations that change the peers internal status. 
+            Enumeration of situations that change the peers internal status.
             Used in calls to OnStatusChanged to inform your application of various situations that might happen.
             </summary>
             <remarks>
@@ -164,9 +178,6 @@
         <member name="F:ExitGames.Client.Photon.StatusCode.ExceptionOnReceive">
             <summary>Exception, if a server cannot be connected. Most likely, the server is not responding. Ask user to try again later.</summary>
         </member>
-        <member name="F:ExitGames.Client.Photon.StatusCode.InternalReceiveException">
-            <summary>Exception, if a server cannot be connected. Most likely, the server is not responding. Ask user to try again later.</summary>
-        </member>
         <member name="F:ExitGames.Client.Photon.StatusCode.TimeoutDisconnect">
             <summary>Disconnection due to a timeout (client did no longer receive ACKs from server).</summary>
         </member>
@@ -178,18 +189,6 @@
         </member>
         <member name="F:ExitGames.Client.Photon.StatusCode.DisconnectByServerLogic">
             <summary>Disconnect by server due to server's logic (received a disconnect command).</summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.StatusCode.TcpRouterResponseOk">
-            <summary>Tcp Router Response. Only used when Photon is setup as TCP router! Routing is ok.</summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.StatusCode.TcpRouterResponseNodeIdUnknown">
-            <summary>Tcp Router Response. Only used when Photon is setup as TCP router! Routing node unknown. Check client connect values.</summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.StatusCode.TcpRouterResponseEndpointUnknown">
-            <summary>Tcp Router Response. Only used when Photon is setup as TCP router! Routing endpoint unknown.</summary>
-        </member>
-        <member name="F:ExitGames.Client.Photon.StatusCode.TcpRouterResponseNodeNotReady">
-            <summary>Tcp Router Response. Only used when Photon is setup as TCP router! Routing not setup yet. Connect again.</summary>
         </member>
         <member name="F:ExitGames.Client.Photon.StatusCode.EncryptionEstablished">
             <summary>(1048) Value for OnStatusChanged()-call, when the encryption-setup for secure communication finished successfully.</summary>
@@ -210,78 +209,101 @@
             <summary>
             Provides textual descriptions for various error conditions and noteworthy situations.
             In cases where the application needs to react, a call to OnStatusChanged is used.
-            OnStatusChanged gives "feedback" to the game, DebugReturn provies human readable messages 
+            OnStatusChanged gives "feedback" to the game, DebugReturn provies human readable messages
             on the background.
             </summary>
             <remarks>
-            All debug output of the library will be reported through this method. Print it or put it in a 
+            All debug output of the library will be reported through this method. Print it or put it in a
             buffer to use it on-screen. Use PhotonPeer.DebugOut to select how verbose the output is.
             </remarks>
             <param name="level">DebugLevel (severity) of the message.</param>
             <param name="message">Debug text. Print to System.Console or screen.</param>
         </member>
         <member name="M:ExitGames.Client.Photon.IPhotonPeerListener.OnOperationResponse(ExitGames.Client.Photon.OperationResponse)">
-            <summary>
-            Callback method which gives you (async) responses for called operations.
-            </summary>
-            <remarks>
-            Similar to method-calling, operations can have a result. 
-            Because operation-calls are non-blocking and executed on the server, responses are provided 
-            after a roundtrip as call to this method.
+             <summary>
+             Callback method which gives you (async) responses for called operations.
+             </summary>
+             <remarks>
+             Similar to method-calling, operations can have a result.
+             Because operation-calls are non-blocking and executed on the server, responses are provided
+             after a roundtrip as call to this method.
             
-            Example: Trying to create a room usually succeeds but can fail if the room's name is already
-            in use (room names are their IDs).
+             Example: Trying to create a room usually succeeds but can fail if the room's name is already
+             in use (room names are their IDs).
             
-            This method is used as general callback for all operations. Each response corresponds to a certain 
-            &quot;type&quot; of operation by its OperationCode.
-            <para></para>
-            </remarks>
-            <example>
-            When you join a room, the server will assign a consecutive number to each client: the 
-            &quot;actorNr&quot; or &quot;player number&quot;. This is sent back in the OperationResult's 
-            Parameters as value of key <see cref="!:ParameterCode.ActorNr" />.<para></para>
+             This method is used as general callback for all operations. Each response corresponds to a certain
+             &quot;type&quot; of operation by its OperationCode.
+             <para></para>
+             </remarks>
+             <example>
+             When you join a room, the server will assign a consecutive number to each client: the
+             &quot;actorNr&quot; or &quot;player number&quot;. This is sent back in the OperationResult's
+             Parameters as value of key <see cref="!:ParameterCode.ActorNr" />.<para></para>
             
-            Fetch your actorNr of a Join response like this:<para></para>
-            <c>int actorNr = (int)operationResponse[(byte)OperationCode.ActorNr];</c>
-            </example>
-            <param name="operationResponse">The response to an operation\-call.</param>                                                          
+             Fetch your actorNr of a Join response like this:<para></para>
+             <c>int actorNr = (int)operationResponse[(byte)OperationCode.ActorNr];</c>
+             </example>
+             <param name="operationResponse">The response to an operation\-call.</param>
         </member>
         <member name="M:ExitGames.Client.Photon.IPhotonPeerListener.OnStatusChanged(ExitGames.Client.Photon.StatusCode)">
-            <summary>
-            OnStatusChanged is called to let the game know when asyncronous actions finished or when errors happen.
-            </summary>
-            <remarks>
-            Not all of the many StatusCode values will apply to your game. Example: If you don't use encryption, 
-            the respective status changes are never made.
+             <summary>
+             OnStatusChanged is called to let the game know when asyncronous actions finished or when errors happen.
+             </summary>
+             <remarks>
+             Not all of the many StatusCode values will apply to your game. Example: If you don't use encryption,
+             the respective status changes are never made.
             
-            The values are all part of the StatusCode enumeration and described value-by-value.
-            </remarks>
-            <param name="statusCode">A code to identify the situation.</param>
+             The values are all part of the StatusCode enumeration and described value-by-value.
+             </remarks>
+             <param name="statusCode">A code to identify the situation.</param>
         </member>
         <member name="M:ExitGames.Client.Photon.IPhotonPeerListener.OnEvent(ExitGames.Client.Photon.EventData)">
+             <summary>
+             Called whenever an event from the Photon Server is dispatched.
+             </summary>
+             <remarks>
+             Events are used for communication between clients and allow the server to update clients over time.
+             The creation of an event is often triggered by an operation (called by this client or an other).
+            
+             Each event carries its specific content in its Parameters. Your application knows which content to
+             expect by checking the event's 'type', given by the event's Code.
+            
+             Events can be defined and extended server-side.
+            
+             If you use the LoadBalancing application as base, several events like EvJoin and EvLeave are already defined.
+             For these events and their Parameters, the library provides constants, so check the EventCode and ParameterCode
+             classes.
+            
+             Photon also allows you to come up with custom events on the fly, purely client-side. To do so, use
+             OpRaiseEvent.<para></para>
+            
+             Events are buffered on the client side and must be Dispatched. This way, OnEvent is always taking
+             place in the same thread as a <see cref="M:ExitGames.Client.Photon.PhotonPeer.DispatchIncomingCommands" /> call.
+             </remarks>
+             <param name="eventData">The event currently being dispatched.</param>
+        </member>
+        <member name="M:ExitGames.Client.Photon.StreamBuffer.Compact">
             <summary>
-            Called whenever an event from the Photon Server is dispatched.
+            The bytes between Position and Length are copied to the beginning of the buffer. Length decreased by Position. Position set to 0.
+            </summary>
+        </member>
+        <member name="M:ExitGames.Client.Photon.StreamBuffer.GetBufferAndAdvance(System.Int32,System.Int32@)">
+            <summary>
+            Brings StreamBuffer to the state as after writing of 'length' bytes. Returned buffer and offset can be used to actually fill "written" segment with data.
+            </summary>
+        </member>
+        <member name="M:ExitGames.Client.Photon.StreamBuffer.SetLength(System.Int64)">
+            <summary>
+            Sets stream length. If current position is greater than specified value, it's set to the value.
             </summary>
             <remarks>
-            Events are used for communication between clients and allow the server to update clients over time. 
-            The creation of an event is often triggered by an operation (called by this client or an other). 
-            
-            Each event carries its specific content in its Parameters. Your application knows which content to
-            expect by checking the event's 'type', given by the event's Code.
-            
-            Events can be defined and extended server-side. 
-            
-            If you use the LoadBalancing application as base, several events like EvJoin and EvLeave are already defined.
-            For these events and their Parameters, the library provides constants, so check the EventCode and ParameterCode 
-            classes.
-            
-            Photon also allows you to come up with custom events on the fly, purely client-side. To do so, use 
-            OpRaiseEvent.<para></para>
-            
-            Events are buffered on the client side and must be Dispatched. This way, OnEvent is always taking
-            place in the same thread as a <see cref="M:ExitGames.Client.Photon.PhotonPeer.DispatchIncomingCommands" /> call.
+            SetLength(0) resets the stream to initial state but preserves underlying byte[] buffer.
             </remarks>
-            <param name="eventData">The event currently being dispatched.</param>
+        </member>
+        <member name="M:ExitGames.Client.Photon.StreamBuffer.SetCapacityMinimum(System.Int32)">
+            <summary>
+            Guarantees that the buffer is at least neededSize bytes.
+            </summary>
         </member>
         <member name="T:ExitGames.Client.Photon.PeerStateValue">
             <summary>
@@ -380,15 +402,15 @@
             <summary>Version of this library as string.</summary>
         </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.SocketImplementationConfig">
-            <summary>Defines which IPhotonSocket class to use per ConnectionProtocol.</summary>
-            <remarks>
-            Several platforms have special Socket implementations and slightly different APIs. 
-            To accomodate this, switching the socket implementation for a network protocol was made available.
-            By default, UDP and TCP have socket implementations assigned.
+             <summary>Defines which IPhotonSocket class to use per ConnectionProtocol.</summary>
+             <remarks>
+             Several platforms have special Socket implementations and slightly different APIs.
+             To accomodate this, switching the socket implementation for a network protocol was made available.
+             By default, UDP and TCP have socket implementations assigned.
             
-            You only need to set the SocketImplementationConfig once, after creating a PhotonPeer
-            and before connecting. If you switch the TransportProtocol, the correct implementation is being used.
-            </remarks>
+             You only need to set the SocketImplementationConfig once, after creating a PhotonPeer
+             and before connecting. If you switch the TransportProtocol, the correct implementation is being used.
+             </remarks>
         </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.SocketImplementation">
             <summary>
@@ -512,6 +534,11 @@
             Careful: This method should not be called frequently, as it's time- and memory-consuming to create the log.
             </remarks>
         </member>
+        <member name="P:ExitGames.Client.Photon.PhotonPeer.EnableServerTracing">
+            <summary>
+            Debugging option to tell the Photon Server to log all datagrams.
+            </summary>
+        </member>
         <member name="P:ExitGames.Client.Photon.PhotonPeer.QuickResendAttempts">
             <summary>
             Up to 4 resend attempts for a reliable command can be done in quick succession (after RTT+4*Variance).
@@ -625,19 +652,14 @@
             Count of commands that got repeated (due to local repeat-timing before an ACK was received).
             </summary>
         </member>
-        <member name="P:ExitGames.Client.Photon.PhotonPeer.WarningSize">
+        <member name="F:ExitGames.Client.Photon.PhotonPeer.WarningSize">
             <summary>
-            The WarningSize is used test all message queues for congestion (in and out, reliable and unreliable).
-            OnStatusChanged will be called with a warning if a queue holds WarningSize commands or a multiple
-            of it.
-            Default: 100.
-            Example: If command is received, OnStatusChanged will be called when the respective command queue
-            has 100, 200, 300 ... items.
+            The WarningSize was used test all message queues for congestion.
             </summary>
         </member>
         <member name="F:ExitGames.Client.Photon.PhotonPeer.SentCountAllowance">
              <summary>
-             Number of send retries before a peer is considered lost/disconnected. Default: 5.
+             Number of send retries before a peer is considered lost/disconnected. Default: 7.
              The initial timeout countdown of a command is calculated by the current roundTripTime + 4 * roundTripTimeVariance.
              Please note that the timeout span until a command will be resent is not constant, but based on
              the roundtrip time at the initial sending, which will be doubled with every failed retry.
@@ -1279,9 +1301,6 @@
         <member name="M:ExitGames.Client.Photon.PeerBase.SerializeMessageToMessage(System.Object,System.Boolean,System.Byte[],System.Boolean)">
             <summary> Returns the UDP Payload starting with Magic Number for binary protocol </summary>
         </member>
-        <member name="M:ExitGames.Client.Photon.PeerBase.SerializeRawMessageToMessage(System.Byte[],System.Boolean,System.Byte[],System.Boolean)">
-            <summary> Returns the UDP Payload starting with Magic Number for binary protocol </summary>
-        </member>
         <member name="P:ExitGames.Client.Photon.PeerBase.mtu">
             <summary> Maximum Transfer Unit to be used for UDP+TCP</summary>
         </member>
@@ -1303,17 +1322,20 @@
             Called by a timer in intervals.
             </summary>
         </member>
-        <member name="F:ExitGames.Client.Photon.EnetPeer.channels">
-            <summary>Will contain channel 0xFF and any other.</summary>
-        </member>
         <member name="F:ExitGames.Client.Photon.EnetPeer.sentReliableCommands">
             <summary>One list for all channels keeps sent commands (for re-sending).</summary>
         </member>
-        <member name="F:ExitGames.Client.Photon.EnetPeer.outgoingAcknowledgementsList">
-            <summary>One list for all channels keeps acknowledgements.</summary>
+        <member name="F:ExitGames.Client.Photon.EnetPeer.outgoingAcknowledgementsPool">
+            <summary>One pool of ACK byte arrays ( 20 bytes each)  for all channels to keep acknowledgements.</summary>
         </member>
         <member name="F:ExitGames.Client.Photon.EnetPeer.datagramEncryptedConnection">
             <summary>Gets enabled by "request" from server (not by client).</summary>
+        </member>
+        <member name="F:ExitGames.Client.Photon.EnetPeer.PeerIdForConnect">
+            <summary>Initial PeerId as used in Connect command. If EnableServerTracing is false.</summary>
+        </member>
+        <member name="F:ExitGames.Client.Photon.EnetPeer.PeerIdForConnectTrace">
+            <summary>Initial PeerId to enable Photon Tracing, as used in Connect command. See: EnableServerTracing.</summary>
         </member>
         <member name="M:ExitGames.Client.Photon.EnetPeer.DispatchIncomingCommands">
             <summary>
@@ -1358,7 +1380,8 @@
             <returns>the invocation ID for this operation (the payload)</returns>
         </member>
         <member name="M:ExitGames.Client.Photon.EnetPeer.SerializeOperationToMessage(System.Byte,System.Collections.Generic.Dictionary{System.Byte,System.Object},ExitGames.Client.Photon.PeerBase.EgMessageType,System.Boolean)">
-            <summary> Returns the UDP Payload starting with Magic Number for binary protocol </summary>
+            <summary>Serializes an operation into our binary messages (magic number, msg-type byte and message). Optionally encrypts.</summary>
+            <remarks>This method is mostly the same in EnetPeer, TPeer and HttpPeerBase. Also, for raw messages, we have another variant.</remarks>
         </member>
         <member name="M:ExitGames.Client.Photon.EnetPeer.ReceiveIncomingCommands(System.Byte[],System.Int32)">
             <summary>reads incoming udp-packages to create and queue incoming commands*</summary>
@@ -1374,6 +1397,16 @@
         </member>
         <member name="M:ExitGames.Client.Photon.NCommand.#ctor(ExitGames.Client.Photon.EnetPeer,System.Byte,System.Byte[],System.Byte)">
             <summary>this variant does only create outgoing commands and increments . incoming ones are created from a DataInputStream</summary>
+        </member>
+        <member name="M:ExitGames.Client.Photon.NCommand.CreateAck(System.Byte[],System.Int32,ExitGames.Client.Photon.NCommand,System.Int32)">
+            <summary>
+             ACKs should never be created as NCommand. use CreateACK to wrtie the serialized ACK right away...
+            </summary>
+            <param name="buffer"></param>
+            <param name="offset"></param>
+            <param name="commandToAck"></param>
+            <param name="sentTime"></param>
+            <returns></returns>
         </member>
         <member name="M:ExitGames.Client.Photon.NCommand.#ctor(ExitGames.Client.Photon.EnetPeer,System.Byte[],System.Int32@)">
             <summary>reads the command values (commandHeader and command-values) from incoming bytestream and populates the incoming command*</summary>
@@ -1407,7 +1440,8 @@
             <returns>Always false in this case (local queues are ignored. true would be: "call again to send remaining data").</returns>
         </member>
         <member name="M:ExitGames.Client.Photon.TPeer.SerializeOperationToMessage(System.Byte,System.Collections.Generic.Dictionary{System.Byte,System.Object},ExitGames.Client.Photon.PeerBase.EgMessageType,System.Boolean)">
-            <summary> Returns the UDP Payload starting with Magic Number for binary protocol </summary>
+            <summary>Serializes an operation into our binary messages (magic number, msg-type byte and message). Optionally encrypts.</summary>
+            <remarks>This method is mostly the same in EnetPeer, TPeer and HttpPeerBase. Also, for raw messages, we have another variant.</remarks>
         </member>
         <member name="M:ExitGames.Client.Photon.TPeer.EnqueueMessageAsPayload(System.Boolean,System.Byte[],System.Byte)">
             <summary>enqueues serialized operations to be sent as tcp stream / package</summary>
@@ -1441,7 +1475,7 @@
             <remarks>
             The OperationCode defines the type of operation called on Photon and in turn also the Parameters that
             are set in the request. Those are provided as Dictionary with byte-keys.
-            There are pre-defined constants for various codes defined in the LoadBalancing application. 
+            There are pre-defined constants for various codes defined in the LoadBalancing application.
             Check: OperationCode, ParameterCode, etc.
             <para></para>
             An operation's request is summarized by the ReturnCode: a short typed code for &quot;Ok&quot; or
@@ -1482,16 +1516,16 @@
             <returns>To be used in debug situations only, as it returns a string for each value.</returns>
         </member>
         <member name="T:ExitGames.Client.Photon.EventData">
-            <summary>
-            Contains all components of a Photon Event.
-            Event Parameters, like OperationRequests and OperationResults, consist of a Dictionary with byte-typed keys per value.
-            </summary>
-            <remarks>
-            The indexer of this class provides access to the Parameters Dictionary.
+             <summary>
+             Contains all components of a Photon Event.
+             Event Parameters, like OperationRequests and OperationResults, consist of a Dictionary with byte-typed keys per value.
+             </summary>
+             <remarks>
+             The indexer of this class provides access to the Parameters Dictionary.
             
-            The operation RaiseEvent allows you to provide custom event content. Defined in LoadBalancing, this
-            CustomContent will be made the value of key ParameterCode.CustomEventContent.
-            </remarks>
+             The operation RaiseEvent allows you to provide custom event content. Defined in LoadBalancing, this
+             CustomContent will be made the value of key ParameterCode.CustomEventContent.
+             </remarks>
         </member>
         <member name="F:ExitGames.Client.Photon.EventData.Code">
             <summary>The event code identifies the type of event.</summary>
@@ -1710,7 +1744,7 @@
         </member>
         <member name="F:ExitGames.Client.Photon.Protocol16.GpType.Custom">
             <summary>
-              A costum type
+              A custom type. 0x63
             </summary>
         </member>
         <member name="F:ExitGames.Client.Photon.Protocol16.GpType.Null">
@@ -1990,6 +2024,13 @@
             </summary>
             <param name="obj">The object to serialize</param>
             <returns>The serialized byte-array</returns>
+        </member>
+        <member name="M:ExitGames.Client.IProtocol.Deserialize(ExitGames.Client.Photon.StreamBuffer)">
+            <summary>
+            Deserialize returns an object reassembled from the given StreamBuffer.
+            </summary>
+            <param name="stream">The buffer to be Deserialized</param>
+            <returns>The Deserialized object</returns>
         </member>
         <member name="M:ExitGames.Client.IProtocol.Deserialize(System.Byte[])">
             <summary>

@@ -10,18 +10,17 @@
 // ----------------------------------------------------------------------------
 
 #if UNITY_EDITOR
-#define PHOTON_VOICE
 
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-
+using ExitGames.Client.Photon;
 using Newtonsoft.Json;
+
 
 public class AccountService
 {
@@ -216,17 +215,19 @@ public class AccountService
         {
             // returnCode == 0 means: all ok. message is new AppId
             this.AppId = message;
-            #if PHOTON_VOICE
-            this.AppId2 = messageDetailed;
-            #endif
+            if (PhotonEditorUtils.HasVoice)
+            {
+                this.AppId2 = messageDetailed;
+            }
         }
         else
         {
             // any error gives returnCode != 0
             this.AppId = string.Empty;
-            #if PHOTON_VOICE
-            this.AppId2 = string.Empty;
-            #endif
+            if (PhotonEditorUtils.HasVoice)
+            {
+                this.AppId2 = string.Empty;
+            }
             this.Message = message;
         }
     }

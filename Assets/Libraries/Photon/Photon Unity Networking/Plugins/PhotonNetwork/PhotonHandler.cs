@@ -24,7 +24,7 @@ using UnityEngine.Profiling;
 /// <summary>
 /// Internal Monobehaviour that allows Photon to run an Update loop.
 /// </summary>
-internal class PhotonHandler : Photon.MonoBehaviour
+internal class PhotonHandler : MonoBehaviour
 {
     public static PhotonHandler SP;
 
@@ -71,9 +71,9 @@ internal class PhotonHandler : Photon.MonoBehaviour
             PhotonNetwork.networkingPeer.SetLevelInPropsIfSynced(SceneManagerHelper.ActiveSceneName);
         };
     }
-    
+
     #else
-    
+
     /// <summary>Called by Unity after a new level was loaded.</summary>
     protected void OnLevelWasLoaded(int level)
     {
@@ -96,13 +96,14 @@ internal class PhotonHandler : Photon.MonoBehaviour
     /// Called by Unity when the application gets paused (e.g. on Android when in background).
     /// </summary>
     /// <remarks>
+    /// Sets a disconnect timer when PhotonNetwork.BackgroundTimeout > 0.1f. See PhotonNetwork.BackgroundTimeout.
+    ///
     /// Some versions of Unity will give false values for pause on Android (and possibly on other platforms).
-    /// Sets a disconnect timer when PhotonNetwork.BackgroundTimeout > 0.001f.
     /// </remarks>
-    /// <param name="pause"></param>
+    /// <param name="pause">If the app pauses.</param>
     protected void OnApplicationPause(bool pause)
     {
-        if (PhotonNetwork.BackgroundTimeout > 0.001f)
+        if (PhotonNetwork.BackgroundTimeout > 0.1f)
         {
             if (timerToStopConnectionInBackground == null)
             {
@@ -193,38 +194,48 @@ internal class PhotonHandler : Photon.MonoBehaviour
 
     public static void StartFallbackSendAckThread()
     {
-#if !UNITY_WEBGL
+	    #if !UNITY_WEBGL
         if (sendThreadShouldRun)
         {
             return;
         }
 
         sendThreadShouldRun = true;
-        SupportClassPun.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
-#endif
+        SupportClassPun.StartBackgroundCalls(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
+	    #endif
     }
 
     public static void StopFallbackSendAckThread()
     {
-#if !UNITY_WEBGL
+	    #if !UNITY_WEBGL
         sendThreadShouldRun = false;
-#endif
+	    #endif
     }
 
+    /// <summary>A thread which runs independent from the Update() calls. Keeps connections online while loading or in background. See PhotonNetwork.BackgroundTimeout.</summary>
     public static bool FallbackSendAckThread()
     {
-        if (sendThreadShouldRun && PhotonNetwork.networkingPeer != null)
+        if (sendThreadShouldRun && !PhotonNetwork.offlineMode && PhotonNetwork.networkingPeer != null)
         {
             // check if the client should disconnect after some seconds in background
-            if (timerToStopConnectionInBackground != null && PhotonNetwork.BackgroundTimeout > 0.001f)
+            if (timerToStopConnectionInBackground != null && PhotonNetwork.BackgroundTimeout > 0.1f)
             {
                 if (timerToStopConnectionInBackground.ElapsedMilliseconds > PhotonNetwork.BackgroundTimeout * 1000)
                 {
+                    if (PhotonNetwork.connected)
+                    {
+                        PhotonNetwork.Disconnect();
+                    }
+                    timerToStopConnectionInBackground.Stop();
+                    timerToStopConnectionInBackground.Reset();
                     return sendThreadShouldRun;
                 }
             }
 
-            PhotonNetwork.networkingPeer.SendAcksOnly();
+            if (PhotonNetwork.networkingPeer.ConnectionTime - PhotonNetwork.networkingPeer.LastSendOutgoingTime > 200)
+            {
+                PhotonNetwork.networkingPeer.SendAcksOnly();
+            }
         }
 
         return sendThreadShouldRun;
@@ -236,7 +247,6 @@ internal class PhotonHandler : Photon.MonoBehaviour
 
     private const string PlayerPrefsKey = "PUNCloudBestRegion";
 
-    internal static CloudRegionCode BestRegionCodeCurrently = CloudRegionCode.none; // default to none
     internal static CloudRegionCode BestRegionCodeInPreferences
     {
         get
@@ -272,7 +282,6 @@ internal class PhotonHandler : Photon.MonoBehaviour
 
     internal IEnumerator PingAvailableRegionsCoroutine(bool connectToBest)
     {
-        BestRegionCodeCurrently = CloudRegionCode.none;
         while (PhotonNetwork.networkingPeer.AvailableRegions == null)
         {
             if (PhotonNetwork.connectionStateDetailed != ClientState.ConnectingToNameServer && PhotonNetwork.connectionStateDetailed != ClientState.ConnectedToNameServer)
@@ -304,11 +313,9 @@ internal class PhotonHandler : Photon.MonoBehaviour
 
 
         Region best = pingManager.BestRegion;
-        PhotonHandler.BestRegionCodeCurrently = best.Code;
         PhotonHandler.BestRegionCodeInPreferences = best.Code;
 
-        Debug.Log("Found best region: " + best.Code + " ping: " + best.Ping + ". Calling ConnectToRegionMaster() is: " + connectToBest);
-
+        Debug.Log("Found best region: '" + best.Code + "' ping: " + best.Ping + ". Calling ConnectToRegionMaster() is: " + connectToBest);
 
         if (connectToBest)
         {

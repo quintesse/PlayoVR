@@ -9,7 +9,7 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
 
@@ -20,6 +20,10 @@ namespace ExitGames.Client.Photon.LoadBalancing
     using System.Collections.Generic;
     using System.Diagnostics;
 
+    #if UNITY
+    using UnityEngine;
+    using Debug = UnityEngine.Debug;
+    #endif
     #if UNITY || NETFX_CORE
     using Hashtable = ExitGames.Client.Photon.Hashtable;
     using SupportClass = ExitGames.Client.Photon.SupportClass;
@@ -28,56 +32,60 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
     #region Enums
 
-    /// <summary>Possible states for a LoadBalancingClient.</summary>
+    /// <summary>
+    /// State values for a client, which handles switching Photon server types, some operations, etc.
+    /// </summary>
+    /// \ingroup publicApi
     public enum ClientState
     {
         /// <summary>Peer is created but not used yet.</summary>
-        Uninitialized,
+        PeerCreated,
 
-        /// <summary>Currently not used.</summary>
-        Queued,
+        /// <summary>Transition state while connecting to a server. On the Photon Cloud this sends the AppId and AuthenticationValues (UserID).</summary>
+        Authenticating,
 
-        /// <summary>Usually when Authenticated, the client will join a game or the lobby (if AutoJoinLobby is true).</summary>
+        /// <summary>Transition state while connecting to a server. Leads to state ConnectedToMasterserver or JoinedLobby.</summary>
         Authenticated,
 
-        /// <summary>Connected to master and joined lobby. Display room list and join/create rooms at will.</summary>
+        /// <summary>The client is in a lobby, connected to the MasterServer. Depending on the lobby, it gets room listings.</summary>
         JoinedLobby,
 
-        /// <summary>Transition from master to game server.</summary>
+        /// <summary>Transition from MasterServer to GameServer.</summary>
         DisconnectingFromMasterserver,
 
-        /// <summary>Transition to gameserver (client will authenticate and join/create game).</summary>
+        /// <summary>Transition to GameServer (client authenticates and joins/creates a room).</summary>
         ConnectingToGameserver,
 
-        /// <summary>Connected to gameserver (going to auth and join game).</summary>
+        /// <summary>Connected to GameServer (going to auth and join game).</summary>
         ConnectedToGameserver,
 
-        /// <summary>Joining game on gameserver.</summary>
+        /// <summary>Transition state while joining or creating a room on GameServer.</summary>
         Joining,
 
-        /// <summary>The client arrived inside a room. CurrentRoom and Players are known. Send events with OpRaiseEvent.</summary>
+        /// <summary>The client entered a room. The CurrentRoom and Players are known and you can now raise events.</summary>
         Joined,
 
-        /// <summary>Currently not used. Instead of OpLeave, the client disconnects from a server (which also triggers a leave immediately).</summary>
+        /// <summary>Transition state when leaving a room.</summary>
         Leaving,
 
-        /// <summary>Transition from gameserver to master (after leaving a room/game).</summary>
+        /// <summary>Transition from GameServer to MasterServer (after leaving a room/game).</summary>
         DisconnectingFromGameserver,
 
-        /// <summary>Connecting to master (includes connect, authenticate and joining the lobby)</summary>
+        /// <summary>Connecting to MasterServer (includes sending authentication values).</summary>
         ConnectingToMasterserver,
 
-        /// <summary>Currently not used.</summary>
-        QueuedComingFromGameserver,
-
-        /// <summary>The client disconnects (from any server).</summary>
+        /// <summary>The client disconnects (from any server). This leads to state Disconnected.</summary>
         Disconnecting,
 
-        /// <summary>The client is no longer connected (to any server). Connect to master to go on.</summary>
+        /// <summary>The client is no longer connected (to any server). Connect to MasterServer to go on.</summary>
         Disconnected,
 
-        /// <summary>Connected to master server.</summary>
-        ConnectedToMaster,
+        /// <summary>Connected to MasterServer. You might use matchmaking or join a lobby now.</summary>
+        ConnectedToMasterserver,
+
+        /// <summary>Connected to MasterServer. You might use matchmaking or join a lobby now.</summary>
+        [Obsolete("Renamed to ConnectedToMasterserver.")]
+        ConnectedToMaster = ConnectedToMasterserver,
 
         /// <summary>Client connects to the NameServer. This process includes low level connecting and setting up encryption. When done, state becomes ConnectedToNameServer.</summary>
         ConnectingToNameServer,
@@ -85,15 +93,15 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Client is connected to the NameServer and established enctryption already. You should call OpGetRegions or ConnectToRegionMaster.</summary>
         ConnectedToNameServer,
 
-        /// <summary>Clients disconnects (specifically) from the NameServer to reconnect to the master server.</summary>
-        DisconnectingFromNameServer,
-
-        /// <summary>Client authenticates itself with the server. On the Photon Cloud this sends the AppId of your game. Used with Master Server and Game Server.</summary>
-        Authenticating
+        /// <summary>Clients disconnects (specifically) from the NameServer (usually to connect to the MasterServer).</summary>
+        DisconnectingFromNameServer
     }
 
-    /// <summary>Ways a room can be created or joined.</summary>
-    public enum JoinType
+
+    /// <summary>
+    /// Internal state, how this peer gets into a particular room (joining it or creating it).
+    /// </summary>
+    internal enum JoinType
     {
         /// <summary>This client creates a room, gets into it (no need to join) and can set room properties.</summary>
         CreateRoom,
@@ -217,7 +225,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Enables the new Authentication workflow.</summary>
         public AuthModeOption AuthMode = AuthModeOption.Auth;
 
-        /// <summary>Defines how messages get encrypted.</summary>
+        /// <summary>Defines how the communication gets encrypted.</summary>
         public EncryptionMode EncryptionMode = EncryptionMode.PayloadEncryption;
 
         /// <summary>The protocol which will be used on Master- and Gameserver.</summary>
@@ -243,7 +251,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
 
         /// <summary>True if this client uses a NameServer to get the Master Server address.</summary>
-        public bool IsUsingNameServer { get; private set; }
+        public bool IsUsingNameServer { get; protected internal set; }
 
         /// <summary>Name Server Host Name for Photon Cloud. Without port and without any prefix.</summary>
         public string NameServerHost = "ns.exitgames.com";
@@ -271,7 +279,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>The game server's address for a particular room. In use temporarily, as assigned by master.</summary>
         public string GameServerAddress { get; protected internal set; }
 
-
         /// <summary>The server this client is currently connected or connecting to.</summary>
         /// <remarks>
         /// Each server (NameServer, MasterServer, GameServer) allow some operations and reject others.
@@ -279,7 +286,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public ServerConnection Server { get; private set; }
 
         /// <summary>Backing field for property.</summary>
-        private ClientState state = ClientState.Uninitialized;
+        private ClientState state = ClientState.PeerCreated;
 
         /// <summary>Current state this client is in. Careful: several states are "transitions" that lead to other states.</summary>
         public ClientState State
@@ -298,7 +305,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
         /// <summary>Returns if this client is currently connected or connecting to some type of server.</summary>
         /// <remarks>This is even true while switching servers. Use IsConnectedAndReady to check only for those states that enable you to send Operations.</remarks>
-        public bool IsConnected { get { return this.loadBalancingPeer != null && this.State != ClientState.Uninitialized && this.State != ClientState.Disconnected; } }
+        public bool IsConnected { get { return this.loadBalancingPeer != null && this.State != ClientState.PeerCreated && this.State != ClientState.Disconnected; } }
 
 
         /// <summary>
@@ -320,7 +327,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
                 switch (this.State)
                 {
-                    case ClientState.Uninitialized:
+                    case ClientState.PeerCreated:
                     case ClientState.Disconnected:
                     case ClientState.Disconnecting:
                     case ClientState.Authenticating:
@@ -433,6 +440,9 @@ namespace ExitGames.Client.Photon.LoadBalancing
         }
 
 
+        /// <summary>The local player is never null but not valid unless the client is in a room, too. The ID will be -1 outside of rooms.</summary>
+        public Player LocalPlayer { get; internal set; }
+
         /// <summary>
         /// The nickname of the player (synced with others). Same as client.LocalPlayer.NickName.
         /// </summary>
@@ -453,6 +463,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 this.LocalPlayer.NickName = value;
             }
         }
+
 
         /// <summary>An ID for this user. Sent in OpAuthenticate when you connect. If not set, the PlayerName is applied during connect.</summary>
         /// <remarks>
@@ -489,27 +500,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>The current room this client is connected to (null if none available).</summary>
         public Room CurrentRoom;
 
-        /// <summary>Private field for LocalPlayer.</summary>
-        private Player localPlayer;
-
-        /// <summary>The local player is never null but not valid unless the client is in a room, too. The ID will be -1 outside of rooms.</summary>
-        public Player LocalPlayer
-        {
-            get
-            {
-                if (localPlayer == null)
-                {
-                    this.localPlayer = this.CreatePlayer(string.Empty, -1, true, null);
-                }
-
-                return this.localPlayer;
-            }
-
-            set
-            {
-                this.localPlayer = value;
-            }
-        }
 
         /// <summary>Statistic value available on master server: Players on master (looking for games).</summary>
         public int PlayersOnMasterCount { get; internal set; }
@@ -520,10 +510,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Statistic value available on master server: Rooms currently created.</summary>
         public int RoomsCount { get; internal set; }
 
+
         /// <summary>Internally used to decide if a room must be created or joined on game server.</summary>
         private JoinType lastJoinType;
 
-        private EnterRoomParams enterRoomParamsCache;
+        protected internal EnterRoomParams enterRoomParamsCache;
 
         /// <summary>Internally used to trigger OpAuthenticate when encryption was established after a connect.</summary>
         private bool didAuthenticate;
@@ -553,6 +544,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Internal flag to know if the client currently fetches a friend list.</summary>
         private bool isFetchingFriendList;
 
+
         /// <summary>Internally used to check if a "Secret" is available to use. Sent by Photon Cloud servers, it simplifies authentication when switching servers.</summary>
         protected bool IsAuthorizeSecretAvailable
         {
@@ -579,6 +571,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public LoadBalancingClient(ConnectionProtocol protocol = ConnectionProtocol.Udp)
         {
             this.loadBalancingPeer = new LoadBalancingPeer(this, protocol);
+            this.LocalPlayer = this.CreatePlayer(string.Empty, -1, true, null);
+            this.State = ClientState.PeerCreated;
         }
 
 
@@ -927,13 +921,14 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 return false;
             }
 
-            if (this.isFetchingFriendList || this.Server == ServerConnection.GameServer)
+            if (this.isFetchingFriendList || this.Server != ServerConnection.MasterServer)
             {
                 return false;   // fetching friends currently, so don't do it again (avoid changing the list while fetching friends)
             }
 
             this.isFetchingFriendList = true;
             this.friendListRequested = friendsToFind;
+
             return this.loadBalancingPeer.OpFindFriends(friendsToFind);
         }
 
@@ -1366,6 +1361,22 @@ namespace ExitGames.Client.Photon.LoadBalancing
         }
 
 
+        /// <summary>Gets a list of games matching a SQL-like where clause.</summary>
+        /// <remarks>
+        /// Operation is only available for lobbies of type SqlLobby.
+        /// This is an async request which triggers a OnOperationResponse() call.
+        /// Returned game list is stored in RoomInfoList.
+        /// </remarks>
+        /// <see cref="http://doc.photonengine.com/en-us/pun/current/manuals-and-demos/matchmaking-and-lobby#sql_lobby_type"/>
+        /// <param name="typedLobby">The lobby to query. Has to be of type SqlLobby.</param>
+        /// <param name="sqlLobbyFilter">The sql query statement.</param>
+        /// <returns>If the operation could be sent (has to be connected).</returns>
+        public bool OpGetGameList(TypedLobby typedLobby, string sqlLobbyFilter)
+        {
+            return this.loadBalancingPeer.OpGetGameList(typedLobby, sqlLobbyFilter);
+        }
+
+
         ///  <summary>
         ///  Updates and synchronizes a Player's Custom Properties. Optionally, expectedProperties can be provided as condition.
         ///  </summary>
@@ -1459,7 +1470,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 Player target = this.CurrentRoom.GetPlayer(actorNr);
                 if (target != null)
                 {
-                    target.CacheProperties(actorProperties);
+                    target.InternalCacheProperties(actorProperties);
                 }
             }
 
@@ -1539,7 +1550,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
             if (expectedProperties == null || expectedProperties.Count == 0)
             {
-                this.CurrentRoom.CacheProperties(gameProperties);
+                this.CurrentRoom.InternalCacheProperties(gameProperties);
             }
             return this.loadBalancingPeer.OpSetPropertiesOfRoom(gameProperties, expectedProperties, webFlags);
         }
@@ -1590,74 +1601,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         }
 
 
-        /// <summary>
-        /// This operation makes Photon call your custom web-service by path/name with the given parameters (converted into Json).
-        /// </summary>
-        /// <remarks>
-        /// A WebRPC calls a custom, http-based function on a server you provide. The uriPath is relative to a "base path"
-        /// which is configured server-side. The sent parameters get converted from C# types to Json. Vice versa, the response
-        /// of the web-service will be converted to C# types and sent back as normal operation response.
-        ///
-        ///
-        /// To use this feature, you have to setup your server:
-        ///
-        /// For a Photon Cloud application, <a href="https://doc.photonengine.com/en-us/realtime/current/reference/webhooks">
-        /// visit the Dashboard </a> and setup "WebHooks". The BaseUrl is used for WebRPCs as well.
-        ///
-        ///
-        /// The response by Photon will call OnOperationResponse() with Code: OperationCode.WebRpc.
-        /// To get this response, you can derive the LoadBalancingClient, or (much easier) you set a suitable
-        /// OnOpResponseAction to be called.
-        ///
-        ///
-        /// It's important to understand that the OperationResponse tells you if the WebRPC could be called or not
-        /// but the content of the response will contain the values the web-service sent (if any).
-        /// If the web-service could not execute the request, it might return another error and a message. This is
-        /// inside the OperationResponse.
-        ///
-        /// The class WebRpcResponse is a helper-class that extracts the most valuable content from the WebRPC
-        /// response.
-        /// </remarks>
-        /// <example>
-        /// To get a WebRPC response, set a OnOpResponseAction:
-        ///
-        ///     this.OnOpResponseAction = this.OpResponseHandler;
-        ///
-        /// It could look like this:
-        ///
-        ///     public void OpResponseHandler(OperationResponse operationResponse)
-        ///     {
-        ///         if (operationResponse.OperationCode == OperationCode.WebRpc)
-        ///         {
-        ///             if (operationResponse.ReturnCode != 0)
-        ///             {
-        ///                 Console.WriteLine("WebRpc failed. Response: " + operationResponse.ToStringFull());
-        ///             }
-        ///             else
-        ///             {
-        ///                 WebRpcResponse webResponse = new WebRpcResponse(operationResponse);
-        ///                 Console.WriteLine(webResponse.DebugMessage);    // message from the webserver
-        ///
-        ///                 // do something with the response...
-        ///             }
-        ///         }
-        ///     }
-        /// </example>
-        /// <param name="uriPath">The url path to call, relative to the baseUrl configured on Photon's server-side.</param>
-        /// <param name="parameters">The parameters to send to the web-service method.</param>
-        /// <param name="sendAuthCookie">Defines if the authentication cookie gets sent to a WebHook (if setup).</param>
-        public bool OpWebRpc(string uriPath, object parameters, bool sendAuthCookie = false)
-        {
-            Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
-            opParameters.Add(ParameterCode.UriPath, uriPath);
-            opParameters.Add(ParameterCode.WebRpcParameters, parameters);
-            if (sendAuthCookie)
-            {
-                opParameters.Add(ParameterCode.EventForward, WebFlags.SendAuthCookieConst);
-            }
-            return this.loadBalancingPeer.OpCustom(OperationCode.WebRpc, opParameters, true);
-        }
-
         #endregion
 
         #region Helpers
@@ -1667,11 +1610,10 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// </summary>
         private void ReadoutProperties(Hashtable gameProperties, Hashtable actorProperties, int targetActorNr)
         {
-            // Debug.LogWarning("ReadoutProperties game=" + gameProperties + " actors(" + actorProperties + ")=" + actorProperties + " " + targetActorNr);
             // read game properties and cache them locally
             if (this.CurrentRoom != null && gameProperties != null)
             {
-                this.CurrentRoom.CacheProperties(gameProperties);
+                this.CurrentRoom.InternalCacheProperties(gameProperties);
             }
 
             if (actorProperties != null && actorProperties.Count > 0)
@@ -1683,7 +1625,9 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     Player target = this.CurrentRoom.GetPlayer(targetActorNr);
                     if (target != null)
                     {
-                        target.CacheProperties(this.ReadoutPropertiesForActorNr(actorProperties, targetActorNr));
+                    Hashtable props = this.ReadoutPropertiesForActorNr(actorProperties, targetActorNr);
+                    target.InternalCacheProperties(props);
+                    //SendMonoMessage(PhotonNetworkingMessage.OnPhotonPlayerPropertiesChanged, target, props);
                     }
                 }
                 else
@@ -1707,14 +1651,14 @@ namespace ExitGames.Client.Photon.LoadBalancing
                             target = this.CreatePlayer(newName, actorNr, false, props);
                             this.CurrentRoom.StorePlayer(target);
                         }
-                        else
-                        {
-                            target.CacheProperties(props);
-                        }
+
+                        target.InternalCacheProperties(props);
+                        //SendMonoMessage(PhotonNetworkingMessage.OnPhotonPlayerPropertiesChanged, target, props);
                     }
                 }
             }
         }
+
 
         /// <summary>
         /// Privately used only to read properties for a distinct actor (which might be the hashtable OR a key-pair value IN the actorProperties).
@@ -1768,53 +1712,38 @@ namespace ExitGames.Client.Photon.LoadBalancing
             this.isFetchingFriendList = false;
 
             // if this is called on the gameserver, we clean the room we were in. on the master, we keep the room to get into it
-            if (this.Server == ServerConnection.GameServer || this.State == ClientState.Disconnecting || this.State == ClientState.Uninitialized)
+            if (this.Server == ServerConnection.GameServer || this.State == ClientState.Disconnecting || this.State == ClientState.PeerCreated)
             {
                 this.CurrentRoom = null;    // players get cleaned up inside this, too, except LocalPlayer (which we keep)
             }
 
             // when we leave the master, we clean up the rooms list (which might be updated by the lobby when we join again)
-            if (this.Server == ServerConnection.MasterServer || this.State == ClientState.Disconnecting || this.State == ClientState.Uninitialized)
+            if (this.Server == ServerConnection.MasterServer || this.State == ClientState.Disconnecting || this.State == ClientState.PeerCreated)
             {
                 this.RoomInfoList.Clear();
             }
         }
 
+
         /// <summary>
-        /// Called internally, when a game was joined or created on the game server.
-        /// This reads the response, finds out the local player's actorNumber (a.k.a. Player.ID) and applies properties of the room and players.
+        /// Called internally, when a game was joined or created on the game server successfully.
         /// </summary>
+        /// <remarks>
+        /// This reads the response, finds out the local player's actorNumber (a.k.a. Player.ID) and applies properties of the room and players.
+        /// Errors for these operations are to be handled before this method is called.
+        /// </remarks>
         /// <param name="operationResponse">Contains the server's response for an operation called by this peer.</param>
         private void GameEnteredOnGameServer(OperationResponse operationResponse)
         {
-            if (operationResponse.ReturnCode != 0)
-            {
-                switch (operationResponse.OperationCode)
-                {
-                    case OperationCode.CreateGame:
-                        this.DebugReturn(DebugLevel.ERROR, "Create failed on GameServer. Changing back to MasterServer. ReturnCode: " + operationResponse.ReturnCode);
-                        break;
-                    case OperationCode.JoinGame:
-                    case OperationCode.JoinRandomGame:
-                        this.DebugReturn(DebugLevel.ERROR, "Join failed on GameServer. Changing back to MasterServer.");
-
-                        if (operationResponse.ReturnCode == ErrorCode.GameDoesNotExist)
-                        {
-                            this.DebugReturn(DebugLevel.INFO, "Most likely the game became empty during the switch to GameServer.");
-                        }
-
-                        // TODO: add callback to join failed
-                        break;
-                }
-
-                this.DisconnectToReconnect();
-                return;
-            }
-
             this.CurrentRoom = this.CreateRoom(this.enterRoomParamsCache.RoomName, this.enterRoomParamsCache.RoomOptions);
             this.CurrentRoom.LoadBalancingClient = this;
             this.CurrentRoom.IsLocalClientInside = true;
-            this.State = ClientState.Joined;    // TODO: maybe this set should be done later (when the room is fully setup with props and all)
+
+			// first change the local id, instead of first updating the actorList since actorList uses ID to update itself
+
+			// the local player's actor-properties are not returned in join-result. add this player to the list
+			int localActorNr = (int)operationResponse[ParameterCode.ActorNr];
+			this.ChangeLocalID(localActorNr);
 
             if (operationResponse.Parameters.ContainsKey(ParameterCode.ActorList))
             {
@@ -1822,14 +1751,12 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 this.UpdatedActorList(actorsInRoom);
             }
 
-            // the local player's actor-properties are not returned in join-result. add this player to the list
-            int localActorNr = (int)operationResponse[ParameterCode.ActorNr];
-            this.ChangeLocalID(localActorNr);
-
 
             Hashtable actorProperties = (Hashtable)operationResponse[ParameterCode.PlayerProperties];
             Hashtable gameProperties = (Hashtable)operationResponse[ParameterCode.GameProperties];
             this.ReadoutProperties(gameProperties, actorProperties, 0);
+
+            this.State = ClientState.Joined;
 
             switch (operationResponse.OperationCode)
             {
@@ -1838,7 +1765,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     break;
                 case OperationCode.JoinGame:
                 case OperationCode.JoinRandomGame:
-                    // TODO: add callback "game joined"
+                    // "game joined" should be called in another place (the join ev contains important info for the room).
                     break;
             }
         }
@@ -1875,33 +1802,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Internal "factory" method to create a room-instance.</summary>
         protected internal virtual Room CreateRoom(string roomName, RoomOptions opt)
         {
-            if (opt == null)
-            {
-                opt = new RoomOptions();
-            }
             Room r = new Room(roomName, opt);
             return r;
-        }
-
-        private void SetupEncryption(Dictionary<byte, object> encryptionData)
-        {
-            var mode = (EncryptionMode)(byte)encryptionData[EncryptionDataParameters.Mode];
-            switch (mode)
-            {
-                case EncryptionMode.PayloadEncryption:
-                    byte[] encryptionSecret = (byte[])encryptionData[EncryptionDataParameters.Secret1];
-                    this.loadBalancingPeer.InitPayloadEncryption(encryptionSecret);
-                    break;
-                case EncryptionMode.DatagramEncryption:
-                    {
-                        byte[] secret1 = (byte[])encryptionData[EncryptionDataParameters.Secret1];
-                        byte[] secret2 = (byte[])encryptionData[EncryptionDataParameters.Secret2];
-                        this.loadBalancingPeer.InitDatagramEncryption(secret1, secret2);
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
 
 
@@ -1909,14 +1811,34 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
         #endregion
 
-        #region IPhotonPeerListener
+        #region Implementation of IPhotonPeerListener
 
         /// <summary>Debug output of low level api (and this client).</summary>
         /// <remarks>This method is not responsible to keep up the state of a LoadBalancingClient. Calling base.DebugReturn on overrides is optional.</remarks>
-        public virtual void DebugReturn(DebugLevel level, string message)
+    public virtual void DebugReturn(DebugLevel level, string message)
+    {
+        #if !UNITY
+        Debug.WriteLine(message);
+        #else
+        if (level == DebugLevel.ERROR)
         {
-            Debug.WriteLine(message);
+            Debug.LogError(message);
         }
+        else if (level == DebugLevel.WARNING)
+        {
+            Debug.LogWarning(message);
+        }
+        else if (level == DebugLevel.INFO)
+        {
+            Debug.Log(message);
+        }
+        else if (level == DebugLevel.ALL)
+        {
+            Debug.Log(message);
+        }
+        #endif
+    }
+
 
         /// <summary>
         /// Uses the OperationResponses provided by the server to advance the internal state and call ops as needed.
@@ -1950,8 +1872,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
             switch (operationResponse.OperationCode)
             {
-                case OperationCode.AuthenticateOnce:
                 case OperationCode.Authenticate:
+                case OperationCode.AuthenticateOnce:
                     {
                         if (operationResponse.ReturnCode != 0)
                         {
@@ -1988,13 +1910,13 @@ namespace ExitGames.Client.Photon.LoadBalancing
                                 if (!string.IsNullOrEmpty(incomingId))
                                 {
                                     this.UserId = incomingId;
-                                    this.DebugReturn(DebugLevel.INFO, string.Format("Setting UserId sent by Server: {0}", this.UserId));
+                                    this.DebugReturn(DebugLevel.INFO, string.Format("Received your UserID from server. Updating local value to: {0}", this.UserId));
                                 }
                             }
                             if (operationResponse.Parameters.ContainsKey(ParameterCode.NickName))
                             {
                                 this.NickName = (string)operationResponse.Parameters[ParameterCode.NickName];
-                                this.DebugReturn(DebugLevel.INFO, string.Format("Setting Nickname sent by Server:{0}", this.NickName));
+                                this.DebugReturn(DebugLevel.INFO, string.Format("Received your NickName from server. Updating local value to: {0}", this.NickName));
                             }
 
                             if (operationResponse.Parameters.ContainsKey(ParameterCode.EncryptionData))
@@ -2016,7 +1938,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                         }
                         else if (this.Server == ServerConnection.MasterServer)
                         {
-                            this.State = ClientState.ConnectedToMaster;
+                            this.State = ClientState.ConnectedToMasterserver;
 
                             if (this.AuthMode != AuthModeOption.Auth)
                             {
@@ -2051,24 +1973,27 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     this.AvailableRegionsServers = operationResponse[ParameterCode.Address] as string[];
                     break;
 
-                case OperationCode.Leave:
-                    //this.CleanCachedValues(); // this is done in status change on "disconnect"
-                    this.DisconnectToReconnect();
-                    break;
-
-                case OperationCode.JoinLobby:
-                    this.State = ClientState.JoinedLobby;
-                    this.inLobby = true;
-                    break;
-
-                case OperationCode.LeaveLobby:
-                    this.State = ClientState.ConnectedToMaster;
-                    this.inLobby = false;
-                    break;
-
                 case OperationCode.JoinRandomGame:  // this happens only on the master server. on gameserver this is a "regular" join
                 case OperationCode.CreateGame:
                 case OperationCode.JoinGame:
+
+                    if (operationResponse.ReturnCode != 0)
+                    {
+                        //PhotonNetworkingMessage callback = PhotonNetworkingMessage.OnPhotonRandomJoinFailed;
+                        //if (operationResponse.OperationCode == OperationCode.CreateGame) callback = PhotonNetworkingMessage.OnPhotonCreateRoomFailed;
+                        //if (operationResponse.OperationCode == OperationCode.JoinGame) callback = PhotonNetworkingMessage.OnPhotonJoinRoomFailed;
+                        //SendMonoMessage(callback, operationResponse.ReturnCode, operationResponse.DebugMessage);
+
+                        if (this.Server == ServerConnection.GameServer)
+                        {
+                            this.DisconnectToReconnect();
+                        }
+                        else
+                        {
+                            this.State = (this.inLobby) ? ClientState.JoinedLobby : ClientState.ConnectedToMasterserver;
+                        }
+                    }
+                    else
                     {
                         if (this.Server == ServerConnection.GameServer)
                         {
@@ -2076,26 +2001,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                         }
                         else
                         {
-                            // TODO: handle more error cases
-                            if (operationResponse.ReturnCode != 0)
-                            {
-                                this.State = (this.inLobby) ? ClientState.JoinedLobby : ClientState.ConnectedToMaster;
-
-                                // TODO: error callbacks?! at the moment, developers have to implement this.OnOpResponseAction to get error cases of this.
-                                //if (operationResponse.ReturnCode == ErrorCode.NoRandomMatchFound)
-                                //{
-                                //    // this happens only for JoinRandomRoom
-                                //    break;
-                                //}
-
-                                if (this.loadBalancingPeer.DebugOut >= DebugLevel.ERROR)
-                                {
-                                    this.DebugReturn(DebugLevel.ERROR, string.Format("Getting into game failed, client stays on masterserver: {0}.", operationResponse.ToStringFull()));
-                                }
-                                break;
-                            }
-
-                            this.GameServerAddress = (string)operationResponse[ParameterCode.Address];
+                            this.GameServerAddress = (string) operationResponse[ParameterCode.Address];
                             string roomName = operationResponse[ParameterCode.RoomName] as string;
                             if (!string.IsNullOrEmpty(roomName))
                             {
@@ -2104,9 +2010,42 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
                             this.DisconnectToReconnect();
                         }
+                    }
+                    break;
 
+                case OperationCode.GetGameList:
+                    if (operationResponse.ReturnCode != 0)
+                    {
+                        this.DebugReturn(DebugLevel.ERROR, "GetGameList failed: " + operationResponse.ToStringFull());
                         break;
                     }
+
+                    this.RoomInfoList = new Dictionary<string, RoomInfo>();
+                    Hashtable games = (Hashtable)operationResponse[ParameterCode.GameList];
+                    foreach (string gameName in games.Keys)
+                    {
+                        RoomInfo game = new RoomInfo(gameName, (Hashtable)games[gameName]);
+                        this.RoomInfoList[gameName] = game;
+                    }
+
+                    // TODO: OnRoomListUpdate
+                    break;
+
+                case OperationCode.JoinLobby:
+                    this.State = ClientState.JoinedLobby;
+                    this.inLobby = true;
+                    // TODO: OnJoinedLobby
+                    break;
+
+                case OperationCode.LeaveLobby:
+                    this.State = ClientState.ConnectedToMasterserver;
+                    this.inLobby = false;
+                    break;
+
+                case OperationCode.Leave:
+                    //this.CleanCachedValues(); // this is done in status change on "disconnect"
+                    this.DisconnectToReconnect();
+                    break;
 
                 case OperationCode.FindFriends:
                     if (operationResponse.ReturnCode != 0)
@@ -2119,15 +2058,16 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     bool[] onlineList = operationResponse[ParameterCode.FindFriendsResponseOnlineList] as bool[];
                     string[] roomList = operationResponse[ParameterCode.FindFriendsResponseRoomIdList] as string[];
 
-                    this.FriendList = new List<FriendInfo>(this.friendListRequested.Length);
+                    List<FriendInfo> friendList = new List<FriendInfo>(this.friendListRequested.Length);
                     for (int index = 0; index < this.friendListRequested.Length; index++)
                     {
                         FriendInfo friend = new FriendInfo();
                         friend.Name = this.friendListRequested[index];
                         friend.Room = roomList[index];
                         friend.IsOnline = onlineList[index];
-                        this.FriendList.Insert(index, friend);
+                        friendList.Insert(index, friend);
                     }
+                    this.FriendList = friendList;
 
                     this.friendListRequested = null;
                     this.isFetchingFriendList = false;
@@ -2244,7 +2184,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
                     switch (this.State)
                     {
-                        case ClientState.Uninitialized:
+                        case ClientState.PeerCreated:
                         case ClientState.Disconnecting:
                             if (this.AuthValues != null)
                             {
@@ -2267,7 +2207,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                             #if DEBUG && !NETFX_CORE
                             stacktrace = new System.Diagnostics.StackTrace(true).ToString();
                             #endif
-                            this.DebugReturn(DebugLevel.WARNING, "Got a unexpected Disconnect in LoadBalancingClient State: " + this.State + ". " + stacktrace);
+                            this.DebugReturn(DebugLevel.WARNING, "Got a unexpected Disconnect in LoadBalancingClient State: " + this.State + ". Server: " + this.Server+ " Trace: " + stacktrace);
 
                             if (this.AuthValues != null)
                             {
@@ -2339,6 +2279,19 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <remarks>This method is essential to update the internal state of a LoadBalancingClient. Overriding methods must call base.OnEvent.</remarks>
         public virtual void OnEvent(EventData photonEvent)
         {
+
+            int actorNr = 0;
+            Player originatingPlayer = null;
+            if (photonEvent.Parameters.ContainsKey(ParameterCode.ActorNr))
+            {
+                actorNr = (int) photonEvent[ParameterCode.ActorNr];
+                if (this.CurrentRoom != null)
+                {
+                    originatingPlayer = this.CurrentRoom.GetPlayer(actorNr);
+                }
+            }
+
+
             switch (photonEvent.Code)
             {
                 case EventCode.GameList:
@@ -2361,13 +2314,12 @@ namespace ExitGames.Client.Photon.LoadBalancing
                             this.RoomInfoList[gameName] = game;
                         }
                     }
+					//SendMonoMessage(PhotonNetworkingMessage.OnReceivedRoomListUpdate);
                     break;
 
                 case EventCode.Join:
-                    int actorNr = (int)photonEvent[ParameterCode.ActorNr];  // actorNr (a.k.a. playerNumber / ID) of sending player
                     Hashtable actorProperties = (Hashtable)photonEvent[ParameterCode.PlayerProperties];
 
-                    Player originatingPlayer = this.CurrentRoom.GetPlayer(actorNr);
                     if (originatingPlayer == null)
                     {
                         Player newPlayer = this.CreatePlayer(string.Empty, actorNr, false, actorProperties);
@@ -2375,11 +2327,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     }
                     else
                     {
-                        originatingPlayer.CacheProperties(actorProperties);
+                        originatingPlayer.InternalCacheProperties(actorProperties);
                         originatingPlayer.IsInactive = false;
                     }
 
-                    if (this.LocalPlayer.ID == actorNr)
+                    if (actorNr == this.LocalPlayer.ID)
                     {
                         // in this player's own join event, we get a complete list of players in the room, so check if we know each of the
                         int[] actorsInRoom = (int[])photonEvent[ParameterCode.ActorList];
@@ -2388,46 +2340,30 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     break;
 
                 case EventCode.Leave:
+                    bool isInactive = false;
+                    if (photonEvent.Parameters.ContainsKey(ParameterCode.IsInactive))
                     {
-                        int actorID = (int) photonEvent[ParameterCode.ActorNr];
+                        isInactive = (bool)photonEvent.Parameters[ParameterCode.IsInactive];
+                    }
 
-                        bool isInactive = false;
-                        if (photonEvent.Parameters.ContainsKey(ParameterCode.IsInactive))
-                        {
-                            isInactive = (bool)photonEvent.Parameters[ParameterCode.IsInactive];
-                        }
+                    if (isInactive)
+                    {
+                        originatingPlayer.IsInactive = true;
+                    }
+                    else
+                    {
+                        this.CurrentRoom.RemovePlayer(actorNr);
+                    }
 
-                        if (isInactive)
+                    if (photonEvent.Parameters.ContainsKey(ParameterCode.MasterClientId))
+                    {
+                        int newMaster = (int)photonEvent[ParameterCode.MasterClientId];
+                        if (newMaster != 0)
                         {
-                            this.CurrentRoom.MarkAsInactive(actorID);
-                        }
-                        else
-                        {
-                            this.CurrentRoom.RemovePlayer(actorID);
-                        }
-
-                        // having a new master before calling destroy for the leaving player is important!
-                        // so we elect a new masterclient and ignore the leaving player (who is still in playerlists).
-                        // note: there is/was a server-side-error which sent 0 as new master instead of skipping the key/value. below is a check for 0 due to that.
-                        // note: if the MasterClientId is NOT set by the server, RoomInfo.serverSideMasterClient is false and RemovePlayer() sets the Master Client ID.
-                        if (photonEvent.Parameters.ContainsKey(ParameterCode.MasterClientId))
-                        {
-                            int newMaster = (int)photonEvent[ParameterCode.MasterClientId];
-                            if (newMaster != 0)
-                            {
-                                this.CurrentRoom.masterClientIdField = newMaster;
-                            }
+                            this.CurrentRoom.masterClientId = newMaster;
                         }
                     }
                     break;
-
-                // EventCode.Disconnect was "replaced" by Leave which now has a "inactive" flag.
-                //case EventCode.Disconnect:  //TURNBASED
-                //    {
-                //        int actorID = (int) photonEvent[ParameterCode.ActorNr];
-                //        this.CurrentRoom.MarkAsInactive(actorID);
-                //    }
-                //    break;
 
                 case EventCode.PropertiesChanged:
                     // whenever properties are sent in-room, they can be broadcasted as event (which we handle here)
@@ -2437,17 +2373,19 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     {
                         targetActorNr = (int)photonEvent[ParameterCode.TargetActorNr];
                     }
-                    Hashtable props = (Hashtable)photonEvent[ParameterCode.Properties];
 
-                    if (targetActorNr > 0)
+                    Hashtable gameProperties = null;
+                    Hashtable actorProps = null;
+                    if (targetActorNr == 0)
                     {
-                        this.ReadoutProperties(null, props, targetActorNr);
+                        gameProperties = (Hashtable)photonEvent[ParameterCode.Properties];
                     }
                     else
                     {
-                        this.ReadoutProperties(props, null, 0);
+                        actorProps = (Hashtable)photonEvent[ParameterCode.Properties];
                     }
 
+                    this.ReadoutProperties(gameProperties, actorProps, targetActorNr);
                     break;
 
                 case EventCode.AppStats:
@@ -2474,6 +2412,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
                         this.lobbyStatistics.Add(info);
                     }
+
+                    //SendMonoMessage(PhotonNetworkingMessage.OnLobbyStatisticsUpdate);
                     break;
 
                 case EventCode.ErrorInfo:
@@ -2504,5 +2444,98 @@ namespace ExitGames.Client.Photon.LoadBalancing
         }
 
         #endregion
+
+
+        private void SetupEncryption(Dictionary<byte, object> encryptionData)
+        {
+            var mode = (EncryptionMode)(byte)encryptionData[EncryptionDataParameters.Mode];
+            switch (mode)
+            {
+                case EncryptionMode.PayloadEncryption:
+                    byte[] encryptionSecret = (byte[])encryptionData[EncryptionDataParameters.Secret1];
+                    this.loadBalancingPeer.InitPayloadEncryption(encryptionSecret);
+                    break;
+                case EncryptionMode.DatagramEncryption:
+                    {
+                        byte[] secret1 = (byte[])encryptionData[EncryptionDataParameters.Secret1];
+                        byte[] secret2 = (byte[])encryptionData[EncryptionDataParameters.Secret2];
+                        this.loadBalancingPeer.InitDatagramEncryption(secret1, secret2);
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+
+
+        /// <summary>
+        /// This operation makes Photon call your custom web-service by path/name with the given parameters (converted into Json).
+        /// </summary>
+        /// <remarks>
+        /// A WebRPC calls a custom, http-based function on a server you provide. The uriPath is relative to a "base path"
+        /// which is configured server-side. The sent parameters get converted from C# types to Json. Vice versa, the response
+        /// of the web-service will be converted to C# types and sent back as normal operation response.
+        ///
+        ///
+        /// To use this feature, you have to setup your server:
+        ///
+        /// For a Photon Cloud application, <a href="https://doc.photonengine.com/en-us/realtime/current/reference/webhooks">
+        /// visit the Dashboard </a> and setup "WebHooks". The BaseUrl is used for WebRPCs as well.
+        ///
+        ///
+        /// The response by Photon will call OnOperationResponse() with Code: OperationCode.WebRpc.
+        /// To get this response, you can derive the LoadBalancingClient, or (much easier) you set a suitable
+        /// OnOpResponseAction to be called.
+        ///
+        ///
+        /// It's important to understand that the OperationResponse tells you if the WebRPC could be called or not
+        /// but the content of the response will contain the values the web-service sent (if any).
+        /// If the web-service could not execute the request, it might return another error and a message. This is
+        /// inside the OperationResponse.
+        ///
+        /// The class WebRpcResponse is a helper-class that extracts the most valuable content from the WebRPC
+        /// response.
+        /// </remarks>
+        /// <example>
+        /// To get a WebRPC response, set a OnOpResponseAction:
+        ///
+        ///     this.OnOpResponseAction = this.OpResponseHandler;
+        ///
+        /// It could look like this:
+        ///
+        ///     public void OpResponseHandler(OperationResponse operationResponse)
+        ///     {
+        ///         if (operationResponse.OperationCode == OperationCode.WebRpc)
+        ///         {
+        ///             if (operationResponse.ReturnCode != 0)
+        ///             {
+        ///                 Console.WriteLine("WebRpc failed. Response: " + operationResponse.ToStringFull());
+        ///             }
+        ///             else
+        ///             {
+        ///                 WebRpcResponse webResponse = new WebRpcResponse(operationResponse);
+        ///                 Console.WriteLine(webResponse.DebugMessage);    // message from the webserver
+        ///
+        ///                 // do something with the response...
+        ///             }
+        ///         }
+        ///     }
+        /// </example>
+        /// <param name="uriPath">The url path to call, relative to the baseUrl configured on Photon's server-side.</param>
+        /// <param name="parameters">The parameters to send to the web-service method.</param>
+        /// <param name="sendAuthCookie">Defines if the authentication cookie gets sent to a WebHook (if setup).</param>
+        public bool OpWebRpc(string uriPath, object parameters, bool sendAuthCookie = false)
+        {
+            Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+            opParameters.Add(ParameterCode.UriPath, uriPath);
+            opParameters.Add(ParameterCode.WebRpcParameters, parameters);
+            if (sendAuthCookie)
+            {
+                opParameters.Add(ParameterCode.EventForward, WebFlags.SendAuthCookieConst);
+            }
+            return this.loadBalancingPeer.OpCustom(OperationCode.WebRpc, opParameters, true);
+        }
     }
+
 }

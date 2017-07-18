@@ -8,9 +8,12 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+
+
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
+
 
 namespace ExitGames.Client.Photon.LoadBalancing
 {
@@ -28,7 +31,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public string Name { get; internal protected set; }
         public bool IsOnline { get; internal protected set; }
         public string Room { get; internal protected set; }
-        public bool IsInRoom { get { return IsOnline && !string.IsNullOrEmpty(this.Room); } }
+
+        public bool IsInRoom
+        {
+            get { return this.IsOnline && !string.IsNullOrEmpty(this.Room); }
+        }
 
         public override string ToString()
         {

@@ -45,7 +45,7 @@ public class Gui : MonoBehaviour {
         var roomName = "";
         if (PhotonNetwork.inRoom)
         {
-            roomName = PhotonNetwork.room.name;
+            roomName = PhotonNetwork.room.Name;
         }
         string rttString = String.Format(
             "RTT/Var/Que: {0}/{1}/{2}",
@@ -56,7 +56,7 @@ public class Gui : MonoBehaviour {
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Connect", bStyle))
         {
-#if UNITY_5_3
+#if UNITY_5_3_OR_NEWER
                 PhotonNetwork.ConnectUsingSettings(string.Format("1.{0}", UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex));
 #else
                 PhotonNetwork.ConnectUsingSettings(string.Format("1.{0}", Application.loadedLevel));
@@ -94,8 +94,8 @@ public class Gui : MonoBehaviour {
         {
             GUILayout.Label("Traffic bytes: " + PhotonVoiceNetwork.Client.loadBalancingPeer.TrafficStatsIncoming.TotalPacketBytes + "/" + PhotonVoiceNetwork.Client.loadBalancingPeer.TrafficStatsOutgoing.TotalPacketBytes, lStyleSmall);
         }
-        GUILayout.Label("Frames Sent/Rcvd/Lost: " + PhotonVoiceNetwork.Client.FramesSent + "/" + PhotonVoiceNetwork.Client.FramesReceived + "/" + PhotonVoiceNetwork.Client.FramesLost, lStyleSmall);
-        GUILayout.Label("Voice RTT/Var: " + PhotonVoiceNetwork.Client.RoundTripTime + "/" + PhotonVoiceNetwork.Client.RoundTripTimeVariance, lStyleSmall);
+        GUILayout.Label("Frames Sent/Rcvd/Lost: " + PhotonVoiceNetwork.VoiceClient.FramesSent + "/" + PhotonVoiceNetwork.VoiceClient.FramesReceived + "/" + PhotonVoiceNetwork.VoiceClient.FramesLost, lStyleSmall);
+        GUILayout.Label("Voice RTT/Var: " + PhotonVoiceNetwork.VoiceClient.RoundTripTime + "/" + PhotonVoiceNetwork.VoiceClient.RoundTripTimeVariance, lStyleSmall);
         
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -120,14 +120,14 @@ public class Gui : MonoBehaviour {
         }
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button((PhotonVoiceNetwork.Client.DebugEchoMode ? "[X] " : "[ ] ")  + "Debug Echo", bStyle))
-        {
-            PhotonVoiceNetwork.Client.DebugEchoMode = !PhotonVoiceNetwork.Client.DebugEchoMode;
-        }
 
         if (rec != null && rec.photonView.isMine)
         {
-            
+            if (GUILayout.Button((rec.DebugEchoMode ? "[X] " : "[ ] ") + "Debug Echo", bStyle))
+            {
+                rec.DebugEchoMode = !rec.DebugEchoMode;
+            }
+
             if (GUILayout.Button((rec.Transmit ? "[X] ": "[ ] ") + "Transmit", bStyle))
             {
                 rec.Transmit = !rec.Transmit;

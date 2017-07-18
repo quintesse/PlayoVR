@@ -9,9 +9,10 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
+
 
 namespace ExitGames.Client.Photon.LoadBalancing
 {
@@ -24,14 +25,32 @@ namespace ExitGames.Client.Photon.LoadBalancing
     #endif
 
 
+    /// <summary>Reads an operation response of a WebRpc and provides convenient access to most common values.</summary>
+    /// <remarks>
+    /// See method PhotonNetwork.WebRpc.<br/>
+    /// Create a WebRpcResponse to access common result values.<br/>
+    /// The operationResponse.OperationCode should be: OperationCode.WebRpc.<br/>
+    /// </remarks>
     public class WebRpcResponse
     {
+        /// <summary>Name of the WebRpc that was called.</summary>
         public string Name { get; private set; }
-        /// <summary> 1 is "OK" for WebRPCs. -1 tells you: No ReturnCode by WebRpc service (check OperationResponse.ReturnCode).</summary>
+
+        /// <summary>ReturnCode of the WebService that answered the WebRpc.</summary>
+        /// <remarks>
+        ///  1 is: "OK" for WebRPCs.<br/>
+        /// -1 is: No ReturnCode by WebRpc service (check OperationResponse.ReturnCode).<br/>
+        /// Other ReturnCodes are defined by the individual WebRpc and service.
+        /// </remarks>
         public int ReturnCode { get; private set; }
+
+        /// <summary>Might be empty or null.</summary>
         public string DebugMessage { get; private set; }
+
+        /// <summary>Other key/values returned by the webservice that answered the WebRpc.</summary>
         public Dictionary<string, object> Parameters { get; private set; }
 
+        /// <summary>An OperationResponse for a WebRpc is needed to read it's values.</summary>
         public WebRpcResponse(OperationResponse response)
         {
             object value;
@@ -48,9 +67,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
             this.DebugMessage = value as string;
         }
 
+        /// <summary>Turns the response into an easier to read string.</summary>
+        /// <returns>String resembling the result.</returns>
         public string ToStringFull()
         {
-            return string.Format("{0}={2}: {1} \"{3}\"", Name, SupportClass.DictionaryToString(Parameters), ReturnCode, DebugMessage);
+            return string.Format("{0}={2}: {1} \"{3}\"", this.Name, SupportClass.DictionaryToString(this.Parameters), this.ReturnCode, this.DebugMessage);
         }
     }
 
@@ -70,7 +91,16 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public bool HttpForward
         {
             get { return (WebhookFlags & HttpForwardConst) != 0; }
-            set { WebhookFlags = (byte)(WebhookFlags | HttpForwardConst); }
+            set {
+                if (value)
+                {
+                    WebhookFlags |= HttpForwardConst;
+                }
+                else
+                {
+                    WebhookFlags = (byte) (WebhookFlags & ~(1 << 0));
+                }
+            }
         }
         public const byte HttpForwardConst = 0x01;
         /// <summary>
@@ -79,7 +109,16 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public bool SendAuthCookie
         {
             get { return (WebhookFlags & SendAuthCookieConst) != 0; }
-            set { WebhookFlags |= SendAuthCookieConst; }
+            set {
+                if (value)
+                {
+                    WebhookFlags |= SendAuthCookieConst;
+                }
+                else
+                {
+                    WebhookFlags = (byte)(WebhookFlags & ~(1 << 1));
+                }
+            }
         }
         public const byte SendAuthCookieConst = 0x02;
         /// <summary>
@@ -88,7 +127,16 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public bool SendSync
         {
             get { return (WebhookFlags & SendSyncConst) != 0; }
-            set { WebhookFlags |= SendSyncConst; }
+            set {
+                if (value)
+                {
+                    WebhookFlags |= SendSyncConst;
+                }
+                else
+                {
+                    WebhookFlags = (byte)(WebhookFlags & ~(1 << 2));
+                }
+            }
         }
         public const byte SendSyncConst = 0x04;
         /// <summary>
@@ -97,7 +145,16 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public bool SendState
         {
             get { return (WebhookFlags & SendStateConst) != 0; }
-            set { WebhookFlags |= SendStateConst; }
+            set {
+                if (value)
+                {
+                    WebhookFlags |= SendStateConst;
+                }
+                else
+                {
+                    WebhookFlags = (byte)(WebhookFlags & ~(1 << 3));
+                }
+            }
         }
         public const byte SendStateConst = 0x08;
 

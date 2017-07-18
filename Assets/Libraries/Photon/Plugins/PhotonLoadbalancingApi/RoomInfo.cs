@@ -9,7 +9,7 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
 
@@ -24,8 +24,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
 
     /// <summary>
-    /// Used for Room listings of the lobby (not yet joining). Offers the basic info about a
-    /// room: name, player counts, properties, etc.
+    /// A simplified room with just the info required to list and join, used for the room listing in the lobby.
+    /// The properties are not settable (IsOpen, MaxPlayers, etc).
     /// </summary>
     /// <remarks>
     /// This class resembles info about available rooms, as sent by the Master server's lobby.
@@ -33,7 +33,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
     /// </remarks>
     public class RoomInfo
     {
-
         /// <summary>Used internally in lobby, to mark rooms that are no longer listed (for being full, closed or hidden).</summary>
         protected internal bool removedFromList;
 
@@ -44,7 +43,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         protected byte maxPlayers = 0;
 
         /// <summary>Backing field for property.</summary>
-        protected string[] expectedUsersField;
+        protected string[] expectedUsers;
 
         /// <summary>Backing field for property.</summary>
         protected bool isOpen = true;
@@ -52,19 +51,21 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Backing field for property.</summary>
         protected bool isVisible = true;
 
+        /// <summary>Backing field for property. False unless the GameProperty is set to true (else it's not sent).</summary>
+        protected bool autoCleanUp = true;
+
         /// <summary>Backing field for property.</summary>
         protected string name;
 
         /// <summary>Backing field for master client id (actorNumber). defined by server in room props and ev leave.</summary>
-        protected internal int masterClientIdField;
-
-        protected internal bool serverSideMasterClient { get; private set; }
+        protected internal int masterClientId;
 
         /// <summary>Backing field for property.</summary>
-        protected string[] propsListedInLobby;
+        protected string[] propertiesListedInLobby;
 
-        /// <summary>Read-only "cache" of custom properties of a room. Set via Room.SetCustomProperties.</summary>
+        /// <summary>Read-only "cache" of custom properties of a room. Set via Room.SetCustomProperties (not available for RoomInfo class!).</summary>
         /// <remarks>All keys are string-typed and the values depend on the game/application.</remarks>
+        /// <see cref="Room.SetCustomProperties"/>
         public Hashtable CustomProperties
         {
             get
@@ -78,7 +79,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         {
             get
             {
-                return name;
+                return this.name;
             }
         }
 
@@ -152,7 +153,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <param name="roomProperties">Properties for this room.</param>
         protected internal RoomInfo(string roomName, Hashtable roomProperties)
         {
-            this.CacheProperties(roomProperties);
+            this.InternalCacheProperties(roomProperties);
 
             this.name = roomName;
         }
@@ -163,7 +164,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public override bool Equals(object other)
         {
             RoomInfo otherRoomInfo = other as RoomInfo;
-            return (otherRoomInfo != null && this.name.Equals(otherRoomInfo.name));
+            return (otherRoomInfo != null && this.Name.Equals(otherRoomInfo.name));
         }
 
         /// <summary>
@@ -187,13 +188,12 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <returns>Summary of this RoomInfo instance.</returns>
         public string ToStringFull()
         {
-            return string.Format("Room: '{0}' {1},{2} {4}/{3} players.\ncustomProps: {5}", this.name, this.isVisible ? "visible" : "hidden", this.isOpen ? "open" : "closed", this.maxPlayers, this.PlayerCount, SupportClass.DictionaryToString(this.customProperties));
+            return string.Format("Room: '{0}' {1},{2} {4}/{3} players.\ncustomProps: {5}", this.name, this.isVisible ? "visible" : "hidden", this.isOpen ? "open" : "closed", this.maxPlayers, this.PlayerCount, this.customProperties.ToStringFull());
         }
 
-
-        /// <summary>Copies "well known" properties to fields (isVisible, etc) and caches the custom properties (string-keys only) in a local hashtable.</summary>
+        /// <summary>Copies "well known" properties to fields (IsVisible, etc) and caches the custom properties (string-keys only) in a local hashtable.</summary>
         /// <param name="propertiesToCache">New or updated properties to store in this RoomInfo.</param>
-        protected internal virtual void CacheProperties(Hashtable propertiesToCache)
+        protected internal virtual void InternalCacheProperties(Hashtable propertiesToCache)
         {
             if (propertiesToCache == null || propertiesToCache.Count == 0 || this.customProperties.Equals(propertiesToCache))
             {
@@ -233,24 +233,29 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 this.PlayerCount = (int)((byte)propertiesToCache[GamePropertyKey.PlayerCount]);
             }
 
+            if (propertiesToCache.ContainsKey(GamePropertyKey.CleanupCacheOnLeave))
+            {
+                this.autoCleanUp = (bool)propertiesToCache[GamePropertyKey.CleanupCacheOnLeave];
+            }
+
             if (propertiesToCache.ContainsKey(GamePropertyKey.MasterClientId))
             {
-                this.serverSideMasterClient = true;
-                this.masterClientIdField = (int)propertiesToCache[GamePropertyKey.MasterClientId];
+                this.masterClientId = (int)propertiesToCache[GamePropertyKey.MasterClientId];
             }
 
             if (propertiesToCache.ContainsKey(GamePropertyKey.PropsListedInLobby))
             {
-                this.propsListedInLobby = propertiesToCache[GamePropertyKey.PropsListedInLobby] as string[];
+                this.propertiesListedInLobby = propertiesToCache[GamePropertyKey.PropsListedInLobby] as string[];
             }
 
             if (propertiesToCache.ContainsKey((byte)GamePropertyKey.ExpectedUsers))
             {
-                this.expectedUsersField = (string[])propertiesToCache[GamePropertyKey.ExpectedUsers];
+                this.expectedUsers = (string[])propertiesToCache[GamePropertyKey.ExpectedUsers];
             }
 
             // merge the custom properties (from your application) to the cache (only string-typed keys will be kept)
             this.customProperties.MergeStringKeys(propertiesToCache);
+            this.customProperties.StripKeysWithNullValues();
         }
     }
 }

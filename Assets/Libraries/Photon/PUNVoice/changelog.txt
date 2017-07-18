@@ -1,3 +1,32 @@
+v1.11
+CHANGED: PUN updated to 1.85
+ADDED: missing Windows Store Applications opus files
+FIXED: broken demo scenes
+ADDED: missing WebSockets PUN plugins folder
+REMOVED: extra unused AndroidManifest.xml file
+FIXED: duplicate DLLs for Windows Store Applications platform
+
+v1.10
+CHANGED: PUN updated to v1.84.1
+FIXED: correct versioning is resumed after the wrong previous version 1.91 which was meant to be 1.9.1.
+FIXED: Windows Store Apps target platform and Universal Windows Platform build is working again.
+FIXED: high CPU usage issue.
+FIXED: PhotonVoiceSettings singleton now allows inactive or non scene instances e.g. attached to prefabs.
+
+v1.91
+FIXED: issue with missing files by renaming compile condition ENABLE_VIDEO to PHOTON_VOICE_VIDEO_ENABLE.
+FIXED: issue in PhotonVoiceHandler due to Profiler namespace change in Unity 5.5+.
+UPDATED: CrossPlatformInput StandardAsset to remove warnings in latest Unity versions.
+
+v1.9
+  PUNVoice:
+CHANGED: PUN updated to v1.84
+ADDED: PhotonVoiceHandler to implements a fallback thread that keeps sending ACKs when in background (Android) or keeps service loop when loading scenes.
+CHANGED: AudioClipWrapper.cs, AudioStreamPlayer.cs, MicWrapper.cs moved from Assets/PUNVoice/Scripts folder to Assets/Plugins/PhotonVoiceApi/Platforms/Unity
+  PhotonVoiceAPI:
+CHANGED: Voice peer sends sudio packets in channel 1 to not interfere with user data being sent in channel 0 by default
+CHANGED: encoding and decoding moved to separate threads
+
 v1.8
 CHANGED: PUN updated to v1.79
 FIXED: when player left a room, VoiceClient.removePlayerVoices tried to remove player voices from wrong container

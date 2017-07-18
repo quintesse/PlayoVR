@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
 using ExitGames.Client.Photon.Voice;
-using System;
 
 /// <summary>
 /// Collection of Photon Voice settings. Add single instance to the scene and set values in inspector.
 /// Will be created automatically on application start otherwise.
 /// </summary>
+[DisallowMultipleComponent]
 public class PhotonVoiceSettings : MonoBehaviour
 {
 
@@ -23,7 +22,7 @@ public class PhotonVoiceSettings : MonoBehaviour
     public POpusCodec.Enums.SamplingRate SamplingRate = POpusCodec.Enums.SamplingRate.Sampling24000;     // set in inspector
 
     /// Outgoing audio stream encoder delay (buffer size in terms of time; applied per every recoder instance).
-    public FrameDuration FrameDuration = FrameDuration.Frame20ms;   // set in inspector
+    public OpusCodec.FrameDuration FrameDuration = OpusCodec.FrameDuration.Frame20ms;   // set in inspector
 
     /// Outgoing audio stream bitrate (applied per every recoder instance).
     public int Bitrate = 30000;               // set in inspector
@@ -61,7 +60,19 @@ public class PhotonVoiceSettings : MonoBehaviour
                 instance = PhotonVoiceNetwork.instance.gameObject.AddComponent<PhotonVoiceSettings>();
             }
             return instance; 
-        } 
+        }
+        private set
+        {
+            if (instance != value)
+            {
+                if (instance != null && value != null)
+                {
+                    Debug.LogErrorFormat(value, "PUNVoice: PhotonVoiceSettings instance already set, extra instance ignored.");
+                    return;
+                }
+                instance = value;
+            }
+        }
     }
 
     // for settings put in scene in editor
@@ -69,14 +80,7 @@ public class PhotonVoiceSettings : MonoBehaviour
     {
         lock (instanceLock)
         {
-            if (instance == null)
-            {
-                instance = this;
-            }
-            else
-            {
-                Debug.LogError("PUNVoice: Attempt to create multiple instances of PhotonVoiceSettings");
-            }
+            Instance = this;
         }
     }
 }

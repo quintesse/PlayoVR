@@ -1,29 +1,15 @@
 fileFormatVersion: 2
-guid: ea682d78b5ad6524b99b38ad2d56bd1d
+guid: a9bd3e6a682e029449e8269f017242bb
 folderAsset: yes
-timeCreated: 1490135593
-licenseType: Free
+timeCreated: 1499357219
+licenseType: Store
 PluginImporter:
   serializedVersion: 1
   iconMap: {}
   executionOrder: {}
   isPreloaded: 0
-  isOverridable: 0
   platformData:
     Any:
-      enabled: 0
-      settings: {}
-    Editor:
-      enabled: 1
-      settings:
-        DefaultValueInitialized: true
-    OSXIntel:
-      enabled: 1
-      settings: {}
-    OSXIntel64:
-      enabled: 1
-      settings: {}
-    OSXUniversal:
       enabled: 1
       settings: {}
   userData: 

@@ -5,12 +5,14 @@
 /// </summary>
 [RequireComponent(typeof (AudioSource))]
 [DisallowMultipleComponent]
+[AddComponentMenu("Photon Voice/Photon Voice Speaker")]
+[HelpURL("https://doc.photonengine.com/en-us/voice/current/getting-started/voice-for-pun#the__audio_source__prefab")]
 public class PhotonVoiceSpeaker : Photon.MonoBehaviour
 {
     private AudioStreamPlayer player;
 
     /// <summary>Time when last audio packet was received for the speaker.</summary>
-    public float LastRecvTime { get; private set; }
+    public long LastRecvTime { get; private set; }
 
     /// <summary>Is the speaker playing right now.</summary>
     public bool IsPlaying { get { return this.player.IsPlaying; } }
@@ -57,7 +59,7 @@ public class PhotonVoiceSpeaker : Photon.MonoBehaviour
     internal void OnAudioFrame(float[] frame)
     {
         // Set last time we got something
-        this.LastRecvTime = Time.time;
+        this.LastRecvTime = System.DateTime.Now.Ticks;
 
         this.player.OnAudioFrame(frame);
     }

@@ -9,7 +9,7 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_6_0
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
 #define UNITY
 #endif
 
@@ -28,12 +28,12 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
     /// <summary>
     /// This class represents a room a client joins/joined.
-    /// Mostly used through LoadBalancingClient.CurrentRoom, after joining any room.
+    /// </summary>
+    /// <remarks>
     /// Contains a list of current players, their properties and those of this room, too.
     /// A room instance has a number of "well known" properties like IsOpen, MaxPlayers which can be changed.
     /// Your own, custom properties can be set via SetCustomProperties() while being in the room.
-    /// </summary>
-    /// <remarks>
+    ///
     /// Typically, this class should be extended by a game-specific implementation with logic and extra features.
     /// </remarks>
     public class Room : RoomInfo
@@ -47,7 +47,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         protected internal LoadBalancingClient LoadBalancingClient { get; set; }
 
         /// <summary>The name of a room. Unique identifier (per Loadbalancing group) for a room/match.</summary>
-        /// <remarks>The name can't be changed once it's set. The setter is used to apply the name, if created by the server.</remarks>
+        /// <remarks>The name can't be changed once it's set by the server.</remarks>
         public new string Name
         {
             get
@@ -63,13 +63,14 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
         /// <summary>
         /// Defines if the room can be joined.
+        /// </summary>
+        /// <remarks>
         /// This does not affect listing in a lobby but joining the room will fail if not open.
         /// If not open, the room is excluded from random matchmaking.
         /// Due to racing conditions, found matches might become closed while users are trying to join.
         /// Simply re-connect to master and find another.
         /// Use property "IsVisible" to not list the room.
-        /// </summary>
-        /// <remarks>
+        ///
         /// As part of RoomInfo this can't be set.
         /// As part of a Room (which the player joined), the setter will update the server and all clients.
         /// </remarks>
@@ -98,10 +99,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
         /// <summary>
         /// Defines if the room is listed in its lobby.
-        /// Rooms can be created invisible, or changed to invisible.
-        /// To change if a room can be joined, use property: open.
         /// </summary>
         /// <remarks>
+        /// Rooms can be created invisible, or changed to invisible.
+        /// To change if a room can be joined, use property: open.
+        ///
         /// As part of RoomInfo this can't be set.
         /// As part of a Room (which the player joined), the setter will update the server and all clients.
         /// </remarks>
@@ -127,6 +129,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 this.isVisible = value;
             }
         }
+
 
         /// <summary>
         /// Sets a limit of players to this room. This property is synced and shown in lobby, too.
@@ -159,7 +162,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
         }
 
-        /// <summary>Gets the count of players in this Room (using this.Players.Count).</summary>
+        /// <summary>The count of players in this Room (using this.Players.Count).</summary>
         public new byte PlayerCount
         {
             get
@@ -199,58 +202,62 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// </remarks>
         public string[] ExpectedUsers
         {
-            get { return this.expectedUsersField; }
+            get { return this.expectedUsers; }
         }
 
         /// <summary>
         /// The ID (actorID, actorNumber) of the player who's the master of this Room.
         /// Note: This changes when the current master leaves the room.
         /// </summary>
-        public int MasterClientId { get { return this.masterClientIdField; } }
+        public int MasterClientId { get { return this.masterClientId; } }
 
         /// <summary>
         /// Gets a list of custom properties that are in the RoomInfo of the Lobby.
         /// This list is defined when creating the room and can't be changed afterwards. Compare: LoadBalancingClient.OpCreateRoom()
         /// </summary>
         /// <remarks>You could name properties that are not set from the beginning. Those will be synced with the lobby when added later on.</remarks>
-        public string[] PropsListedInLobby
+        public string[] PropertiesListedInLobby
         {
             get
             {
-                return this.propsListedInLobby;
+                return this.propertiesListedInLobby;
             }
 
             private set
             {
-                this.propsListedInLobby = value;
+                this.propertiesListedInLobby = value;
             }
         }
 
-        /// <summary>Creates a Room with null for name and no properties.</summary>
-        protected internal Room() : base(null, null)
+        /// <summary>
+        /// Gets if this room uses autoCleanUp to remove all (buffered) RPCs and instantiated GameObjects when a player leaves.
+        /// </summary>
+        public bool AutoCleanUp
         {
-            // nothing set yet (until a room was assigned by master)
+            get
+            {
+                return this.autoCleanUp;
+            }
         }
 
-        /// <summary>Creates a Room with given name and properties.</summary>
-        protected internal Room(string roomName) : base(roomName, null)
-        {
-            // base sets name and (custom)properties. here we set "well known" properties
-        }
 
         /// <summary>Creates a Room (representation) with given name and properties and the "listing options" as provided by parameters.</summary>
         /// <param name="roomName">Name of the room (can be null until it's actually created on server).</param>
         /// <param name="options">Room options.</param>
-        protected internal Room(string roomName, RoomOptions options) : base(roomName, options.CustomRoomProperties)
+        protected internal Room(string roomName, RoomOptions options) : base(roomName, options != null ? options.CustomRoomProperties : null)
         {
-            // base sets name and (custom)properties. here we set "well known" properties
-            this.isVisible = options.IsVisible;
-            this.isOpen = options.IsOpen;
-            this.maxPlayers = options.MaxPlayers;
-            this.PropsListedInLobby = options.CustomRoomPropertiesForLobby;
-            this.PlayerTTL = options.PlayerTtl;
-            this.RoomTTL = options.EmptyRoomTtl;
+            // base() sets name and (custom)properties. here we set "well known" properties
+            if (options != null)
+            {
+                this.isVisible = options.IsVisible;
+                this.isOpen = options.IsOpen;
+                this.maxPlayers = options.MaxPlayers;
+                this.propertiesListedInLobby = options.CustomRoomPropertiesForLobby;
+                this.PlayerTTL = options.PlayerTtl;
+                this.RoomTTL = options.EmptyRoomTtl;
+            }
         }
+
 
         /// <summary>
         /// Updates and synchronizes this Room's Custom Properties. Optionally, expectedProperties can be provided as condition.
@@ -315,20 +322,22 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// Enables you to define the properties available in the lobby if not all properties are needed to pick a room.
         /// </summary>
         /// <remarks>
-        /// Limit the amount of properties sent to users in the lobby as this improves speed and stability.
+        /// Limit the amount of properties sent to users in the lobby to improve speed and stability.
         /// </remarks>
-        /// <param name="propsToListInLobby">An array of custom room property names to forward to the lobby.</param>
-        public void SetPropertiesListedInLobby(string[] propsToListInLobby)
+        /// <param name="propertiesListedInLobby">An array of custom room property names to forward to the lobby.</param>
+        public void SetPropertiesListedInLobby(string[] propertiesListedInLobby)
         {
             Hashtable customProps = new Hashtable();
-            customProps[GamePropertyKey.PropsListedInLobby] = propsToListInLobby;
+            customProps[GamePropertyKey.PropsListedInLobby] = propertiesListedInLobby;
 
             bool sent = this.LoadBalancingClient.OpSetPropertiesOfRoom(customProps);
+
             if (sent)
             {
-                this.propsListedInLobby = propsToListInLobby;
+                this.propertiesListedInLobby = propertiesListedInLobby;
             }
         }
+
 
         /// <summary>
         /// Removes a player from this room's Players Dictionary.
@@ -339,11 +348,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         {
             this.Players.Remove(player.ID);
             player.RoomReference = null;
-
-            if (player.ID == this.MasterClientId)
-            {
-                this.UpdateMasterClientId();
-            }
         }
 
         /// <summary>
@@ -353,52 +357,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         {
             this.RemovePlayer(this.GetPlayer(id));
         }
-
-        /// <summary>
-        /// Internally used to mark a player as "offline" for async/turnbased games.
-        /// </summary>
-        /// <param name="id">The actorNumber (player.ID) of a player in this room.</param>
-        protected internal virtual void MarkAsInactive(int id)
-        {
-            Player player = this.GetPlayer(id);
-            if (player != null)
-            {
-                player.IsInactive = true;
-            }
-        }
-
-        /// <summary>
-        /// Picks a new master client and sets property MasterClientId accordingly.
-        /// </summary>
-        /// <remarks>
-        /// The Photon server can select the Master Client and inform clients about that.
-        /// In this case, serverSideMasterClient is true and the clients get updates of this from the server.
-        /// </remarks>
-        private void UpdateMasterClientId()
-        {
-            if (this.serverSideMasterClient)
-            {
-                return;
-            }
-
-            int lowestId = int.MaxValue;
-            foreach (int id in this.Players.Keys)
-            {
-                if (id < lowestId)
-                {
-                    lowestId = id;
-                }
-            }
-
-            // with 0 players, the lowest ID is 0 (and thus master is 0, too)
-            if (this.players.Count == 0)
-            {
-                lowestId = 0;
-            }
-
-            this.masterClientIdField = lowestId;
-        }
-
 
         /// <summary>
         /// Asks the server to assign another player as Master Client of your current room.
@@ -420,11 +378,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <returns>False when this operation couldn't be done currently. Requires a v4 Photon Server.</returns>
         public bool SetMasterClient(Player masterClientPlayer)
         {
-            if (!this.serverSideMasterClient)
-            {
-                this.LoadBalancingClient.DebugReturn(DebugLevel.WARNING, "SetMasterClient can only be called if the server supports a 'Server Side Master Client'.");
-                return false;
-            }
             if (!this.IsLocalClientInside)
             {
                 this.LoadBalancingClient.DebugReturn(DebugLevel.WARNING, "SetMasterClient can only be called for the current room (being in one).");
@@ -464,7 +417,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             // while initializing the room, the players are not guaranteed to be added in-order
             if (this.MasterClientId == 0 || player.ID < this.MasterClientId)
             {
-                this.UpdateMasterClientId();
+                this.masterClientId = player.ID;
             }
 
             return player;
@@ -516,7 +469,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <returns>Summary of this Room instance.</returns>
         public new string ToStringFull()
         {
-            return string.Format("Room: '{0}' {1},{2} {4}/{3} players.\ncustomProps: {5}", this.name, this.isVisible ? "visible" : "hidden", this.isOpen ? "open" : "closed", this.maxPlayers, this.PlayerCount, SupportClass.DictionaryToString(this.CustomProperties));
+            return string.Format("Room: '{0}' {1},{2} {4}/{3} players.\ncustomProps: {5}", this.name, this.isVisible ? "visible" : "hidden", this.isOpen ? "open" : "closed", this.maxPlayers, this.PlayerCount, this.CustomProperties.ToStringFull());
         }
     }
 }

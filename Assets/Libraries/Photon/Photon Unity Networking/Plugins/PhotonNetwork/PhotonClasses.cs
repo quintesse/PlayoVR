@@ -390,6 +390,34 @@ public interface IPunCallbacks
     /// And the client has to be connected to the Master Server, which is providing the info about lobbies.
     /// </remarks>
     void OnLobbyStatisticsUpdate();
+
+	/// <summary>
+	/// Called when a remote Photon Player activity changed. This will be called ONLY if PlayerTtl is greater than 0.
+	/// </summary>
+    /// <remarks>
+	/// Use PhotonPlayer.IsInactive to check a player's current activity state.
+	///
+	/// Example: void OnPhotonPlayerActivityChanged(PhotonPlayer otherPlayer) {...}
+	///
+	/// This callback has precondition:
+	/// PlayerTtl must be greater than 0.
+	/// </remarks>
+	void OnPhotonPlayerActivityChanged(PhotonPlayer otherPlayer);
+
+	/// <summary>
+	/// Called when ownership of a PhotonView is transfered to another player.
+	/// </summary>
+	/// <remarks>
+	/// The parameter viewAndPlayers contains:
+	///
+	/// PhotonView view = viewAndPlayers[0] as PhotonView;
+	///
+	/// PhotonPlayer newOwner = viewAndPlayers[1] as PhotonPlayer;
+	///
+	/// PhotonPlayer oldOwner = viewAndPlayers[2] as PhotonPlayer;
+	/// </remarks>
+	/// <example>void OnOwnershipTransfered(object[] viewAndPlayers) {} //</example>
+	void OnOwnershipTransfered(object[] viewAndPlayers);
 }
 
 /// <summary>
@@ -867,6 +895,38 @@ namespace Photon
         public virtual void OnLobbyStatisticsUpdate()
         {
         }
+
+        /// <summary>
+        /// Called when a remote Photon Player activity changed. This will be called ONLY if PlayerTtl is greater than 0.
+        /// </summary>
+        /// <remarks>
+        /// Use PhotonPlayer.IsInactive to check a player's current activity state.
+        ///
+        /// Example: void OnPhotonPlayerActivityChanged(PhotonPlayer otherPlayer) {...}
+        ///
+        /// This callback has precondition:
+        /// PlayerTtl must be greater than 0.
+        /// </remarks>
+		public virtual void OnPhotonPlayerActivityChanged(PhotonPlayer otherPlayer)
+		{
+		}
+
+        /// <summary>
+        /// Called when ownership of a PhotonView is transfered to another player.
+        /// </summary>
+        /// <remarks>
+        /// The parameter viewAndPlayers contains:
+        ///
+        /// PhotonView view = viewAndPlayers[0] as PhotonView;
+        ///
+        /// PhotonPlayer newOwner = viewAndPlayers[1] as PhotonPlayer;
+        ///
+        /// PhotonPlayer oldOwner = viewAndPlayers[2] as PhotonPlayer;
+        /// </remarks>
+        /// <example>void OnOwnershipTransfered(object[] viewAndPlayers) {} //</example>
+		public virtual void OnOwnershipTransfered(object[] viewAndPlayers)
+		{
+		}
     }
 }
 
@@ -1244,7 +1304,7 @@ public class HelpURL : Attribute
 #endif
 
 
-#if !UNITY_MIN_5_3
+#if !UNITY_MIN_5_3  && ! UNITY_2017
 // in Unity 5.3 and up, we have to use a SceneManager. This section re-implements it for older Unity versions
 
 #if UNITY_EDITOR

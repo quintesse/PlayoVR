@@ -191,4 +191,3 @@ public class PhotonViewHandler : EditorWindow
         Debug.Log("Corrected scene views where needed.");
     }
 }
-
