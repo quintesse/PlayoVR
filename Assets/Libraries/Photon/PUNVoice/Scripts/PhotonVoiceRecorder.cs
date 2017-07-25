@@ -8,7 +8,7 @@ using Voice = ExitGames.Client.Photon.Voice;
 [RequireComponent(typeof(PhotonVoiceSpeaker))]
 [DisallowMultipleComponent]
 [AddComponentMenu("Photon Voice/Photon Voice Recorder")]
-[HelpURL("https://doc.photonengine.com/en-us/voice/current/getting-started/voice-for-pun#the__audio_source__prefab")]
+//[HelpURL("https://doc.photonengine.com/en-us/voice/current/getting-started/voice-for-pun#the__audio_source__prefab")]
 public class PhotonVoiceRecorder : Photon.MonoBehaviour
 {
     private Voice.LocalVoice voice = Voice.LocalVoiceAudio.Dummy;

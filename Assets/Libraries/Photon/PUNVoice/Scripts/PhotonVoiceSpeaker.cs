@@ -6,7 +6,7 @@
 [RequireComponent(typeof (AudioSource))]
 [DisallowMultipleComponent]
 [AddComponentMenu("Photon Voice/Photon Voice Speaker")]
-[HelpURL("https://doc.photonengine.com/en-us/voice/current/getting-started/voice-for-pun#the__audio_source__prefab")]
+//[HelpURL("https://doc.photonengine.com/en-us/voice/current/getting-started/voice-for-pun#the__audio_source__prefab")]
 public class PhotonVoiceSpeaker : Photon.MonoBehaviour
 {
     private AudioStreamPlayer player;
