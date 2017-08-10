@@ -106,6 +106,51 @@
             return (child != null) ? child.gameObject : null;
         }
 
+        public T FindComponent<T>() {
+            GameObject go = FindObject();
+            if (go != null) {
+                T comp = go.GetComponent<T>();
+                if (comp != null) {
+                    return comp;
+                }
+            }
+            return default(T);
+        }
+
+        public bool IsPhotonView {
+            get {
+                return parentHandleId > 0;
+            }
+        }
+
+        public bool IsNetworkAttachment {
+            get {
+                return parentHandleId < 0;
+            }
+        }
+
+        public PhotonView GetPhotonView() {
+            if (parentHandleId > 0) {
+                return PhotonView.Find(parentHandleId);
+            } else {
+                return null;
+            }
+        }
+
+        public NetworkAttachment GetNetworkAttachment() {
+            if (parentHandleId < 0) {
+                return NetworkAttachment.Find(parentHandleId);
+            } else {
+                return null;
+            }
+        }
+
+        public bool IsChild {
+            get {
+                return pathFromParent != null;
+            }
+        }
+
         public static bool operator ==(NetworkReference nref1, NetworkReference nref2) {
             if (ReferenceEquals(nref1, nref2)) {
                 return true;
@@ -190,19 +235,17 @@
         }
 
         private static MonoBehaviour GetNetworkHandle(Transform obj) {
-            if (obj.transform.parent != null) {
-                NetworkAttachment na = obj.parent.GetComponentInParent<NetworkAttachment>();
-                if (na != null) {
-                    return na;
-                }
-                PhotonView pv = obj.parent.GetComponentInParent<PhotonView>();
-                if (pv != null) {
-                    return pv;
-                }
-                PhotonViewLink pvl = obj.parent.GetComponentInParent<PhotonViewLink>();
-                if (pvl != null) {
-                    return pvl;
-                }
+            NetworkAttachment na = obj.GetComponentInParent<NetworkAttachment>();
+            if (na != null) {
+                return na;
+            }
+            PhotonView pv = obj.GetComponentInParent<PhotonView>();
+            if (pv != null) {
+                return pv;
+            }
+            PhotonViewLink pvl = obj.GetComponentInParent<PhotonViewLink>();
+            if (pvl != null) {
+                return pvl;
             }
             return null;
         }
@@ -227,6 +270,9 @@
 
         private static string GetNetworkHandlePath(Transform obj, MonoBehaviour script) {
             if (script != null) {
+                if (script.transform == obj) {
+                    return null;
+                }
                 if (script is NetworkAttachment) {
                     NetworkAttachment na = (NetworkAttachment)script;
                     return NetUtils.RelPath(obj.parent, na.transform);
