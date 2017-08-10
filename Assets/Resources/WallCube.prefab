@@ -81,6 +81,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &33826694185883432
 MeshFilter:
@@ -155,7 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
+  ownAdditionalPhotonviews: []
 --- !u!114 &114438835549044788
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -167,7 +168,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
 --- !u!114 &114589282044231042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -179,7 +179,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d70b26c29c35241468791bcac2337d1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
 --- !u!114 &114748160337600816
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -241,18 +240,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
+  OwnerShipWasTransfered: 0
   prefixBackup: -1
-  observed: {fileID: 0}
-  synchronization: 1
+  synchronization: 3
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114589282044231042}
-  - {fileID: 114388883819977316}
-  - {fileID: 114438835549044788}
   - {fileID: 114748160337600816}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
+  currentMasterID: -1
   isRuntimeInstantiated: 0

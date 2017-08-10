@@ -46,7 +46,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1991625737178822}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2, y: 0.9, z: -0.8}
+  m_LocalPosition: {x: -0.2, y: 0.9, z: 0.8}
   m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
   m_Children: []
   m_Father: {fileID: 0}
@@ -65,7 +65,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 33af27359b49eda48829e2c0bf1e12b8, type: 2}
+  - {fileID: 2100000, guid: 402b0446dd2335346ae7f51a387239f4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -82,6 +82,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &33285178189516786
 MeshFilter:
@@ -163,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 1
+  ownAdditionalPhotonviews: []
 --- !u!114 &114700851640191538
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -177,20 +178,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
+  OwnerShipWasTransfered: 0
   prefixBackup: -1
-  observed: {fileID: 0}
-  synchronization: 1
+  synchronization: 3
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114838327174307352}
-  - {fileID: 114497296670972620}
-  - {fileID: 114740659021493392}
   - {fileID: 114850760172276944}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
+  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114740659021493392
 MonoBehaviour:
@@ -203,7 +202,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
 --- !u!114 &114818472260264558
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -229,7 +227,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d70b26c29c35241468791bcac2337d1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
 --- !u!114 &114850760172276944
 MonoBehaviour:
   m_ObjectHideFlags: 1

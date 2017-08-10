@@ -79,6 +79,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &33978931122484754
 MeshFilter:
@@ -125,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2581cbf5437cd44903d1d4b83020e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
+  ownAdditionalPhotonviews: []
 --- !u!114 &114070730526096524
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -139,18 +140,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
+  OwnerShipWasTransfered: 0
   prefixBackup: -1
-  observed: {fileID: 0}
-  synchronization: 1
+  synchronization: 3
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 1
   ObservedComponents:
-  - {fileID: 114040759736246476}
   - {fileID: 114821959420239516}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
+  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!114 &114280567253820244
 MonoBehaviour:
