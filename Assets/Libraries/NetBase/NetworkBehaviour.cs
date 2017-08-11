@@ -1,65 +1,65 @@
 ﻿namespace NetBase {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
+    using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-    public abstract class NetworkBehaviour : Photon.MonoBehaviour {
-        [Tooltip("Only send updates if any of the tracked values have changed")]
-        public bool onChangeOnly = false;
+    public abstract class NetworkBehaviour : MonoBehaviour {
 
-        protected void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
-            if (stream.isWriting) {
-                Obtain(); // Obtain the current state of the object
-                // FIXME PhotonNetwork doesn't make it at all easy to try to only send data when needed
-                // so for now we completely disable change detection :(
-                if (true /*!onChangeOnly || HasChanged()*/) { // Determine if we should send it
-                    Serialize(stream, info); // Send the new state
-                    Retain(); // Remember the state for later
+        protected abstract string PropKey { get; }
+
+        protected abstract void RecvState(Hashtable content);
+
+        //
+        // Custom property handling
+        //
+
+        protected sealed class PropertyEventHandler : MonoBehaviour {
+            private static PropertyEventHandler instance;
+
+            private PropertyEventHandler() { }
+
+            public static PropertyEventHandler Instance {
+                get {
+                    if (instance == null) {
+                        GameObject anchor = new GameObject("[PropertyEventHandlerAnchor]");
+                        //anchor.hideFlags = HideFlags.HideAndDontSave;
+                        instance = anchor.AddComponent<PropertyEventHandler>();
+                    }
+                    return instance;
                 }
-            } else {
-                Serialize(stream, info); // Receive the new state
-                Apply(); // Apply the new state to the object
+            }
+
+            void OnPhotonCustomRoomPropertiesChanged(Hashtable props) {
+                foreach (object key in props.Keys) {
+                    if (key is string) {
+                        var parts = key.ToString().Split('$');
+                        if (parts.Length >= 3) {
+                            // Could be one of our properties
+                            string id = parts[0] + "$";
+                            int parentId = int.Parse(parts[1]);
+                            string path = parts[2];
+                            Hashtable content = (Hashtable)props[key];
+                            NetworkReference nref = NetworkReference.FromIdAndPath(parentId, path);
+                            NetworkBehaviour[] comps = nref.FindComponents<NetworkBehaviour>();
+                            foreach (NetworkBehaviour comp in comps) {
+                                if (comp.PropKey.StartsWith(id)) {
+                                    Debug.Log("RVD PROPS: " + content.ToString());
+                                    comp.RecvState(content);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        /// <summary>
-        /// Gets called to obtain the current state of the object.
-        /// If the state can be read directly from the object's state
-        /// when writing to the stream it won't be necessary to
-        /// implement this.
-        /// </summary>
-        public virtual void Obtain() {
+        protected void SetProperties(Hashtable content) {
+            Hashtable props = new Hashtable();
+            props.Add(PropKey, content);
+            PhotonNetwork.room.SetCustomProperties(props);
+            Debug.Log("SNT PROPS: " + content.ToString());
         }
-
-        /// <summary>
-        /// Gets called to determine if the object's state has changed
-        /// with respect to the previous state. Return `true` is it has
-        /// or if you don't want to bother checking for changes. Return
-        /// false if the state is the same and no update needs to be sent.
-        /// </summary>
-        /// <returns>Boolean indicating the object's state has changed</returns>
-        public abstract bool HasChanged();
-
-        /// <summary>
-        /// Gets called to read/write the object's state to/from the Photon stream
-        /// </summary>
-        public abstract void Serialize(PhotonStream stream, PhotonMessageInfo info);
-
-        /// <summary>
-        /// Gets called to store a copy of the current state so it can be
-        /// used to check for changes in the state. If no change checks
-        /// are being done it won't be necessary to implement this.
-        /// </summary>
-        public virtual void Retain() {
-        }
-
-        /// <summary>
-        /// Gets called to apply the newly received state to the object.
-        /// If the state was applied directly to the object's state when
-        /// reading from the stream it won't be necessary to implement this.
-        /// </summary>
-        public virtual void Apply() {
-        }
-
     }
 }

@@ -117,6 +117,17 @@
             return default(T);
         }
 
+        public T[] FindComponents<T>() {
+            GameObject go = FindObject();
+            if (go != null) {
+                T[] comps = go.GetComponents<T>();
+                if (comps != null) {
+                    return comps;
+                }
+            }
+            return default(T[]);
+        }
+
         public bool IsPhotonView {
             get {
                 return parentHandleId > 0;

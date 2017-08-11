@@ -8,7 +8,7 @@
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
     [RequireComponent(typeof(VRTK_InteractableObject))]
-    public class NetworkGrabManager : EventBehaviour {
+    public class NetworkGrabManager : NetworkBehaviour {
         public PhotonView[] ownAdditionalPhotonviews;
 
         private int grabOwner;
@@ -25,7 +25,8 @@
         void Awake() {
             io = GetComponent<VRTK_InteractableObject>();
             nref = NetworkReference.FromObject(this.gameObject);
-            var dummy = EventHandler.Instance;
+            propKey = PROP_KEY_ID + nref.parentHandleId + "$" + (nref.pathFromParent != null ? nref.pathFromParent : "") + "$";
+            var dummy = PropertyEventHandler.Instance;
         }
 
         void OnEnable() {
@@ -62,50 +63,28 @@
             io.isGrabbable = (grabOwner == 0);
         }
 
-        private void RecvState(Hashtable content) {
-            InitState((int)content["go"]);
+        //
+        // Syncing states
+        //
+
+        private string propKey;
+
+        public const string PROP_KEY_ID = "ngm$";
+
+        protected override string PropKey {
+            get {
+                return propKey;
+            }
         }
 
         private void SendState() {
             Hashtable content = new Hashtable();
             content.Add("go", grabOwner);
-            RaiseEvent(content);
+            SetProperties(content);
         }
 
-        //
-        // Event handling
-        //
-
-        const byte EVENT_CODE = EVENT_CODE_BASE + 1;
-
-        sealed class EventHandler {
-            private static readonly EventHandler instance = new EventHandler();
-
-            private EventHandler() {
-                PhotonNetwork.OnEventCall += EventHandler.OnEvent;
-            }
-
-            public static EventHandler Instance {
-                get {
-                    return instance;
-                }
-            }
-
-            public static void OnEvent(byte eventcode, object content, int senderid) {
-                if (eventcode == EVENT_CODE) {
-                    EventBehaviour.HandleOnEvent<NetworkGrabManager>((Hashtable)content, senderid);
-                }
-            }
-        }
-
-        protected override void OnEvent(Hashtable content, int senderid) {
-            RecvState(content);
-            Debug.Log("RVD GRAB: " + content.ToString());
-        }
-
-        protected override void RaiseEvent(Hashtable content) {
-            RaiseEvent(EVENT_CODE, nref, content);
-            Debug.Log("SNT GRAB: " + content.ToString());
+        protected override void RecvState(Hashtable content) {
+            InitState((int)content["go"]);
         }
     }
 }

@@ -7,7 +7,7 @@
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
     [RequireComponent(typeof(VRTK_InteractableObject))]
-    public class NetworkSnapManager : EventBehaviour {
+    public class NetworkSnapManager : NetworkBehaviour {
         private VRTK_InteractableObject io;
         private VRTK_SnapDropZone dropZone;
         private NetworkReference dropZoneNetRef;
@@ -18,11 +18,11 @@
                 return dropZoneNetRef;
             }
         }
-
         void Awake() {
             io = GetComponent<VRTK_InteractableObject>();
             nref = NetworkReference.FromObject(this.gameObject);
-            var dummy = EventHandler.Instance;
+            propKey = PROP_KEY_ID + nref.parentHandleId + "$" + (nref.pathFromParent != null ? nref.pathFromParent : "") + "$";
+            var dummy = PropertyEventHandler.Instance;
         }
 
         void OnEnable() {
@@ -83,55 +83,33 @@
             }
         }
 
-        private void RecvState(Hashtable content) {
-            int parentId = (int)content["pid"];
-            string path = (string)content["pth"];
-            NetworkReference nref = NetworkReference.FromIdAndPath(parentId, path);
-            InitState(nref);
-            ApplyState();
+        //
+        // Syncing states
+        //
+
+        private string propKey;
+
+        public const string PROP_KEY_ID = "nsm$";
+
+        protected override string PropKey {
+            get {
+                return propKey;
+            }
         }
 
         private void SendState() {
             Hashtable content = new Hashtable();
             content.Add("pid", dropZoneNetRef.parentHandleId);
             content.Add("pth", dropZoneNetRef.pathFromParent);
-            RaiseEvent(content);
+            SetProperties(content);
         }
 
-        //
-        // Event handling
-        //
-
-        const byte EVENT_CODE = EVENT_CODE_BASE + 2;
-
-        sealed class EventHandler {
-            private static readonly EventHandler instance = new EventHandler();
-
-            private EventHandler() {
-                PhotonNetwork.OnEventCall += EventHandler.OnEvent;
-            }
-
-            public static EventHandler Instance {
-                get {
-                    return instance;
-                }
-            }
-
-            public static void OnEvent(byte eventcode, object content, int senderid) {
-                if (eventcode == EVENT_CODE) {
-                    EventBehaviour.HandleOnEvent<NetworkSnapManager>((Hashtable)content, senderid);
-                }
-            }
-        }
-
-        protected override void OnEvent(Hashtable content, int senderid) {
-            RecvState(content);
-            Debug.Log("RVD SNAP: " + content.ToString());
-        }
-
-        protected override void RaiseEvent(Hashtable content) {
-            RaiseEvent(EVENT_CODE, nref, content);
-            Debug.Log("SNT SNAP: " + content.ToString());
+        protected override void RecvState(Hashtable content) {
+            int parentId = (int)content["pid"];
+            string path = (string)content["pth"];
+            NetworkReference nref = NetworkReference.FromIdAndPath(parentId, path);
+            InitState(nref);
+            ApplyState();
         }
     }
 }
