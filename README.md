@@ -96,10 +96,10 @@ If you want to add networking to your VRTK interactable objects then you just ne
 
  - From this project copy/drag the `NetBase` and `NetVRTK` folders
  - Add a `PhotonView` script
- - Add a `NetworkGrabManager` script
- - Add a `NetworkParentManager` script (when using `ChildOfController` mechanics)
  - Add a `NetworkObject` script (leave the default options)
- - Drag these last two scripts to the `Observed Components` of the `PhotonView`
+ - Drag the `NetworkObject` script to the `Observed Components` of the `PhotonView`
+ - Optionally add a `NetworkGrabManager` script if the object can be grabbed
+ - Optionally add a `NetworkSnapManager` script if the object can be snapped to a drop zone
 
 ## NetworkGrabManager
 
@@ -114,9 +114,7 @@ This script handles the transfer of "ownership" that Photon imposes on object. O
 
 ### Requirements/suggestions:
 
- - must be registered with a `PhotonView`'s list of `Observed Components`
- - best used with `PhotonView`'s `Reliable Delta Compressed` option and in that case leave `onChangeOnly` turned off
- - an `VRTK_InteractableObject` must exist on the same object
+ - a `VRTK_InteractableObject` must exist on the same object
 
 ## NetworkSnapManager
 
@@ -128,38 +126,7 @@ This script syncs the action of an object being snapped to a drop zone across th
 
 ### Requirements/suggestions:
 
- - must be registered with a `PhotonView`'s list of `Observed Components`
- - best used with `PhotonView`'s `Reliable Delta Compressed` option and in that case leave `onChangeOnly` turned off
- - an `VRTK_InteractableObject` must exist on the same object
-
-## NetworkParentManager
-
-This script handles those situations when an object changes parents.
-
-There are several strategies that this script uses to determine if the object has changed parent and how it should communicate those changes to the other clients.
-
-The easiest way is to look at the "full path" of its parent, eg: `/Building/Floor3/BookCase12/SnapZone`. If that changes we know the object has changed parents and we should tell the other clients about it. This works in some cases but besides being very inefficient (the string might be very long) it doesn't work when the object don't have the exact same "path name" in every client (eg. my plaey object is called "Player" locally but "Player(Clone)" in other clients).
-
-So to make the process less dependent on the full path name because that not always uniquely references an object on all clients the `NetworkParentableObject` will look for the existence of a `PhotonView` component in any of the parents. It will then determine the path relative to that object. The advantage of that is a) all `PhotonView`s have a unique number that is the same across all clients en b) the paths to send will be shorter (many times the `PhotonView` can be found on the direct parent of the object which means we don't need a path at all) making things more efficient.
-
-But unfortunately this doesn't cover one of the most common situations when using VRTK: grabbing an object using the `VRTK_Interactable_Object` grab mechanic. Because what happens when you grab an object is that VRTK will make it a child of the VR controller that performed the grab, it will *not* be a child of your player avatar's hands, which is the representation that others will see of you in _their_ clients. So we need a way to link your VR hands to the hands of your avatar in such a way that we can send the reparenting operation and in such a way that the other clients will understand it.
-
-One way of solving this could be to actually move the `PhotonView`s from the hand of your local avatar to the VR controller objects. But the solution I've implemented in this demo is to create an object called `PhotonViewLink` which you can put on an object and then link it to a `PhotonView` on another object. When the `NetworkParentableObject` script encounters this it will treat the linked `PhotonView` as the object's parent.
-
-And finally we have the situation where a parent object is part of the scene, it won't get moved around so it doesn't need a `PhotonView` (and you don't want to give it one either because you can only have a 1000 tracked objects in Photon in total) but its "full path" can't always be determined 100%. For those cases exists the `NetworkAttachment` script. It serves the same function as a `PhotonView` for determining parentage but without actually wasting the resources of an actual `PhotonView`.
-
-![NetworkParentManager](Docs/Images/network-parent-manager.png)
-
-### Properties:
-
- - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
-
-### Requirements/suggestions:
-
- - must be registered with a `PhotonView`'s list of `Observed Components`
- - best used with `PhotonView`'s `Reliable Delta Compressed` option and in that case leave `onChangeOnly` turned off
- - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
- - If used with a `NetworkGrabManager` place this script *after* that one in the `PhotonView`'s list of `Observed Components`
+ - a `VRTK_InteractableObject` must exist on the same object
 
 ## NetworkObject
 
@@ -171,6 +138,7 @@ This script handles the synchronization of position, orientation and movement of
 
 ### Properties:
 
+ - **Parent** : Synchronizes changes to the location of the object in the object hierarchy. For more detail see below.
  - **Position** : This determines the way in which the position of the object will be synchronized with the other clients. It can be set to one of the following values:
    - **None** : no synchronization will happen, the value will always remain unchanged
    - **Set** : the value will be set the moment a client receives it, no interpolation will happen
@@ -184,16 +152,32 @@ This script handles the synchronization of position, orientation and movement of
 
 NB: The reason for **Use local values** is that it's almost always better to use the local coordinate system, especially in combination with **On change only** because there are many situations where an object stays immobile relative to its parent, even if the parent itself (or any ancestor) is moved around a lot. This makes it more efficient because no updates have to be sent in those cases. But if your objects can change parents (you are using the `VRTK_Interactable_Object` grab mechanic for example) then sometimes it might be desirable to use world coordinates by disabling **Use local values**. Just know that this *might* be less efficient. In those cases it might be best to switch to `NetworkParentableObject` instead.
 
+#### About "parent" option
+
+With this option active the script will handle and synchronize those situations when an object changes parents.
+
+There are several strategies that the script uses to determine if the object has changed parent and how it should communicate those changes to the other clients.
+
+The easiest way is to look at the "full path" of its parent, eg: `/Building/Floor3/BookCase12/SnapZone`. If that changes we know the object has changed parents and we should tell the other clients about it. This works in some cases but besides being very inefficient (the string might be very long) it doesn't work when the object don't have the exact same "path name" in every client (eg. my player object is called "Player" locally but "Player(Clone)" in other clients).
+
+So to make the process less dependent on the full path name because that not always uniquely references an object on all clients the script will look for the existence of a `PhotonView` component in any of the parents. It will then determine the path relative to that object. The advantage of that is a) all `PhotonView`s have a unique number that is the same across all clients en b) the paths to send will be shorter (many times the `PhotonView` can be found on the direct parent of the object which means we don't need a path at all) making things more efficient.
+
+But unfortunately this doesn't cover one of the most common situations when using VRTK: grabbing an object using the `VRTK_Interactable_Object` grab mechanic. Because what happens when you grab an object is that VRTK will make it a child of the VR controller that performed the grab, it will *not* be a child of your player avatar's hands, which is the representation that others will see of you in _their_ clients. So we need a way to link your VR hands to the hands of your avatar in such a way that we can send the reparenting operation and in such a way that the other clients will understand it.
+
+One way of solving this could be to actually move the `PhotonView`s from the hand of your local avatar to the VR controller objects. But the solution I've implemented in this demo is to create an object called `PhotonViewLink` which you can put on an object and then link it to a `PhotonView` on another object. When the `NetworkObject` script encounters this it will treat the linked `PhotonView` as the object's parent.
+
+And finally we have the situation where a parent object is part of the scene, it won't get moved around so it doesn't need a `PhotonView` (and you don't want to give it one either because you can only have a 1000 tracked objects in Photon in total) but its "full path" can't always be determined 100%. For those cases exists the `NetworkAttachment` script. It serves the same function as a `PhotonView` for determining parentage but without actually wasting the resources of an actual `PhotonView`.
+
 ### Requirements/suggestions:
 
  - must be registered with a `PhotonView`'s list of `Observed Components`
- - can be used with `PhotonView`'s unreliable transmission options, but if used with either a `NetworkGrabManager` and/or a `NetworkParentManager` you need the `Reliable Delta Compressed` option
  - the `PhotonView` must be owned by the player manipulating the object, see `NetworkGrabManager` if you want to handle that dynamically
- - If used with a `NetworkGrabManager` and/or `NetworkParentManager` place this script *after* those in the `PhotonView`'s list of `Observed Components`
 
 ## PhotonViewLink
 
-This script can be added to objects that are potential parents for interactable objects but that don't have a `PhotonView` themselves. It mostly used in those situations where the parent object on the client doing the grabbing/snapping/reparenting is not the same as its representation on the other clients (for example the camera rig on one client is represented as a player avatar on the other clients). The script is to be used in conjunction with the `NetworkParentableObject`.
+This script can be added to objects that are potential parents for interactable objects but that don't have a `PhotonView` themselves. It mostly used in those situations where the parent object on the client doing the grabbing/snapping/reparenting is not the same as its representation on the other clients (for example the camera rig on one client is represented as a player avatar on the other clients). The script is to be used in conjunction with the `NetworkObject`'s `parent` option.
+
+![Photon View Link](Docs/Images/photon-view-link.png)
 
 ### Properties:
 
@@ -201,7 +185,9 @@ This script can be added to objects that are potential parents for interactable 
  
 ## NetworkAttachment
 
-This script can be added to objects that are potential parents for interactable objects but that don't have a `PhotonView` themselves and when no good alternative `PhotonView` candidates exist like with the `PhotonViewLink` script. It is mostly useful for static scene objects that won't move or change (and therefore don't need a `PhotonView`). The script is to be used in conjunction with the `NetworkParentableObject`.
+This script can be added to objects that are potential parents for interactable objects but that don't have a `PhotonView` themselves and when no good alternative `PhotonView` candidates exist like with the `PhotonViewLink` script. It is mostly useful for static scene objects that won't move or change (and therefore don't need a `PhotonView`). The script is to be used in conjunction with the `NetworkObject`'s `parent` option.
+
+![Network Attachment](Docs/Images/network-attachment.png)
 
 ### Properties:
 
