@@ -8,6 +8,10 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-08-12
+   - Manager scripts are no longer observed components but now use Photon's "Custom Properties" to sync information
+   - The `NetworkParentManager` was removed in favor of merging its functionality with `NetworkObject`
+   - Updated to latest version of VRTK
  - 2017-07-18
    - Updated to latest version of VRTK
    - Updated to latest version of PUN and PUNVoice
