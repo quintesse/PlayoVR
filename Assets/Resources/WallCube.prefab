@@ -27,7 +27,6 @@ GameObject:
   - component: {fileID: 114388883819977316}
   - component: {fileID: 114293911112763104}
   - component: {fileID: 114748160337600816}
-  - component: {fileID: 114438835549044788}
   - component: {fileID: 114589282044231042}
   - component: {fileID: 65344094357632980}
   - component: {fileID: 33826694185883432}
@@ -45,7 +44,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1143262253976884}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.121, y: 0.156, z: 3.098}
+  m_LocalPosition: {x: -4.72, y: 0.156, z: 3.452}
   m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
   m_Children: []
   m_Father: {fileID: 0}
@@ -157,17 +156,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ownAdditionalPhotonviews: []
---- !u!114 &114438835549044788
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1143262253976884}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114589282044231042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -190,13 +178,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
+  parent: 1
   position: 2
   rotation: 2
   scale: 0
   velocity: 1
   angularVelocity: 1
   useLocalValues: 1
+  onChangeOnly: 0
 --- !u!114 &114873278120566584
 MonoBehaviour:
   m_ObjectHideFlags: 1

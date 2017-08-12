@@ -29,7 +29,6 @@ GameObject:
   - component: {fileID: 114497296670972620}
   - component: {fileID: 114461646444634442}
   - component: {fileID: 114850760172276944}
-  - component: {fileID: 114740659021493392}
   - component: {fileID: 114838327174307352}
   - component: {fileID: 114818472260264558}
   m_Layer: 0
@@ -191,17 +190,6 @@ MonoBehaviour:
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
---- !u!114 &114740659021493392
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1991625737178822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab58f41d9db1d2e488e61711f01b910a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114818472260264558
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -238,13 +226,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af018577f438cf542b899ec9138bf9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onChangeOnly: 0
+  parent: 1
   position: 2
   rotation: 2
   scale: 0
   velocity: 1
   angularVelocity: 1
   useLocalValues: 1
+  onChangeOnly: 0
 --- !u!114 &114935897818585254
 MonoBehaviour:
   m_ObjectHideFlags: 1
