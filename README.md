@@ -193,6 +193,13 @@ This script can be added to objects that are potential parents for interactable 
 
  - **id** : A positive non-zero number which has to be unique between other instances of this script
  
+## Licenses
+
+ - **Only the code in `Assets/Libraries/NetBase` and `Assets/Libraries/NetVRTK` is released under the MIT license**
+ - Any code in `Assets/Scripts` specifically marked in the header as released under the MIT license
+ - Other code libraries in `Assets/Libraries` all come with their own licenses
+ - Any binary resources are more or less there on a "fair use" basis, **don't trust that you can just copy and use them**
+ 
 ## Thanks
 
  - @thestonefox for VRTK
