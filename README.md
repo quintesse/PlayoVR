@@ -8,6 +8,8 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2017-08-18
+   - In the last update somehow all interactable scene objects were broken. Fixed now.
  - 2017-08-12
    - Manager scripts are no longer observed components but now use Photon's "Custom Properties" to sync information
    - The `NetworkParentManager` was removed in favor of merging its functionality with `NetworkObject`
