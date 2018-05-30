@@ -9,7 +9,7 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
 #define UNITY
 #endif
 
@@ -97,20 +97,19 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
             PingImplementation = typeof(PingMono);
             #if UNITY_WEBGL
-            PingImplementation = typeof(PingHttp);
+            Type pingType = Type.GetType("ExitGames.Client.Photon.PingHttp, Assembly-CSharp", false);
+            PingImplementation = pingType ?? Type.GetType("ExitGames.Client.Photon.PingHttp, Assembly-CSharp-firstpass", false);
             #endif
             #if !UNITY_EDITOR && UNITY_WINRT
             PingImplementation = typeof(PingWindowsStore);
             #endif
 
 
-            // to support WebGL export in Unity, we find and assign the SocketWebTcp class (if it's in the project).
-            // alternatively class SocketWebTcp might be in the Photon3Unity3D.dll
-            Type websocketType = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp", false);
-            if (websocketType == null)
-            {
-                websocketType = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp-firstpass", false);
-            }
+            // to support WebGL export in Unity, we find and assign the SocketWebTcpThread or SocketWebTcpCoroutine class (if it's in the project).
+            Type websocketType = Type.GetType("ExitGames.Client.Photon.SocketWebTcpThread, Assembly-CSharp", false);
+			websocketType = websocketType ?? Type.GetType("ExitGames.Client.Photon.SocketWebTcpThread, Assembly-CSharp-firstpass", false);
+            websocketType = websocketType ?? Type.GetType("ExitGames.Client.Photon.SocketWebTcpCoroutine, Assembly-CSharp", false);
+			websocketType = websocketType ?? Type.GetType("ExitGames.Client.Photon.SocketWebTcpCoroutine, Assembly-CSharp-firstpass", false);
             if (websocketType != null)
             {
                 this.SocketImplementationConfig[ConnectionProtocol.WebSocket] = websocketType;
@@ -124,7 +123,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             Dictionary<byte, object> parameters = new Dictionary<byte, object>();
             parameters[(byte)ParameterCode.ApplicationId] = appId;
 
-            return this.OpCustom(OperationCode.GetRegions, parameters, true, 0, true);
+            return this.SendOperation(OperationCode.GetRegions, parameters, new SendOptions() { Reliability = true, Encrypt = true });
         }
 
         /// <summary>
@@ -148,7 +147,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 parameters[(byte)ParameterCode.LobbyType] = (byte)lobby.Type;
             }
 
-            return this.OpCustom(OperationCode.JoinLobby, parameters, true);
+            return this.SendOperation(OperationCode.JoinLobby, parameters, new SendOptions() { Reliability = true });
         }
 
 
@@ -164,7 +163,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 this.Listener.DebugReturn(DebugLevel.INFO, "OpLeaveLobby()");
             }
 
-            return this.OpCustom(OperationCode.LeaveLobby, null, true);
+            return this.SendOperation(OperationCode.LeaveLobby, null, new SendOptions() { Reliability = true });
         }
 
 
@@ -207,11 +206,9 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 gameProperties[GamePropertyKey.CleanupCacheOnLeave] = false;  			// this is only informational for the clients which join
             }
 
-            if (roomOptions.CheckUserOnJoin)
-            {
-                flags = flags | (int)RoomOptionBit.CheckUserOnJoin;
-                op[ParameterCode.CheckUserOnJoin] = true;   //TURNBASED
-            }
+            // since v4.1.1.18, CheckUserOnJoin is set by default:
+            flags = flags | (int)RoomOptionBit.CheckUserOnJoin;
+            op[ParameterCode.CheckUserOnJoin] = true;
 
             if (roomOptions.PlayerTtl > 0 || roomOptions.PlayerTtl == -1)
             {
@@ -293,7 +290,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
 
             //this.Listener.DebugReturn(DebugLevel.INFO, "CreateGame: " + SupportClass.DictionaryToString(op));
-            return this.OpCustom(OperationCode.CreateGame, op, true);
+            return this.SendOperation(OperationCode.CreateGame, op, new SendOptions() { Reliability = true });
         }
 
         /// <summary>
@@ -356,7 +353,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
 
             // UnityEngine.Debug.Log("JoinGame: " + SupportClass.DictionaryToString(op));
-            return this.OpCustom(OperationCode.JoinGame, op, true);
+            return this.SendOperation(OperationCode.JoinGame, op, new SendOptions() { Reliability = true });
         }
 
 
@@ -409,7 +406,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             }
 
             //this.Listener.DebugReturn(DebugLevel.INFO, "OpJoinRandom: " + SupportClass.DictionaryToString(opParameters));
-            return this.OpCustom(OperationCode.JoinRandomGame, opParameters, true);
+            return this.SendOperation(OperationCode.JoinRandomGame, opParameters, new SendOptions() { Reliability = true });
         }
 
 
@@ -417,15 +414,21 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// Leaves a room with option to come back later or "for good".
         /// </summary>
         /// <param name="becomeInactive">Async games can be re-joined (loaded) later on. Set to false, if you want to abandon a game entirely.</param>
+        /// <param name="sendAuthCookie">WebFlag: Securely transmit the encrypted object AuthCookie to the web service in PathLeave webhook when available</param>
         /// <returns>If the opteration can be send currently.</returns>
-        public virtual bool OpLeaveRoom(bool becomeInactive)
+        public virtual bool OpLeaveRoom(bool becomeInactive, bool sendAuthCookie = false)
         {
             Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
             if (becomeInactive)
             {
-                opParameters[ParameterCode.IsInactive] = becomeInactive;
+                opParameters[ParameterCode.IsInactive] = true;
             }
-            return this.OpCustom(OperationCode.Leave, opParameters, true);
+            if (sendAuthCookie)
+            {
+                opParameters[ParameterCode.EventForward] = 0x02;
+            }
+
+            return this.SendOperation(OperationCode.Leave, opParameters, new SendOptions() { Reliability = true });
         }
 
         /// <summary>Gets a list of games matching a SQL-like where clause.</summary>
@@ -468,7 +471,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             opParameters[(byte)ParameterCode.LobbyType] = (byte)lobby.Type;
             opParameters[(byte)ParameterCode.Data] = queryData;
 
-            return this.OpCustom(OperationCode.GetGameList, opParameters, true);
+            return this.SendOperation(OperationCode.GetGameList, opParameters, new SendOptions() { Reliability = true });
         }
 
         /// <summary>
@@ -493,7 +496,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 opParameters[ParameterCode.FindFriendsRequestList] = friendsToFind;
             }
 
-            return this.OpCustom(OperationCode.FindFriends, opParameters, true);
+            return this.SendOperation(OperationCode.FindFriends, opParameters, new SendOptions() { Reliability = true });
         }
 
         public bool OpSetCustomPropertiesOfActor(int actorNr, Hashtable actorProperties)
@@ -540,7 +543,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 opParameters[ParameterCode.EventForward] = webflags.WebhookFlags;
             }
 
-            return this.OpCustom((byte)OperationCode.SetProperties, opParameters, true, 0, false);
+            return this.SendOperation(OperationCode.SetProperties, opParameters, new SendOptions() { Reliability = true });
         }
 
 
@@ -584,7 +587,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 opParameters[ParameterCode.EventForward] = webflags.WebhookFlags;
             }
 
-            return this.OpCustom((byte)OperationCode.SetProperties, opParameters, true, 0, false);
+            return this.SendOperation(OperationCode.SetProperties, opParameters, new SendOptions() { Reliability = true });
         }
 
         /// <summary>
@@ -620,7 +623,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             if (authValues != null && authValues.Token != null)
             {
                 opParameters[ParameterCode.Secret] = authValues.Token;
-                return this.OpCustom(OperationCode.Authenticate, opParameters, true, (byte)0, false);   // we don't have to encrypt, when we have a token (which is encrypted)
+                return this.SendOperation(OperationCode.Authenticate, opParameters, new SendOptions() { Reliability = true }); // we don't have to encrypt, when we have a token (which is encrypted)
             }
 
 
@@ -663,7 +666,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 }
             }
 
-            return this.OpCustom(OperationCode.Authenticate, opParameters, true, (byte)0, this.IsEncryptionAvailable);
+            return this.SendOperation(OperationCode.Authenticate, opParameters, new SendOptions() { Reliability = true, Encrypt = this.IsEncryptionAvailable });
         }
 
 
@@ -697,7 +700,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
             if (authValues != null && authValues.Token != null)
             {
                 opParameters[ParameterCode.Secret] = authValues.Token;
-                return this.OpCustom(OperationCode.AuthenticateOnce, opParameters, true, (byte)0, false);   // we don't have to encrypt, when we have a token (which is encrypted)
+                return this.SendOperation(OperationCode.AuthenticateOnce, opParameters, new SendOptions() { Reliability = true }); // we don't have to encrypt, when we have a token (which is encrypted)
             }
 
 
@@ -740,7 +743,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 }
             }
 
-            return this.OpCustom(OperationCode.AuthenticateOnce, opParameters, true, (byte)0, this.IsEncryptionAvailable);
+            return this.SendOperation(OperationCode.AuthenticateOnce, opParameters, new SendOptions() { Reliability = true, Encrypt = this.IsEncryptionAvailable });
         }
 
         /// <summary>
@@ -774,7 +777,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 opParameters[(byte)ParameterCode.Add] = groupsToAdd;
             }
 
-            return this.OpCustom((byte)OperationCode.ChangeGroups, opParameters, true, 0);
+            return this.SendOperation(OperationCode.ChangeGroups, opParameters, new SendOptions() { Reliability = true });
         }
 
 
@@ -784,10 +787,9 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <remarks>This override explicitly uses another parameter order to not mix it up with the implementation for Hashtable only.</remarks>
         /// <param name="eventCode">Identifies this type of event (and the content). Your game's event codes can start with 0.</param>
         /// <param name="customEventContent">Any serializable datatype (including Hashtable like the other OpRaiseEvent overloads).</param>
-        /// <param name="sendReliable">If this event has to arrive reliably (potentially repeated if it's lost).</param>
         /// <param name="raiseEventOptions">Contains (slightly) less often used options. If you pass null, the default options will be used.</param>
         /// <returns>If operation could be enqueued for sending. Sent when calling: Service or SendOutgoingCommands.</returns>
-        public virtual bool OpRaiseEvent(byte eventCode, object customEventContent, bool sendReliable, RaiseEventOptions raiseEventOptions)
+        public virtual bool OpRaiseEvent(byte eventCode, object customEventContent, RaiseEventOptions raiseEventOptions, SendOptions sendOptions)
         {
             this.opParameters.Clear(); // re-used private variable to avoid many new Dictionary() calls (garbage collection)
             this.opParameters[(byte)ParameterCode.Code] = (byte)eventCode;
@@ -824,7 +826,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 }
             }
 
-            return this.OpCustom((byte) OperationCode.RaiseEvent, this.opParameters, sendReliable, raiseEventOptions.SequenceChannel, false);
+            return this.SendOperation(OperationCode.RaiseEvent, this.opParameters, sendOptions);
         }
 
 
@@ -854,7 +856,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 // no need to send op in case we set the default values
                 return true;
             }
-            return this.OpCustom((byte)OperationCode.ServerSettings, this.opParameters, true);
+
+            return this.SendOperation(OperationCode.ServerSettings, this.opParameters, new SendOptions() { Reliability = true });
         }
     }
 
@@ -1390,6 +1393,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public const byte ExchangeKeysForEncryption = 250;
 
         /// <summary>(255) Code for OpJoin, to get into a room.</summary>
+        [Obsolete]
         public const byte Join = 255;
 
         /// <summary>(231) Authenticates this peer and connects to a virtual application</summary>
@@ -1603,13 +1607,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>Time To Live (TTL) for a room when the last player leaves. Keeps room in memory for case a player re-joins soon. In milliseconds.</summary>
         public int EmptyRoomTtl;
 
-        /// <summary>Activates UserId checks on joining - allowing a users to be only once in the room.</summary>
-        /// <remarks>
-        /// Turnbased rooms should be created with this check turned on! They should also use custom authentication.
-        /// Disabled by default for backwards-compatibility.
-        /// </remarks>
-        public bool CheckUserOnJoin { get; set; }
-
         /// <summary>Removes a user's events and properties from the room when a user leaves.</summary>
         /// <remarks>
         /// This makes sense when in rooms where players can't place items in the room and just vanish entirely.
@@ -1699,6 +1696,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public ReceiverGroup Receivers;
 
         /// <summary>Events are ordered per "channel". If you have events that are independent of others, they can go into another sequence or channel.</summary>
+        [Obsolete("Not used where SendOptions are a parameter too. Use SendOptions.Channel instead.")]
         public byte SequenceChannel;
 
         /// <summary> Optional flags to be used in Photon client SDKs with Op RaiseEvent and Op SetProperties.</summary>
@@ -1707,8 +1705,6 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
         ///// <summary>Used along with CachingOption SliceSetIndex, SlicePurgeIndex or SlicePurgeUpToIndex if you want to set or purge a specific cache-slice.</summary>
         //public int CacheSliceIndex;
-
-        //public bool Encrypt;
     }
 
     /// <summary>

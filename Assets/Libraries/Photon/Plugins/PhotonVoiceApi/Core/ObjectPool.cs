@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 namespace ExitGames.Client.Photon.Voice
 {
     public abstract class ObjectPool<TType, TInfo> : IDisposable
@@ -17,20 +16,17 @@ namespace ExitGames.Client.Photon.Voice
         abstract protected void destroyObject(TType obj);
         abstract protected bool infosMatch(TInfo i0, TInfo i1);
         internal string LogPrefix { get { return "[ObjectPool] [" + name + "]"; } }
-
         public ObjectPool(int capacity, string name)
         {
             this.capacity = capacity;
             this.name = name;
         }
-
         public ObjectPool(int capacity, string name, TInfo info)
         {
             this.capacity = capacity;
             this.name = name;
             Init(info);
         }
-
         public void Init(TInfo info)
         {
             lock (this)
@@ -44,7 +40,10 @@ namespace ExitGames.Client.Photon.Voice
                 inited = true;
             }
         }
-
+        public TInfo Info
+        {
+            get { return info; }
+        }
         // Creates from the info given in constructor if fails to get from pool.
         public TType AcquireOrCreate()
         {
@@ -61,7 +60,6 @@ namespace ExitGames.Client.Photon.Voice
             }
             return createObject(this.info);
         }
-
         // Acquires from pool only if info matches, otherwise creates object from passed info
         public TType AcquireOrCreate(TInfo info)
         {
@@ -72,7 +70,6 @@ namespace ExitGames.Client.Photon.Voice
             }
             return AcquireOrCreate();
         }
-
         // Returns to pool only if info matches
         virtual public bool Release(TType obj, TInfo objInfo)
         {
@@ -88,14 +85,12 @@ namespace ExitGames.Client.Photon.Voice
                     }
                 }
             }
-
             // destroy if can't reuse
             //UnityEngine.Debug.Log(LogPrefix + " Release(Info) destroy");
             destroyObject(obj);
             // TODO: log warning
             return false;
         }
-
         virtual public bool Release(TType obj)
         {
             lock (this)
@@ -106,7 +101,6 @@ namespace ExitGames.Client.Photon.Voice
                     return true;
                 }
             }
-
             // destroy if can't reuse
             //UnityEngine.Debug.Log(LogPrefix + " Release destroy " + pos);
             destroyObject(obj);
@@ -125,7 +119,6 @@ namespace ExitGames.Client.Photon.Voice
             }
         }
     }
-
     public class PrimitiveArrayPool<T> : ObjectPool<T[], int>
     {
         public PrimitiveArrayPool(int capacity, string name) : base(capacity, name) { }
@@ -135,18 +128,15 @@ namespace ExitGames.Client.Photon.Voice
             //UnityEngine.Debug.Log(LogPrefix + " Create " + pos);
             return new T[info];
         }
-
         protected override void destroyObject(T[] obj)
         {
             //UnityEngine.Debug.Log(LogPrefix + " Dispose " + pos + " " + obj.GetHashCode());
         }
-
         protected override bool infosMatch(int i0, int i1)
         {
             return i0 == i1;
         }
     }
-
     public class ImageBufferNativePool<T> : ObjectPool<T, ImageBufferInfo> where T : ImageBufferNative
     {
         public delegate T Factory(ImageBufferNativePool<T> pool, ImageBufferInfo info);
@@ -164,13 +154,11 @@ namespace ExitGames.Client.Photon.Voice
             //UnityEngine.Debug.Log(LogPrefix + " Create " + pos);
             return factory(this, info);
         }
-
         protected override void destroyObject(T obj)
         {
             //UnityEngine.Debug.Log(LogPrefix + " Dispose " + pos + " " + obj.GetHashCode());
             obj.Dispose();
         }
-
         // only height and stride compared, other parameters do not affect native buffers and can be simple overwritten
         protected override bool infosMatch(ImageBufferInfo i0, ImageBufferInfo i1)
         {

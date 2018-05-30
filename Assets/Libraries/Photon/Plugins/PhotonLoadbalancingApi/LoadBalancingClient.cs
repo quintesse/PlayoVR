@@ -9,7 +9,8 @@
 // <author>developer@photonengine.com</author>
 // ----------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_2017
+
+#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
 #define UNITY
 #endif
 
@@ -141,6 +142,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
         CustomAuthenticationFailed,
         /// <summary>OnStatusChanged: The server disconnected this client from within the room's logic (the C# code).</summary>
         DisconnectByServerLogic,
+        /// <summary>The authentication ticket should provide access to any Photon Cloud server without doing another authentication-service call. However, the ticket expired.</summary>
+        AuthenticationTicketExpired
     }
 
     /// <summary>Available server (types) for internally used field: server.</summary>
@@ -168,6 +171,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// With this encryption mode for UDP, the connection gets setup and all further datagrams get encrypted almost entirely. On-demand message encryption (like in PayloadEncryption) is skipped.
         /// </summary>
         DatagramEncryption = 10,
+
+        DatagramEncryptionRandomSequence = 11,
     }
 
 
@@ -233,7 +238,36 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// When using AuthOnceWss, the client uses a wss-connection on the Nameserver but another protocol on the other servers.
         /// As the Nameserver sends an address, which is different per protocol, it needs to know the expected protocol.
         /// </remarks>
-        public ConnectionProtocol ExpectedProtocol = ConnectionProtocol.Udp;
+        private ConnectionProtocol ExpectedProtocol = ConnectionProtocol.Udp;
+
+        /// <summary>Exposes the TransportProtocol of the used PhotonPeer. Settable while not connected.</summary>
+        public ConnectionProtocol TransportProtocol
+        {
+            get { return this.loadBalancingPeer.TransportProtocol; }
+            set
+            {
+                if (this.loadBalancingPeer == null || this.loadBalancingPeer.PeerState != PeerStateValue.Disconnected)
+                {
+                    this.DebugReturn(DebugLevel.WARNING, "Can't set TransportProtocol. Disconnect first! " + ((this.loadBalancingPeer != null) ? "PeerState: " + this.loadBalancingPeer.PeerState : "loadBalancingPeer is null."));
+                    return;
+                }
+                this.loadBalancingPeer.TransportProtocol = value;
+            }
+        }
+
+        /// <summary>Defines which IPhotonSocket class to use per ConnectionProtocol.</summary>
+        /// <remarks>
+        /// Several platforms have special Socket implementations and slightly different APIs.
+        /// To accomodate this, switching the socket implementation for a network protocol was made available.
+        /// By default, UDP and TCP have socket implementations assigned.
+        ///
+        /// You only need to set the SocketImplementationConfig once, after creating a PhotonPeer
+        /// and before connecting. If you switch the TransportProtocol, the correct implementation is being used.
+        /// </remarks>
+        public Dictionary<ConnectionProtocol, Type> SocketImplementationConfig
+        {
+            get { return this.loadBalancingPeer.SocketImplementationConfig; }
+        }
 
 
         ///<summary>Simplifies getting the token for connect/init requests, if this feature is enabled.</summary>
@@ -670,6 +704,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
 
             this.AuthValues = authValues;
 
+
+            // as this.Connect() checks usage of WebSockets for WebGL exports, this method doesn't
             return this.Connect();
         }
 
@@ -699,6 +735,13 @@ namespace ExitGames.Client.Photon.LoadBalancing
         {
             this.DisconnectedCause = DisconnectCause.None;
 
+            #if UNITY_WEBGL
+            if (this.TransportProtocol == ConnectionProtocol.Tcp || this.TransportProtocol == ConnectionProtocol.Udp)
+            {
+                this.DebugReturn(DebugLevel.WARNING, "WebGL requires WebSockets. Switching TransportProtocol to WebSocketSecure.");
+                this.TransportProtocol = ConnectionProtocol.WebSocketSecure;
+            }
+            #endif
 
             if (this.loadBalancingPeer.Connect(this.MasterServerAddress, this.AppId, this.TokenForInit))
             {
@@ -918,16 +961,63 @@ namespace ExitGames.Client.Photon.LoadBalancing
         {
             if (this.loadBalancingPeer == null)
             {
+                this.DebugReturn(DebugLevel.ERROR, "OpFindFriends aborted: loadBalancingPeer is null.");
                 return false;
             }
 
             if (this.isFetchingFriendList || this.Server != ServerConnection.MasterServer)
             {
+                this.DebugReturn(DebugLevel.WARNING, "OpFindFriends skipped: already fetching friends list.");
                 return false;   // fetching friends currently, so don't do it again (avoid changing the list while fetching friends)
             }
 
+            if (friendsToFind == null || friendsToFind.Length == 0)
+            {
+                this.DebugReturn(DebugLevel.ERROR, "OpFindFriends skipped: friendsToFind array is null or empty.");
+                return false;
+            }
+
+            List<string> friendsList = new List<string>(friendsToFind.Length);
+            for (int i = 0; i < friendsToFind.Length; i++)
+            {
+                string friendUserId = friendsToFind[i];
+                if (string.IsNullOrEmpty(friendUserId))
+                {
+                    this.DebugReturn(DebugLevel.WARNING,
+                        string.Format(
+                            "friendsToFind array contains a null or empty UserId, element at position {0} skipped.",
+                            i));
+                }
+                else if (friendUserId.Equals(UserId))
+                {
+                    this.DebugReturn(DebugLevel.WARNING,
+                        string.Format(
+                            "friendsToFind array contains local player's UserId \"{0}\", element at position {1} skipped.",
+                            friendUserId,
+                            i));
+                }
+                else if (friendsList.Contains(friendUserId))
+                {
+                    this.DebugReturn(DebugLevel.WARNING,
+                        string.Format(
+                            "friendsToFind array contains duplicate UserId \"{0}\", element at position {1} skipped.",
+                            friendUserId,
+                            i));
+                }
+                else 
+                {
+                    friendsList.Add(friendUserId);
+                }
+            }
+
+            if (friendsList.Count == 0)
+            {
+                this.DebugReturn(DebugLevel.ERROR, "OpFindFriends skipped: friends list to find is empty.");
+                return false;
+            }
+
             this.isFetchingFriendList = true;
-            this.friendListRequested = friendsToFind;
+            this.friendListRequested = friendsList.ToArray();
 
             return this.loadBalancingPeer.OpFindFriends(friendsToFind);
         }
@@ -1330,7 +1420,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// Leaves the current room, optionally telling the server that the user is just becoming inactive.
         /// </summary>
         ///
-        /// <param name="becomeInactive">If true, this player becomes inactive in the game and can return later (if PlayerTTL of the room is > 0).</param>
+        /// <param name="becomeInactive">If true, this player becomes inactive in the game and can return later (if PlayerTTL of the room is != 0).</param>
+        /// <param name="sendAuthCookie">WebFlag: Securely transmit the encrypted object AuthCookie to the web service in PathLeave webhook when available</param>
         /// <remarks>
         /// OpLeaveRoom skips execution when the room is null or the server is not GameServer or the client is disconnecting from GS already.
         /// OpLeaveRoom returns false in those cases and won't change the state, so check return of this method.
@@ -1339,25 +1430,15 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// which not only leaves the room but also the server. Disconnect also triggers a leave and so that workflow is is quicker.
         /// </remarks>
         /// <returns>If the current room could be left (impossible while not in a room).</returns>
-        public bool OpLeaveRoom(bool becomeInactive)
+        public bool OpLeaveRoom(bool becomeInactive, bool sendAuthCookie = false)
         {
             if (this.CurrentRoom == null || this.Server != ServerConnection.GameServer || this.State == ClientState.DisconnectingFromGameserver)
             {
                 return false;
             }
 
-            if (becomeInactive)
-            {
-                this.State = ClientState.DisconnectingFromGameserver;
-                this.loadBalancingPeer.Disconnect();
-            }
-            else
-            {
-                this.State = ClientState.Leaving;
-                this.loadBalancingPeer.OpLeaveRoom(false);    //TURNBASED users can leave a room forever or return later
-            }
-
-            return true;
+            this.State = ClientState.Leaving;
+            return this.loadBalancingPeer.OpLeaveRoom(becomeInactive, sendAuthCookie);
         }
 
 
@@ -1559,12 +1640,31 @@ namespace ExitGames.Client.Photon.LoadBalancing
         /// <summary>
         /// Send an event with custom code/type and any content to the other players in the same room.
         /// </summary>
+        /// <param name="eventCode">Identifies this type of event (and the content). Your game's event codes can start with 0.</param>
+        /// <param name="customEventContent">Any serializable datatype (including Hashtable like the other OpRaiseEvent overloads).</param>
+        /// <param name="raiseEventOptions">Contains used send options. If you pass null, the default options will be used.</param>
+        /// <returns>If operation could be enqueued for sending. Sent when calling: Service or SendOutgoingCommands.</returns>
+        public virtual bool OpRaiseEvent(byte eventCode, object customEventContent, RaiseEventOptions raiseEventOptions, SendOptions sendOptions)
+        {
+            if (this.loadBalancingPeer == null)
+            {
+                return false;
+            }
+
+            return this.loadBalancingPeer.OpRaiseEvent(eventCode, customEventContent, raiseEventOptions, sendOptions);
+        }
+
+
+        /// <summary>
+        /// Send an event with custom code/type and any content to the other players in the same room.
+        /// </summary>
         /// <remarks>This override explicitly uses another parameter order to not mix it up with the implementation for Hashtable only.</remarks>
         /// <param name="eventCode">Identifies this type of event (and the content). Your game's event codes can start with 0.</param>
         /// <param name="customEventContent">Any serializable datatype (including Hashtable like the other OpRaiseEvent overloads).</param>
-        /// <param name="sendReliable">If this event has to arrive reliably (potentially repeated if it's lost).</param>
+        /// <param name="sendReliable">Defines if this event is sent reliably (potentially repeated if it's lost).</param>
         /// <param name="raiseEventOptions">Contains (slightly) less often used options. If you pass null, the default options will be used.</param>
         /// <returns>If operation could be enqueued for sending. Sent when calling: Service or SendOutgoingCommands.</returns>
+        [Obsolete("Use OpRaiseEvent(byte eventCode, object customEventContent, RaiseEventOptions raiseEventOptions) instead. Parameter 'sendReliable' moved to: RaiseEventOptions.SendOptions.")]
         public virtual bool OpRaiseEvent(byte eventCode, object customEventContent, bool sendReliable, RaiseEventOptions raiseEventOptions)
         {
             if (this.loadBalancingPeer == null)
@@ -1572,7 +1672,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                 return false;
             }
 
-            return this.loadBalancingPeer.OpRaiseEvent(eventCode, customEventContent, sendReliable, raiseEventOptions);
+            return this.loadBalancingPeer.OpRaiseEvent(eventCode, customEventContent, raiseEventOptions, new SendOptions() { Reliability = sendReliable, Channel = raiseEventOptions.SequenceChannel });
         }
 
 
@@ -2062,7 +2162,7 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     for (int index = 0; index < this.friendListRequested.Length; index++)
                     {
                         FriendInfo friend = new FriendInfo();
-                        friend.Name = this.friendListRequested[index];
+                        friend.UserId = this.friendListRequested[index];
                         friend.Room = roomList[index];
                         friend.IsOnline = onlineList[index];
                         friendList.Insert(index, friend);
@@ -2456,10 +2556,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
                     this.loadBalancingPeer.InitPayloadEncryption(encryptionSecret);
                     break;
                 case EncryptionMode.DatagramEncryption:
+                case EncryptionMode.DatagramEncryptionRandomSequence:
                     {
                         byte[] secret1 = (byte[])encryptionData[EncryptionDataParameters.Secret1];
                         byte[] secret2 = (byte[])encryptionData[EncryptionDataParameters.Secret2];
-                        this.loadBalancingPeer.InitDatagramEncryption(secret1, secret2);
+                        this.loadBalancingPeer.InitDatagramEncryption(secret1, secret2, mode == EncryptionMode.DatagramEncryptionRandomSequence);
                     }
                     break;
                 default:
@@ -2534,7 +2635,8 @@ namespace ExitGames.Client.Photon.LoadBalancing
             {
                 opParameters.Add(ParameterCode.EventForward, WebFlags.SendAuthCookieConst);
             }
-            return this.loadBalancingPeer.OpCustom(OperationCode.WebRpc, opParameters, true);
+
+            return this.loadBalancingPeer.SendOperation(OperationCode.WebRpc, opParameters, new SendOptions() { Reliability = true });
         }
     }
 

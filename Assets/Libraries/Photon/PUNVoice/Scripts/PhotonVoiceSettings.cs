@@ -36,15 +36,27 @@ public class PhotonVoiceSettings : MonoBehaviour
     /// Remote audio stream playback delay to compensate packets latency variations (applied per every speaker instance). Try 100 - 200 if sound is choppy.
     public int PlayDelayMs = 200;                       // set in inspector
 
+    /// PS4 user ID of the local user: pass the userID of the PS4 controller that is used by the local user.
+    /// This value is used by Photon Voice when sending output to the headphones of as PS4 controller.
+    /// If you don't provide a user ID, then Photon Voice uses the user ID of the user at index 0 in the list of local users
+    /// and in case that multiple controllers are attached, the audio output might be sent to the headphones of a different controller then intended.
+#if UNITY_PS4
+    public int PS4UserID = 0;                       // set from your games code
+#endif
+
+    public enum MicAudioSourceType
+    {
+        Unity,
+        Photon
+    }
+
+    /// Default microphone type;
+    public MicAudioSourceType MicrophoneType;
     /// Lost frames simulation ratio.
     public int DebugLostPercent = 0;                    // set in inspector
 
     /// Log debug info.
     public bool DebugInfo = false;                    // set in inspector
-
-//    public string AppId = "<app-id>";
-//    public string AppVersion = "1.0";
-
 
     private static PhotonVoiceSettings instance;
     private static object instanceLock = new object();
@@ -52,22 +64,40 @@ public class PhotonVoiceSettings : MonoBehaviour
     /// <summary>
     /// Get current settings.
     /// </summary>
-    public static PhotonVoiceSettings Instance { 
-        get 
+    public static PhotonVoiceSettings Instance
+    {
+        get
         {
-            if (instance == null)
+            lock (instanceLock)
             {
-                instance = PhotonVoiceNetwork.instance.gameObject.AddComponent<PhotonVoiceSettings>();
+                if (instance == null)
+                {
+                    PhotonVoiceSettings candidate = FindObjectOfType<PhotonVoiceSettings>();
+                    if (candidate != null)
+                    {
+                        instance = candidate;
+                    }
+                    else
+                    {
+                        instance = PhotonVoiceNetwork.instance.gameObject.AddComponent<PhotonVoiceSettings>();
+                    }
+                }
+                return instance;
             }
-            return instance; 
         }
         private set
         {
-            if (instance != value)
+            lock (instanceLock)
             {
                 if (instance != null && value != null)
                 {
-                    Debug.LogErrorFormat(value, "PUNVoice: PhotonVoiceSettings instance already set, extra instance ignored.");
+                    if (instance.GetInstanceID() != value.GetInstanceID())
+                    {
+                        Debug.LogErrorFormat(
+                            "PUNVoice: Destroying a duplicate instance of PhotonVoiceSettings as only one is allowed.");
+                        Destroy(value);
+                        return;
+                    }
                     return;
                 }
                 instance = value;
@@ -76,11 +106,8 @@ public class PhotonVoiceSettings : MonoBehaviour
     }
 
     // for settings put in scene in editor
-    void Awake()
+    private void Awake()
     {
-        lock (instanceLock)
-        {
-            Instance = this;
-        }
+        Instance = this;
     }
 }

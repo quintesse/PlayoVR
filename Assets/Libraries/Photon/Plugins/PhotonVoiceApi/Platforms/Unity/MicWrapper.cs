@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 
 // Wraps UnityEngine.Microphone with Voice.IAudioStream interface.
-public class MicWrapper : ExitGames.Client.Photon.Voice.IBufferReader<float>
+public class MicWrapper : ExitGames.Client.Photon.Voice.IAudioReader<float>
 {
     private AudioClip mic;
     private string device;
@@ -29,14 +29,14 @@ public class MicWrapper : ExitGames.Client.Photon.Voice.IBufferReader<float>
         this.mic = Microphone.Start(device, true, 1, frequency);
     }
 
+    public int SamplingRate { get { return this.mic.frequency; } }
+    public int Channels { get { return this.mic.channels; } }
+
     public void Dispose()
     {
 		Microphone.End(this.device);
     }
-
-    public int SourceSamplingRate { get { return this.mic.frequency; } }
-    public int Channels { get { return this.mic.channels; } }
-
+    
     private int micPrevPos;
     private int micLoopCnt;
     private int readAbsPos;

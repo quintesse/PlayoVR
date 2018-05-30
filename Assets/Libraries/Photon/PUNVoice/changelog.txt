@@ -1,3 +1,37 @@
+v1.15
+	PUNVoice:
+CHANGED: PUN updated to 1.90v
+FIXED: Photon Voice's "AutoConnect" and "AutoDisconnect" settings ignored when PUN's "OfflineMode" is enabled
+
+v1.14.2
+    PUNVoice:
+REMOVED: internal files
+CHANGED: updated Unity's StandardAssets's CrossPlatformInput to get rid of warnings in newest Unity versions
+
+v1.14
+    PUNVoice:
+CHANGED: UWP build fixes
+CHANGED: the PS4 output implementation is now mixing the output of all PhotonVoiceSpeaker.cs instances and passing them to the same PS4 audio output port instead of opening a new port per instance because the Sony PS4 audio output APIs don't support more than 4 parallely opened voice output ports
+CHANGED: refactored the PhotonVoiceSpeaker cleanup code to get rid of code redundancies
+FIXED: Singleton pattern for PhotonVoiceNetwork and PhotonVoiceSettings
+CHANGED: PhotonVoiceRecorder passes IAudioSource along with LocalVoice to PhotonVoiceCreated message
+CHANGED: DelayProcessor supports both float and short audio buffers
+CHANGED: PUN updated to 1.89v
+CHANGED: LoadBalancingApi updated to 4.1.2.0v
+    PhotonVoiceAPI:
+MINOR: fixed a typo in a comment inside AudioStreamPlayer::Update()
+
+v1.13
+  PUNVoice:
+ADDED: platform plugins (AEC, native microphone input, iOS ForceToSpeaker)
+CHANGED: more control over PhotonVoiceRecorder source and frame type
+  PhotonVoiceAPI:
+FIXED: threading issue causing access violation in opus_egpb.dll
+
+v1.12
+CHANGED: PUN updated to 1.87
+CHANGED: LoadBalancingApi updated to 4.1.1.17
+
 v1.11
 CHANGED: PUN updated to 1.85
 ADDED: missing Windows Store Applications opus files

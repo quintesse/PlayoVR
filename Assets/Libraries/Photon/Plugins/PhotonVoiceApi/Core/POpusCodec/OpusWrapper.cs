@@ -1,4 +1,4 @@
-﻿#if (UNITY_IPHONE && !UNITY_EDITOR) || __IOS__
+﻿#if (UNITY_IOS && !UNITY_EDITOR) || __IOS__
 #define DLL_IMPORT_INTERNAL
 #endif
 

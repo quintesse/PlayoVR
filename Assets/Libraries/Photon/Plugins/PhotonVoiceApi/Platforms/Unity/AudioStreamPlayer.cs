@@ -132,7 +132,7 @@ public class AudioStreamPlayer
             // average jittering value
             this.CurrentBufferLag = (this.CurrentBufferLag * 39 + (this.streamSamplePos - playPos)) / 40;
 
-            // calc jitter-free stream position based on clock-driven palyer position and average lag
+            // calc jitter-free stream position based on clock-driven player position and average lag
             this.streamSamplePosAvg = playPos + this.CurrentBufferLag;
             if (this.streamSamplePosAvg > this.streamSamplePos)
             {

@@ -7,15 +7,28 @@ using Voice = ExitGames.Client.Photon.Voice;
 class DelayProcessor : UnityEngine.MonoBehaviour
 {
     // Message sent by PhotonVoiceRecorder
-    void VoiceCreated(PhotonVoiceRecorder.VoiceCreatedParams p)
+    void PhotonVoiceCreated(PhotonVoiceRecorder.PhotonVoiceCreatedParams p)
     {
-        ((Voice.LocalVoiceAudioFloat)p.Voice).AddPreProcessor(new Processor(40000, 0.3f));
+		if (p.Voice is Voice.LocalVoiceAudioFloat) 
+		{
+    	    ((Voice.LocalVoiceAudioFloat)p.Voice).AddPreProcessor(new ProcessorFloat(p.AudioSource.SamplingRate / 2, 0.3f));
+            UnityEngine.Debug.Log("DelayProcessor: ProcessorFloat added to local voice pipeline");
+        }
+        else if (p.Voice is Voice.LocalVoiceAudioShort)
+        {
+            ((Voice.LocalVoiceAudioShort)p.Voice).AddPreProcessor(new ProcessorShort(p.AudioSource.SamplingRate / 2, 0.3f));
+            UnityEngine.Debug.Log("DelayProcessor: ProcessorShort added to local voice pipeline");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("DelayProcessor: Only float and short voices are supported. Trying to add processor to " + p.Voice.GetType());
+        }
     }
 
     /*
     // Building processing pipeline from the scratch.
     // Gives full control on processing order and resampler implementation.
-    void VoiceCreated(PhotonVoiceRecorder.VoiceCreatedParams p)
+    void PhotonVoiceCreated(PhotonVoiceRecorder.VoiceCreatedParams p)
     {        
         p.Voice.ClearProcessors();
 
@@ -31,7 +44,7 @@ class DelayProcessor : UnityEngine.MonoBehaviour
         // Optional. If added before resampling, use SourceSamplingRate instead of SamplingRate
         var levelMeter = new Voice.AudioUtil.LevelMeterFloat(p.Info.SamplingRate, p.Info.Channels);
         var voiceDetector = new Voice.AudioUtil.VoiceDetectorFloat(p.Info.SamplingRate, p.Info.Channels);        
-        var voiceDetectorCalibration = new Voice.AudioUtil.VoiceDetectorCalibration<float>(voiceDetector, levelMeter, p.Info.SamplingRate * p.Info.Channels);
+        var voiceDetectorCalibration = new Voice.AudioUtil.VoiceDetectorCalibration<float>(voiceDetector, levelMeter, p.Info.SamplingRate, p.Info.Channels);
         p.Voice.AddPostProcessor(levelMeter, voiceDetectorCalibration, voiceDetector); // level meter and calibration should be processed even if no signal detected
 
         // Audio voice properties exposing built-in processor will not work after clear. Use refs to created processors.
@@ -40,27 +53,23 @@ class DelayProcessor : UnityEngine.MonoBehaviour
         
     }
     //*/
-    class Processor : Voice.LocalVoiceAudioFloat.IProcessor
+    abstract class Processor<T> : Voice.LocalVoiceAudio<T>.IProcessor
     {
         float factor;
-        float[] prevBuf;
+        T[] prevBuf;
         int prevBufPosWrite;
         int prevBufPosRead;
-        public Processor(int size, float factor)
+        public Processor(int delaySamples, float factor)
         {
-            prevBuf = new float[size];
-            prevBufPosRead = size / 2;
+            prevBuf = new T[delaySamples * 2];
+            prevBufPosRead = delaySamples;
             this.factor = factor;
         }
-        public float[] Process(float[] buf)
+        abstract protected void mix(float factor, T[] buf, T[] prevBuf, ref int prevBufPosRead);
+        public T[] Process(T[] buf)
         {
+            mix(factor, buf, prevBuf, ref prevBufPosRead);            
 
-            for (int i = 0; i < buf.Length; i++)
-            {
-                buf[i] += factor * prevBuf[prevBufPosRead++ % prevBuf.Length];
-            }
-
-            //var len = buf.Length;
             if (buf.Length > prevBuf.Length - prevBufPosWrite)
             {
                 Array.Copy(buf, 0, prevBuf, prevBufPosWrite, prevBuf.Length - prevBufPosWrite);
@@ -79,6 +88,35 @@ class DelayProcessor : UnityEngine.MonoBehaviour
 
         public void Dispose()
         {
+        }
+    }
+
+    class ProcessorFloat : Processor<float>
+    {
+        public ProcessorFloat(int delaySamples, float factor) : base(delaySamples, factor)
+        {            
+        }
+
+        protected override void mix(float factor, float[] buf, float[] prevBuf, ref int prevBufPosRead)        
+        {
+            for (int i = 0; i < buf.Length; i++)
+            {
+                buf[i] += factor * prevBuf[prevBufPosRead++ % prevBuf.Length];
+            }
+        }
+    }
+
+    class ProcessorShort : Processor<short>
+    {
+        public ProcessorShort(int delaySamples, float factor) : base(delaySamples, factor)
+        {
+        }
+        protected override void mix(float factor, short[] buf, short[] prevBuf, ref int prevBufPosRead)
+        {
+            for (int i = 0; i < buf.Length; i++)
+            {
+                buf[i] += (short)(buf[i] + factor * prevBuf[prevBufPosRead++ % prevBuf.Length]);
+            }
         }
     }
 }

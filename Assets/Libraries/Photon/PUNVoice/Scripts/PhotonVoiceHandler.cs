@@ -109,7 +109,15 @@ public class PhotonVoiceHandler : MonoBehaviour
 
     private void Awake()
     {
-        StartFallbackSendAckThread();
+        // make sure that instance exists before starting thread (instance can be created in main thread only)
+        if (null != PhotonVoiceNetwork.instance)
+        {
+            StartFallbackSendAckThread();
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("[PUNVoice]: \"FallbackSendAckThread\" not started because PhotonVoiceNetwork instance not ready yet.");
+        }
     }
 
     protected void Update()

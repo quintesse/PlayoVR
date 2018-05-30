@@ -20,9 +20,9 @@ PluginImporter:
       settings:
         CPU: x86_64
         DefaultValueInitialized: true
-        OS: AnyOS
+        OS: Linux
     Linux:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: None
     Linux64:
@@ -34,7 +34,7 @@ PluginImporter:
       settings:
         CPU: x86_64
     OSXIntel:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: None
     OSXIntel64:
@@ -44,7 +44,7 @@ PluginImporter:
     OSXUniversal:
       enabled: 1
       settings:
-        CPU: None
+        CPU: x86_64
     WP8:
       enabled: 0
       settings:
@@ -66,6 +66,7 @@ PluginImporter:
         DontProcess: False
         PlaceholderPath: 
         SDK: AnySDK
+        ScriptingBackend: AnyScriptingBackend
     iOS:
       enabled: 0
       settings:

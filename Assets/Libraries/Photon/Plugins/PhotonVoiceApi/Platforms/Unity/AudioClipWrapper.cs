@@ -3,7 +3,7 @@ using System.Collections;
 
 // Wraps UnityEngine.AudioClip with Voice.IAudioStream interface.
 // Used for playing back audio clips via Photon Voice.
-public class AudioClipWrapper : ExitGames.Client.Photon.Voice.IBufferReader<float>
+public class AudioClipWrapper : ExitGames.Client.Photon.Voice.IAudioReader<float>
 {
     private AudioClip audioClip;
     private int readPos;
@@ -50,6 +50,8 @@ public class AudioClipWrapper : ExitGames.Client.Photon.Voice.IBufferReader<floa
             return false;
         }
     }
+    public int SamplingRate { get { return this.audioClip.frequency; } }
+    public int Channels { get { return this.audioClip.channels; } }
 
     public void Dispose() 
     {

@@ -1,0 +1,1 @@
+Build with configure/make and copy libspeexdsp.dylib to Contents\MacOS\libspeexdsp
