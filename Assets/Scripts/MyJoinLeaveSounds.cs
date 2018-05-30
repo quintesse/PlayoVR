@@ -1,7 +1,7 @@
 ﻿using Photon;
 using UnityEngine;
 
-public class SoundsForJoinAndLeave : PunBehaviour
+public class MySoundsForJoinAndLeave : PunBehaviour
 {
     public AudioClip JoinClip;
     public AudioClip LeaveClip;
