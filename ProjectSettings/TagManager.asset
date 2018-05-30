@@ -3,9 +3,7 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags:
-  - Holsterable
-  - PanoramaSource
+  tags: []
   layers:
   - Default
   - TransparentFX
@@ -15,8 +13,8 @@ TagManager:
   - UI
   - 
   - 
-  - StereoRender_Ignore
-  - Lighting_Ignore
+  - 
+  - 
   - 
   - 
   - 
