@@ -4,14 +4,24 @@
 /[Bb]uild/
 /[Bb]uilds/
 /Assets/AssetStoreTools*
-/Assets/Libraries/Photon/Photon Unity Networking/Demos*
-/Assets/Libraries/Photon/PUNVoice/DemoVoice*
-/Assets/Libraries/SteamVR/Extras*
-/Assets/Libraries/SteamVR/InteractionSystem*
-/Assets/Libraries/SteamVR/Scenes*
-/Assets/Libraries/VRTK/Examples*
-/Assets/Libraries/DFVoice/*
-/Assets/Libraries/DFVoice.meta
+/Assets/Plugins/*
+/Assets/Plugins.meta
+/Assets/Photon Unity Networking/*
+/Assets/Photon Unity Networking.meta
+/Assets/PhotonChatApi/*
+/Assets/PhotonChatApi.meta
+/Assets/PUNVoice/*
+/Assets/PUNVoice.meta
+/Assets/Libraries/Photon/*
+/Assets/Libraries/Photon.meta
+/Assets/SteamVR/*
+/Assets/SteamVR.meta
+/Assets/Libraries/SteamVR/*
+/Assets/Libraries/SteamVR.meta
+/Assets/VRTK/*
+/Assets/VRTK.meta
+/Assets/Libraries/VRTK/*
+/Assets/Libraries/VRTK.meta
 /Assets/Libraries/Oculus/*
 /Assets/Libraries/Oculus.meta
 
