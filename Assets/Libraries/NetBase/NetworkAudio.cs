@@ -13,20 +13,32 @@
         // Play a sound both locally and for all connected players
         public static void SendPlayClipAtPoint(AudioClip clip, Vector3 position, float volume) {
             if (instance != null) {
-                SendPlayClipAtPoint(instance.GetClipId(clip), position, volume);
+                int clipId = instance.GetClipId(clip);
+                if (clipId >= 0) {
+                    SendPlayClipAtPoint(clipId, position, volume);
+                } else {
+                    Debug.Log("AudioClip wasn't found: " + clip.name);
+                }
             }
         }
 
         // Play a sound both locally and for all connected players
         public static void SendPlayClipAtPoint(string clipName, Vector3 position, float volume) {
             if (instance != null) {
-                SendPlayClipAtPoint(instance.GetClipId(clipName), position, volume);
+                int clipId = instance.GetClipId(clipName);
+                if (clipId >= 0) {
+                    SendPlayClipAtPoint(clipId, position, volume);
+                } else {
+                    Debug.Log("AudioClip wasn't found: " + clipName);
+                }
             }
         }
 
         // Play a sound both locally and for all connected players
         public static void SendPlayClipAtPoint(int clipId, Vector3 position, float volume) {
-            instance.photonView.RPC("PlayClipAtPoint", PhotonTargets.All, clipId, position, volume);
+            if (instance != null) {
+                instance.photonView.RPC("PlayClipAtPoint", PhotonTargets.All, clipId, position, volume);
+            }
         }
 
         [PunRPC]
