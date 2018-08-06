@@ -6,11 +6,18 @@ public class Bullet : MonoBehaviour {
     public AudioClip hitSolidSound;
     public AudioClip hitSoftSound;
 
+    private double timeCreated;
+
     void Start() {
         // Add velocity to the bullet
         GetComponent<Rigidbody>().velocity = transform.forward * 12;
-        // Destroy the bullet after 1 second
-        Destroy(this.gameObject, 1.0f);
+        timeCreated = PhotonNetwork.time;
+    }
+
+    void Update() {
+        if (PhotonNetwork.isMasterClient && PhotonNetwork.time - timeCreated > 1) {
+            PhotonNetwork.Destroy(gameObject);
+        }
     }
 
     void OnCollisionEnter(Collision collision) {
@@ -21,9 +28,8 @@ public class Bullet : MonoBehaviour {
             return;
         }
 
-        Destroy(gameObject);
-
         if (PhotonNetwork.isMasterClient) {
+            PhotonNetwork.Destroy(gameObject);
             NetworkAudio.SendPlayClipAtPoint(hitSolidSound, transform.position, 1.0f);
         }
     }
