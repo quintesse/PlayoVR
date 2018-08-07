@@ -8,6 +8,13 @@ so those people can actually talk to each other.
 
 ## Changelog
 
+ - 2018-08-07
+   - Updated to work with the latest version of all 3rd party dependencies
+   - 3rd party dependencies are _no_ longer part of the repository
+   - Fixed gun orientation
+   - Fixed/updated door handling
+   - Avatars now have a player name floating above them
+   - Updated configuration instructions
  - 2017-08-18
    - In the last update somehow all interactable scene objects were broken. Fixed now.
  - 2017-08-12
@@ -65,10 +72,16 @@ so those people can actually talk to each other.
 To be able to use this example project you'll have to set it up first:
 
  1. Open the project in Unity.
- 2. In the menu bar click on `Window > Photon Unity Networking > Highlight Server Settings`.
- 3. In the `Inspector` window change the `AppId` field to your own one [you got from Photon](https://www.photonengine.com/en-US/Dashboard).
- 4. Open the `Main` scene found in the `Scenes` folder in the `Project` window.
- 5. Hit `Play`!
+ 2. In the menu bar click on `Window > TextMeshPro > Import TMP Essential Resources` and import all.
+ 3. Clone [VRTK](https://github.com/thestonefox/VRTK) or download as a ZIP.
+ 4. Copy `VRTK/Assets/VRTK` to the `Assets` folder of this project.
+ 5. In the Asset Store search for `SteamVR Plugin` and import it's contents **except** `ProjectSettings` (deselect it).
+ 6. In the Asset Store search for `Photon Unity Networking Free` and import all of it. Click `Skip` and `Close` in the wizard that pops up afterwards for now.
+ 7. In the Asset Store search for `Photon Voice` and import all of it.
+ 8. In the menu bar click on `Window > Photon Unity Networking > Highlight Server Settings`.
+ 9. In the `Inspector` window set `hosting` (use `Best Region` if you're not sure what to use) and set the `AppId` and `Voice AppId` fields to use the IDs [you got from Photon](https://dashboard.photonengine.com).
+ 10. Open the `Main` scene found in the `Scenes` folder in the `Project` window.
+ 11. Hit `Play`!
  
 ## Testing locally
 
@@ -197,13 +210,12 @@ This script can be added to objects that are potential parents for interactable 
  
 ## Licenses
 
- - **Only the code in `Assets/Libraries/NetBase`, `Assets/Libraries/NetVRTK` and `Assets/Scripts` is released under the MIT license**
- - Other code libraries in `Assets/Libraries` all come with their own licenses
+ - The code in `Assets/Libraries/NetBase`, `Assets/Libraries/NetVRTK` and `Assets/Scripts` is released under the MIT license
  - Any binary resources are more or less there on a "fair use" basis, **don't assume that you can just copy and use them**
  
 ## Thanks
 
- - @thestonefox for VRTK
+ - @thestonefox for [VRTK](https://github.com/thestonefox/VRTK)
  - @bddckr for allowing me to steal some things (including parts of this README) from
  [his test project ](https://github.com/bddckr/VRTK-PUN-NetworkTest)
  
