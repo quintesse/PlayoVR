@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using NetBase;
 
 public class PlayerConnectManager : Photon.PunBehaviour {
     private GameObject[] spawns;
@@ -29,6 +28,8 @@ public class PlayerConnectManager : Photon.PunBehaviour {
     public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
         if (PhotonNetwork.isMasterClient) {
             var idx = PhotonNetwork.otherPlayers.Length;
+            // Tell the new player to create an avatar for themselves
+            // (We do it this way so the new object will properly belong to the new player)
             photonView.RPC("NewPlayer", newPlayer, idx, playerName(newPlayer));
         }
     }
@@ -41,7 +42,6 @@ public class PlayerConnectManager : Photon.PunBehaviour {
     void NewPlayer(int idx, string name) {
         // Create a new player at the appropriate spawn spot
         var trans = spawns[idx].transform;
-        var player = PhotonNetwork.Instantiate(playerAvatar.name, trans.position, trans.rotation, 0);
-        player.name = name;
+        var player = PhotonNetwork.Instantiate(playerAvatar.name, trans.position, trans.rotation, 0, new object[] { name });
     }
 }

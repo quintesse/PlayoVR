@@ -10,6 +10,27 @@ public class SetupPlayerAvatar : Photon.MonoBehaviour {
     [Tooltip("The avatar's right hand to sync with the right controller. If empty, a child named 'Right Hand' will be used.")]
     public GameObject RightHand;
 
+    void OnPhotonInstantiate(PhotonMessageInfo info) {
+        string name = photonView.instantiationData[0].ToString();
+        InitPlayer(name);
+    }
+
+    private void InitPlayer(string name) {
+        // Set player's name
+        gameObject.name = name;
+        var label = NetUtils.Find(gameObject, "Top/Label");
+        if (label != null) {
+            if (!photonView.isMine) {
+                TMPro.TextMeshPro text = label.GetComponent<TMPro.TextMeshPro>();
+                if (text != null) {
+                    text.text = name;
+                }
+            } else {
+                label.SetActive(false);
+            }
+        }
+    }
+
     void Awake () {
         if (!photonView.isMine) {
             return;
