@@ -124,9 +124,9 @@ This script handles the transfer of "ownership" that Photon imposes on object. O
 
 ### Properties:
 
- - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
  - **Own Additional Photonviews** : This can contain a list of additional `PhotonView` scripts that should change ownership when the player grabs the current object. This is useful for complex objects like for instance a door where the user might grab a door knob but the script for syncing the movement of the door is on the door, not the knob.
-
+ - **Grab Owner** : _(Read Only)_ Shows the PUN ID of the plauer currently holding the object or `0` if it's not being held.
+ 
 ### Requirements/suggestions:
 
  - a `VRTK_InteractableObject` must exist on the same object
@@ -137,7 +137,7 @@ This script syncs the action of an object being snapped to a drop zone across th
 
 ### Properties:
 
- - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
+ - **Snapped To** : _(Read Only)_ Shows the path/id of the object that we're snapped to.
 
 ### Requirements/suggestions:
 
@@ -165,7 +165,7 @@ This script handles the synchronization of position, orientation and movement of
  - **Use local values** : By default this setting is enabled which means that the **Position** and **Rotation** will be synchronized using their local coordinate system. When disabled world coordinates will be used instead.
  - **On change only** : By default this setting is enabled which means that values will only be sent to the other clients when they have actually changed. When disabled updates will always be sent on each network "tick".
 
-NB: The reason for **Use local values** is that it's almost always better to use the local coordinate system, especially in combination with **On change only** because there are many situations where an object stays immobile relative to its parent, even if the parent itself (or any ancestor) is moved around a lot. This makes it more efficient because no updates have to be sent in those cases. But if your objects can change parents (you are using the `VRTK_Interactable_Object` grab mechanic for example) then sometimes it might be desirable to use world coordinates by disabling **Use local values**. Just know that this *might* be less efficient. In those cases it might be best to switch to `NetworkParentableObject` instead.
+NB: The reason for **Use local values** is that it's almost always better to use the local coordinate system, especially in combination with **On change only** because there are many situations where an object stays immobile relative to its parent, even if the parent itself (or any ancestor) is moved around a lot. This makes it more efficient because no updates have to be sent in those cases. But if your objects can change parents and you can't use the **parent** option then it might be desirable to use world coordinates by disabling **Use local values**. Just know that this *might* be less efficient.
 
 #### About "parent" option
 
