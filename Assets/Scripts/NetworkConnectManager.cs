@@ -2,7 +2,7 @@
 using UnityEngine;
 
 public class NetworkConnectManager : Photon.PunBehaviour {
-    public string gameVersion = "1.0";
+    public string gameVersion = "0.3";
 
     [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
     public byte MaxPlayersPerRoom = 4;
