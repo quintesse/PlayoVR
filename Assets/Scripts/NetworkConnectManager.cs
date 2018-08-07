@@ -12,6 +12,7 @@ public class NetworkConnectManager : Photon.PunBehaviour {
         PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
         PhotonNetwork.automaticallySyncScene = true;
         PhotonNetwork.logLevel = Loglevel;
+        PhotonNetwork.playerName = "Player ?";
         PhotonNetwork.ConnectUsingSettings(gameVersion);
     }
 

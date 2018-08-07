@@ -20,6 +20,7 @@ public class PlayerConnectManager : Photon.PunBehaviour {
     }
 
     public override void OnJoinedRoom() {
+        PhotonNetwork.playerName = playerName(PhotonNetwork.player);
         if (PhotonNetwork.isMasterClient) {
             NewPlayer(0, playerName(PhotonNetwork.player));
         }
