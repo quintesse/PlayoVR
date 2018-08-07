@@ -24,6 +24,10 @@
 /Assets/Libraries/VRTK.meta
 /Assets/Libraries/Oculus/*
 /Assets/Libraries/Oculus.meta
+/Assets/TextMesh Pro/*
+/Assets/TextMesh Pro.meta
+/Assets/Libraries/TextMesh Pro/*
+/Assets/Libraries/TextMesh Pro.meta
 
 # Don't store the Photon network settings, they contain private info
 /Assets/Libraries/Photon/Resources/PhotonServerSettings.asset*
