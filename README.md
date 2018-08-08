@@ -75,7 +75,7 @@ To be able to use this example project you'll have to set it up first:
  2. In the menu bar click on `Window > TextMeshPro > Import TMP Essential Resources` and import all.
  3. Clone [VRTK](https://github.com/thestonefox/VRTK) or download as a ZIP.
  4. Copy `VRTK/Assets/VRTK` to the `Assets` folder of this project.
- 5. For VRTK to work with any VR headsets you will need to install their respective SDKs. Read [these instructions](https://github.com/thestonefox/VRTK/blob/master/Assets/VRTK/Documentation/GETTING_STARTED.md#supported-sdks) on how to do that.
+ 5. For VRTK to work with any VR headsets you will need to install their respective SDKs. Read [the section on 'Supported SDKs' here](https://github.com/thestonefox/VRTK/blob/master/Assets/VRTK/Documentation/GETTING_STARTED.md#supported-sdks) on how to do that.
  6. In the Asset Store search for `Photon Unity Networking Free` and import all of it. Click `Skip` and `Close` in the wizard that pops up afterwards for now.
  7. In the Asset Store search for `Photon Voice` and import all of it.
  8. In the menu bar click on `Window > Photon Unity Networking > Highlight Server Settings`.
