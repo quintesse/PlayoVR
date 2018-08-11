@@ -31,6 +31,14 @@
         }
 
         void Awake() {
+            VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
+        void OnDestroy() {
+            VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
+        void OnEnable() {
             if (!photonView.isMine) {
                 return;
             }

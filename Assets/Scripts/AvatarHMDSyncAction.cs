@@ -18,6 +18,14 @@
         private Transform rightHandTransform;
         private Transform playAreaTransform;
 
+        void Awake() {
+            VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
+        void OnDestroy() {
+            VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
         protected virtual void OnEnable() {
             AvatarTop = AvatarTop != null ? AvatarTop : NetUtils.Find(gameObject, "Top");
             AvatarHead = AvatarHead != null ? AvatarHead : NetUtils.Find(gameObject, "Head");
