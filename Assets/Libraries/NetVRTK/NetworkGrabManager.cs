@@ -1,10 +1,7 @@
 ﻿namespace NetVRTK {
-    using System.Collections;
-    using System.Collections.Generic;
     using UnityEngine;
     using VRTK;
     using NetBase;
-    using System;
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
     [RequireComponent(typeof(VRTK_InteractableObject))]

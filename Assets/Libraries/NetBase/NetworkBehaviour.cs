@@ -1,7 +1,4 @@
 ﻿namespace NetBase {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using UnityEngine;
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 

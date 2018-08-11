@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿namespace NetBase {
+    using UnityEngine;
 
-public class PhotonViewLink : MonoBehaviour {
-    public PhotonView linkedView;
+    public class PhotonViewLink : MonoBehaviour {
+        public PhotonView linkedView;
+    }
 }
