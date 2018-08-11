@@ -1,18 +1,16 @@
 ﻿namespace NetBase {
-    using System;
-    using System.Collections;
     using UnityEngine;
     using UnityEngine.SceneManagement;
 
     public class NetUtils {
 
-        public static void EnablePhotonView(Transform trans, bool enable) {
+        public static void SetPhotonViewSync(Transform trans, ViewSynchronization sync) {
             var comp = trans.gameObject.GetComponent<PhotonView>();
             if (comp != null) {
-                comp.enabled = enable;
+                comp.synchronization = sync;
             }
-            foreach (Rigidbody c in trans.gameObject.GetComponentsInChildren(typeof(PhotonView), true)) {
-                comp.enabled = enable;
+            foreach (PhotonView c in trans.gameObject.GetComponentsInChildren(typeof(PhotonView), true)) {
+                comp.synchronization = sync;
             }
         }
 
