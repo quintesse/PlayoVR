@@ -72,12 +72,18 @@ so those people can actually talk to each other.
 To be able to use this example project you'll have to set it up first:
 
  1. Open the project in Unity.
- 2. In the menu bar click on `Window > TextMeshPro > Import TMP Essential Resources` and import all.
+ 2. In the menu bar click on Window > TextMeshPro > Import TMP Essential Resources and import all.
  3. Clone [VRTK](https://github.com/thestonefox/VRTK) or download as a ZIP.
  4. Copy `VRTK/Assets/VRTK` to the `Assets` folder of this project.
  5. For VRTK to work with any VR headsets you will need to install their respective SDKs. Read [the section on 'Supported SDKs' here](https://github.com/thestonefox/VRTK/blob/master/Assets/VRTK/Documentation/GETTING_STARTED.md#supported-sdks) on how to do that.
- 6. In the Asset Store search for `Photon Unity Networking Free` and import all of it. Click `Skip` and `Close` in the wizard that pops up afterwards for now.
+    - Normally you will only need to follow the instructions about importing the SDKs, the project already contains all the necessary camera rigs. If you encounter problems like missing scripts on the SDKs present in the Main scene you should delete those SDKs and follow the full instructions on how to re-add them.
+    - If you import the `SteamVR Plugin` and get a dialog about recommended project settings that just won't go away you can simply click "Ignore All".
+    - If you imported the "Oculus Integration" and you get a dialog "Update Oculus Utilities Plugin" then   just select "Yes" and "Restart" (don't save changes to the scene).
+ 6. In the Asset Store search for `Photon Unity Networking Free` and import all of it.
+    - If you get a dialog "API Update Required" just select "I Made a Backup. Go Ahead!".
+    - If you get a dialog "PUN Setup" just click `Skip` and `Close` for now.
  7. In the Asset Store search for `Photon Voice` and import all of it.
+    - If you imported the "Oculus Integration" and you get errors in `Assets/Oculus/Avatar/Samples/SocialStarter` just delete that entire folder.
  8. In the menu bar click on `Window > Photon Unity Networking > Highlight Server Settings`.
  9. In the `Inspector` window set `hosting` (use `Best Region` if you're not sure what to use) and set the `AppId` and `Voice AppId` fields to use the IDs [you got from Photon](https://dashboard.photonengine.com).
  10. Open the `Main` scene found in the `Scenes` folder in the `Project` window.
