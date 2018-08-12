@@ -2,17 +2,19 @@
     using UnityEngine;
 
     public class NetworkConnectManager : Photon.PunBehaviour {
-        public string gameVersion = "0.3";
+        public static string gameVersion = "0.4";
 
         [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
         public byte MaxPlayersPerRoom = 4;
         public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
 
         void Awake() {
-            PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
-            PhotonNetwork.automaticallySyncScene = true;
-            PhotonNetwork.logLevel = Loglevel;
-            PhotonNetwork.ConnectUsingSettings(gameVersion);
+            if (!PhotonNetwork.connecting && !PhotonNetwork.connected) {
+                PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
+                PhotonNetwork.automaticallySyncScene = false;
+                PhotonNetwork.logLevel = Loglevel;
+                PhotonNetwork.ConnectUsingSettings(gameVersion);
+            }
         }
 
         public override void OnConnectedToMaster() {
@@ -27,6 +29,10 @@
 
             Debug.Log("Joining random room...");
             PhotonNetwork.JoinRandomRoom();
+        }
+
+        public override void OnLeftLobby() {
+            Debug.Log("Left lobby");
         }
 
         public override void OnPhotonRandomJoinFailed(object[] codeAndMsg) {
@@ -44,6 +50,10 @@
 
         public override void OnJoinedRoom() {
             Debug.Log("Joined room");
+        }
+
+        public override void OnLeftRoom() {
+            Debug.Log("Left room");
         }
 
         public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
