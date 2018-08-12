@@ -23,6 +23,10 @@
 /Assets/VRTK.meta
 /Assets/Libraries/VRTK/*
 /Assets/Libraries/VRTK.meta
+/Assets/Oculus/*
+/Assets/Oculus.meta
+/Assets/Resources/OvrAvatarSettings.asset
+/Assets/Resources/OvrAvatarSettings.asset.meta
 /Assets/Libraries/Oculus/*
 /Assets/Libraries/Oculus.meta
 /Assets/TextMesh Pro/*
