@@ -25,8 +25,14 @@
                         text.text = name;
                     }
                 } else {
+                    // We deactivate the label because we don't show a label on our own local avatar
                     label.SetActive(false);
                 }
+            }
+            var icon = NetUtils.Find(gameObject, "Top/Icon");
+            if (icon != null && photonView.isMine) {
+                // We deactivate the icon because we don't show a speaker icon on our own local avatar
+                icon.SetActive(false);
             }
         }
 
