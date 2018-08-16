@@ -15,6 +15,10 @@
             GetComponent<VRTK_InteractableObject>().InteractableObjectUsed += new InteractableObjectEventHandler(DoFireGun);
         }
 
+        void DoFireGun(object sender, InteractableObjectEventArgs e) {
+            fired = true;
+        }
+
         // Update is called once per frame
         void Update() {
             // Handle firing
@@ -25,28 +29,21 @@
         }
 
         void CmdFire() {
-            // Create the Bullet from the Bullet Prefab
-            // (gets replicated automatically to all clients)
-            var bullet = PhotonNetwork.Instantiate(
-                "Bullet",
-                bulletSpawn.position,
-                bulletSpawn.rotation,
-                0);
-
-            // Now play sound and animation locally and on all other clients
-            photonView.RPC("NetFire", PhotonTargets.All);
+            // Now create the bullet and play sound/animation locally and on all other clients
+            photonView.RPC("NetFire", PhotonTargets.All, bulletSpawn.position, bulletSpawn.rotation);
         }
 
         [PunRPC]
-        void NetFire() {
+        void NetFire(Vector3 position, Quaternion rotation) {
+            // Create the Bullet from the Bullet Prefab
+            var bullet = Instantiate(
+                bulletPrefab,
+                position,
+                rotation);
             // Play sound of gun shooting
             AudioSource.PlayClipAtPoint(fireGunSound, transform.position, 1.0f);
             // Play animation of gun shooting
             fireAnimation.Play();
-        }
-
-        void DoFireGun(object sender, InteractableObjectEventArgs e) {
-            fired = true;
         }
     }
 }

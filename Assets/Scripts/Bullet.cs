@@ -1,22 +1,23 @@
 ﻿namespace PlayoVR {
     using UnityEngine;
-    using NetBase;
 
     public class Bullet : MonoBehaviour {
         public AudioClip hitSolidSound;
         public AudioClip hitSoftSound;
 
         private double timeCreated;
+        private bool shouldDestroy;
 
         void Start() {
             // Add velocity to the bullet
             GetComponent<Rigidbody>().velocity = transform.forward * 12;
-            timeCreated = PhotonNetwork.time;
+            timeCreated = Time.time;
+            shouldDestroy = false;
         }
 
         void Update() {
-            if (PhotonNetwork.isMasterClient && PhotonNetwork.time - timeCreated > 1) {
-                PhotonNetwork.Destroy(gameObject);
+            if (shouldDestroy || Time.time - timeCreated > 1) {
+                Destroy(gameObject);
             }
         }
 
@@ -28,10 +29,8 @@
                 return;
             }
 
-            if (PhotonNetwork.isMasterClient) {
-                PhotonNetwork.Destroy(gameObject);
-                NetworkAudio.PlayClipAtPoint(hitSolidSound, transform.position, 1.0f);
-            }
+            AudioSource.PlayClipAtPoint(hitSolidSound, transform.position, 1.0f);
+            shouldDestroy = true;
         }
     }
 }
