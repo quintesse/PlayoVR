@@ -11,11 +11,11 @@
         }
 
         // Play a sound both locally and for all connected players
-        public static void SendPlayClipAtPoint(AudioClip clip, Vector3 position, float volume) {
+        public static void PlayClipAtPoint(AudioClip clip, Vector3 position, float volume, PhotonTargets targets = PhotonTargets.All) {
             if (instance != null) {
                 int clipId = instance.GetClipId(clip);
                 if (clipId >= 0) {
-                    SendPlayClipAtPoint(clipId, position, volume);
+                    PlayClipAtPoint(clipId, position, volume, targets);
                 } else {
                     Debug.Log("AudioClip wasn't found: " + clip.name);
                 }
@@ -23,11 +23,11 @@
         }
 
         // Play a sound both locally and for all connected players
-        public static void SendPlayClipAtPoint(string clipName, Vector3 position, float volume) {
+        public static void PlayClipAtPoint(string clipName, Vector3 position, float volume, PhotonTargets targets = PhotonTargets.All) {
             if (instance != null) {
                 int clipId = instance.GetClipId(clipName);
                 if (clipId >= 0) {
-                    SendPlayClipAtPoint(clipId, position, volume);
+                    PlayClipAtPoint(clipId, position, volume, targets);
                 } else {
                     Debug.Log("AudioClip wasn't found: " + clipName);
                 }
@@ -35,14 +35,14 @@
         }
 
         // Play a sound both locally and for all connected players
-        public static void SendPlayClipAtPoint(int clipId, Vector3 position, float volume) {
+        public static void PlayClipAtPoint(int clipId, Vector3 position, float volume, PhotonTargets targets = PhotonTargets.All) {
             if (instance != null) {
-                instance.photonView.RPC("PlayClipAtPoint", PhotonTargets.All, clipId, position, volume);
+                instance.photonView.RPC("NetPlayClipAtPoint", targets, clipId, position, volume);
             }
         }
 
         [PunRPC]
-        protected void PlayClipAtPoint(int clipId, Vector3 position, float volume) {
+        protected void NetPlayClipAtPoint(int clipId, Vector3 position, float volume) {
             AudioClip clip = GetClip(clipId);
             if (clip != null) {
                 AudioSource.PlayClipAtPoint(clip, position, volume);

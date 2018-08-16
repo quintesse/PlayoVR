@@ -30,7 +30,7 @@
 
             if (PhotonNetwork.isMasterClient) {
                 PhotonNetwork.Destroy(gameObject);
-                NetworkAudio.SendPlayClipAtPoint(hitSolidSound, transform.position, 1.0f);
+                NetworkAudio.PlayClipAtPoint(hitSolidSound, transform.position, 1.0f);
             }
         }
     }
