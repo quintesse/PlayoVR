@@ -1881,7 +1881,7 @@ MonoBehaviour:
   SamplingRate: 24000
   FrameDuration: 20000
   Bitrate: 30000
-  VoiceDetection: 0
+  VoiceDetection: 1
   VoiceDetectionThreshold: 0.01
   PlayDelayMs: 200
   MicrophoneType: 0
