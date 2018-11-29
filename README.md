@@ -92,16 +92,18 @@ To be able to use this example project you'll have to set it up first:
  
 ## Testing locally
 
-To test locally without another computer you can create a standalone Non-VR build:
+To test locally without another computer you can create a special shortcut that will run the program in normal, Non-VR, mode:
 
  1. In the menu bar click on `File > Build Settings...`
  2. Click the `Build` button, choose a destination folder and name your executable.
  3. In the Explorer window that popped up right-click on the `.exe` and select `Create shortcut`
  4. Right-click on the newly created shortcut and select `Properties`
- 5. In the `Target` field at the very end just after `.exe` type a space and `-novr`
+ 5. In the `Target` field at the very end just after `.exe` type a space and add `-vrmode none`
  6. Click `Ok`
  7. Run the executable by double-clicking the shortcut
  8. Hit `Play` in the Unity Editor (or run the `.exe` instead of the shortcut)
+ 
+ You could also add shortcuts for the other VR modes as documented below.
 
 ## Command line arguments
 
