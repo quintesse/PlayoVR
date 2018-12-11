@@ -79,6 +79,7 @@ To be able to use this example project you'll have to set it up first:
  6. For VRTK to work with any VR headsets you will need to install their respective SDKs. Read [the section on 'Supported SDKs' here](https://github.com/thestonefox/VRTK/blob/master/Assets/VRTK/Documentation/GETTING_STARTED.md#supported-sdks) on how to do that.
     - Normally you will only need to follow the instructions about importing the SDKs, the project already contains all the necessary camera rigs. If you encounter problems like missing scripts on the SDKs present in the Main scene you should delete those SDKs and follow the full instructions on how to re-add them.
     - If you import the `SteamVR Plugin` and get a dialog about recommended project settings that just won't go away you can simply click "Ignore All".
+    - If you import the `SteamVR Plugin` and you get an error saying "The type or namespace name SteamVR_PlayArea' could not be found" you are using a plugin version 2+ that isn't supported by VRTK right now. Instructions on how to solve this can be found [here](https://github.com/thestonefox/VRTK/issues/1907#issuecomment-446020932).
     - If you imported the "Oculus Integration" and you get a dialog "Update Oculus Utilities Plugin" then   just select "Yes" and "Restart" (don't save changes to the scene).
  7. In the Asset Store search for `Photon Unity Networking Free` and import all of it.
     - If you get a dialog "API Update Required" just select "I Made a Backup. Go Ahead!".
