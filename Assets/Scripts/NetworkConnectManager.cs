@@ -1,19 +1,24 @@
 ﻿namespace PlayoVR {
+    using Photon.Pun;
+    using Photon.Realtime;
     using UnityEngine;
 
-    public class NetworkConnectManager : Photon.PunBehaviour {
+    public class NetworkConnectManager : MonoBehaviourPunCallbacks
+    {
         public static string gameVersion = "0.4";
 
         [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
         public byte MaxPlayersPerRoom = 4;
-        public PhotonLogLevel Loglevel = PhotonLogLevel.Informational;
+        public PunLogLevel Loglevel = PunLogLevel.Informational;
 
         void Awake() {
-            if (!PhotonNetwork.connecting && !PhotonNetwork.connected) {
-                PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
-                PhotonNetwork.automaticallySyncScene = false;
-                PhotonNetwork.logLevel = Loglevel;
-                PhotonNetwork.ConnectUsingSettings(gameVersion);
+            //if (!PhotonNetwork.connecting && !PhotonNetwork.connected) {
+            if (!PhotonNetwork.IsConnected) {
+                //PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
+                PhotonNetwork.AutomaticallySyncScene = false;
+                PhotonNetwork.LogLevel = Loglevel;
+                //PhotonNetwork.ConnectUsingSettings(gameVersion);
+                PhotonNetwork.ConnectUsingSettings();
             }
         }
 
@@ -35,7 +40,7 @@
             Debug.Log("Left lobby");
         }
 
-        public override void OnPhotonRandomJoinFailed(object[] codeAndMsg) {
+        public override void OnJoinRandomFailed(short numbr, string strg) {
             Debug.Log("Can't join random room!");
 
             Debug.Log("Creating room...");
@@ -56,24 +61,17 @@
             Debug.Log("Left room");
         }
 
-        public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
+        public override void OnPlayerEnteredRoom(Player newPlayer) {
             Debug.Log("Player connected");
         }
 
-        public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer) {
+        public override void OnPlayerLeftRoom(Player otherPlayer) {
             Debug.Log("Player disconnected");
         }
 
-        public override void OnFailedToConnectToPhoton(DisconnectCause cause) {
+        public override void OnDisconnected(DisconnectCause cause) {
             Debug.Log("Couldn't connect to Photon network");
-        }
-
-        public override void OnConnectionFail(DisconnectCause cause) {
-            Debug.Log("Connection failed to the Photon network");
-        }
-
-        public override void OnDisconnectedFromPhoton() {
-            Debug.Log("We got disconnected form the Photon network");
+            Debug.Log(cause);
         }
     }
 }

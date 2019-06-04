@@ -2,15 +2,18 @@
     using UnityEngine;
     using VRTK;
     using NetBase;
+    using Photon.Pun;
 
-    public class SetupPlayerAvatar : Photon.MonoBehaviour {
+    public class SetupPlayerAvatar : MonoBehaviourPun, IPunInstantiateMagicCallback
+    {
         [Tooltip("The avatar's left hand to sync with the left controller. If empty, a child named 'Left Hand' will be used.")]
         public GameObject LeftHand;
         [Tooltip("The avatar's right hand to sync with the right controller. If empty, a child named 'Right Hand' will be used.")]
         public GameObject RightHand;
 
-        void OnPhotonInstantiate(PhotonMessageInfo info) {
-            string name = photonView.instantiationData[0].ToString();
+        public void OnPhotonInstantiate(PhotonMessageInfo info) {
+            //Debug.Log("SetupPlayerAvatar.OnPhotonInstantiate has been called");
+            string name = photonView.InstantiationData[0].ToString();
             InitPlayer(name);
         }
 
@@ -19,7 +22,7 @@
             gameObject.name = name;
             var label = NetUtils.Find(gameObject, "Top/Label");
             if (label != null) {
-                if (!photonView.isMine) {
+                if (!photonView.IsMine) {
                     TMPro.TextMeshPro text = label.GetComponent<TMPro.TextMeshPro>();
                     if (text != null) {
                         text.text = name;
@@ -30,7 +33,7 @@
                 }
             }
             var icon = NetUtils.Find(gameObject, "Top/Icon");
-            if (icon != null && photonView.isMine) {
+            if (icon != null && photonView.IsMine) {
                 // We deactivate the icon because we don't show a speaker icon on our own local avatar
                 icon.SetActive(false);
             }
@@ -45,7 +48,8 @@
         }
 
         void OnEnable() {
-            if (!photonView.isMine) {
+            //Debug.Log("SetupPlayerAvatar.OnEnable has been called");
+            if (!photonView.IsMine) {
                 return;
             }
             // Move the camera rig to where the player was spawned
@@ -54,6 +58,7 @@
             sdk.loadedSetup.actualBoundaries.transform.rotation = transform.rotation;
 
             // Add PhotonViewLink objects to the VR controller objects and link them to the avatar's hands
+            //Debug.Log("Trying to setup hands");
             LeftHand = LeftHand != null ? LeftHand : NetUtils.Find(gameObject, "Left Hand");
             RightHand = RightHand != null ? RightHand : NetUtils.Find(gameObject, "Right Hand");
             SetUpControllerHandLink(LeftHand, VRTK_DeviceFinder.Devices.LeftController);

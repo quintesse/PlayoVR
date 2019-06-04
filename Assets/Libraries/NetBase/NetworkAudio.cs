@@ -1,8 +1,10 @@
 ﻿namespace NetBase {
+    using Photon.Pun;
     using UnityEngine;
 
     [RequireComponent(typeof(PhotonView))]
-    public abstract class NetworkAudio : Photon.PunBehaviour {
+    public abstract class NetworkAudio : MonoBehaviourPunCallbacks
+    {
 
         private static NetworkAudio instance;
 
@@ -11,7 +13,7 @@
         }
 
         // Play a sound both locally and for all connected players
-        public static void PlayClipAtPoint(AudioClip clip, Vector3 position, float volume, PhotonTargets targets = PhotonTargets.All) {
+        public static void PlayClipAtPoint(AudioClip clip, Vector3 position, float volume, Photon.Pun.RpcTarget targets = Photon.Pun.RpcTarget.All) {
             if (instance != null) {
                 int clipId = instance.GetClipId(clip);
                 if (clipId >= 0) {
@@ -23,7 +25,7 @@
         }
 
         // Play a sound both locally and for all connected players
-        public static void PlayClipAtPoint(string clipName, Vector3 position, float volume, PhotonTargets targets = PhotonTargets.All) {
+        public static void PlayClipAtPoint(string clipName, Vector3 position, float volume, Photon.Pun.RpcTarget targets = Photon.Pun.RpcTarget.All) {
             if (instance != null) {
                 int clipId = instance.GetClipId(clipName);
                 if (clipId >= 0) {
@@ -35,7 +37,7 @@
         }
 
         // Play a sound both locally and for all connected players
-        public static void PlayClipAtPoint(int clipId, Vector3 position, float volume, PhotonTargets targets = PhotonTargets.All) {
+        public static void PlayClipAtPoint(int clipId, Vector3 position, float volume, Photon.Pun.RpcTarget targets = Photon.Pun.RpcTarget.All) {
             if (instance != null) {
                 instance.photonView.RPC("NetPlayClipAtPoint", targets, clipId, position, volume);
             }

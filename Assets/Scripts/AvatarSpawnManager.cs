@@ -1,10 +1,13 @@
 ﻿namespace PlayoVR {
+    using Photon.Pun;
+    using Photon.Realtime;
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using VRTK;
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-    public class AvatarSpawnManager : Photon.PunBehaviour {
+    public class AvatarSpawnManager : MonoBehaviourPunCallbacks
+    {
         [Tooltip("Reference to the player avatar prefab")]
         public GameObject playerAvatar;
 
@@ -12,6 +15,7 @@
         private bool sceneLoaded = false;
         private bool connected = false;
 
+        // we set up our available spawnpoints
         void Awake() {
             if (playerAvatar == null) {
                 Debug.LogError("AvatarSpawnManager is missing a reference to the player avatar prefab!");
@@ -22,11 +26,14 @@
             }
         }
 
-        void OnEnable() {
+        public override void OnEnable() {
+            base.OnEnable();
+            //Debug.Log("AvatarSpawnManager.OnEnable has been called");
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        void OnDisable() {
+        public override void OnDisable() {
+            base.OnDisable();
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
@@ -35,23 +42,26 @@
             sceneLoaded = true;
         }
 
+        // when the local player connects we use the photon callback OnJoinedRoom in order to set the name for this player and if we are the master clint we also initialize the  
         public override void OnJoinedRoom() {
+            //Debug.Log("AvatarSpawnManager.OnJoinedRoom has been called");
             connected = true;
             // Player sets its own name when joining
-            PhotonNetwork.playerName = playerName(PhotonNetwork.player);
+            PhotonNetwork.NickName = playerName(PhotonNetwork.LocalPlayer);
             // Initialize the master client
-            InitPlayer(PhotonNetwork.player);
+            InitPlayer(PhotonNetwork.LocalPlayer);
         }
 
-        public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer) {
+        public override void OnPlayerEnteredRoom(Player newPlayer) {
+            Debug.Log("Someone else tried to join");
             InitPlayer(newPlayer);
         }
 
-        public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer) {
+        public override void OnPlayerLeftRoom(Player otherPlayer) {
         }
 
-        void InitPlayer(PhotonPlayer newPlayer) {
-            if (PhotonNetwork.isMasterClient && connected && sceneLoaded) {
+        void InitPlayer(Player newPlayer) {
+            if (PhotonNetwork.IsMasterClient && connected && sceneLoaded) {
                 // The master client tells everyone about the new player
                 Hashtable props = new Hashtable();
                 props[PlayerPropNames.PLAYER_NR] = playerNr(newPlayer);
@@ -62,25 +72,25 @@
 
         [PunRPC]
         void SpawnAvatar() {
-            if (!PhotonNetwork.player.CustomProperties.ContainsKey(PlayerPropNames.PLAYER_NR)) {
+            if (!PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey(PlayerPropNames.PLAYER_NR)) {
                 Debug.LogError("Player does not have a PLAYER_NR property!");
                 return;
             }
-            int nr = (int)PhotonNetwork.player.CustomProperties[PlayerPropNames.PLAYER_NR];
+            int nr = (int)PhotonNetwork.LocalPlayer.CustomProperties[PlayerPropNames.PLAYER_NR];
             // Create a new player at the appropriate spawn spot
             var trans = spawnPoints[nr].transform;
-            var name = PhotonNetwork.playerName;
+            var name = PhotonNetwork.NickName;
             var player = PhotonNetwork.Instantiate(playerAvatar.name, trans.position, trans.rotation, 0, new object[] { name });
         }
 
-        private string playerName(PhotonPlayer ply) {
-            return "Player " + ply.ID;
+        private string playerName(Player ply) {
+            return "Player " + ply.ActorNumber;
         }
 
-        private int playerNr(PhotonPlayer ply) {
+        private int playerNr(Player ply) {
             // TODO: do something a bit more clever here
             // We want players to actually show up in an empty spot
-            return PhotonNetwork.otherPlayers.Length;
+            return PhotonNetwork.PlayerListOthers.Length;
         }
     }
 }

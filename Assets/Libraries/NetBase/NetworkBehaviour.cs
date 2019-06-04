@@ -1,4 +1,5 @@
 ﻿namespace NetBase {
+    using Photon.Pun;
     using UnityEngine;
     using Hashtable = ExitGames.Client.Photon.Hashtable;
 
@@ -55,7 +56,7 @@
         protected void SetProperties(Hashtable content) {
             Hashtable props = new Hashtable();
             props.Add(PropKey, content);
-            PhotonNetwork.room.SetCustomProperties(props);
+            PhotonNetwork.CurrentRoom.SetCustomProperties(props);
             Debug.Log("SNT PROPS: " + content.ToString());
         }
     }

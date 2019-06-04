@@ -1,8 +1,10 @@
 ﻿namespace PlayoVR {
+    using Photon.Pun;
     using UnityEngine;
     using VRTK;
 
-    public class Gun : Photon.MonoBehaviour {
+    public class Gun : MonoBehaviourPun
+    {
         public GameObject bulletPrefab;
         public Transform bulletSpawn;
         public AudioClip fireGunSound;
@@ -30,7 +32,7 @@
 
         void CmdFire() {
             // Now create the bullet and play sound/animation locally and on all other clients
-            photonView.RPC("NetFire", PhotonTargets.All, bulletSpawn.position, bulletSpawn.rotation);
+            photonView.RPC("NetFire", RpcTarget.All, bulletSpawn.position, bulletSpawn.rotation);
         }
 
         [PunRPC]
