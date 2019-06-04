@@ -2,9 +2,11 @@
     using UnityEngine;
     using VRTK;
     using NetBase;
+    using Photon.Pun;
 
     [RequireComponent(typeof(VRTK_SnapDropZone)), RequireComponent(typeof(PhotonView))]
-    public class PanoramaSwitcher : Photon.MonoBehaviour {
+    public class PanoramaSwitcher : MonoBehaviourPun
+    {
         public GameObject projectionSphere;
 
         private VRTK_SnapDropZone dropZone;
@@ -29,7 +31,7 @@
 
         private void HandleSnappedToDropZone(object sender, SnapDropZoneEventArgs e) {
             var nref = NetworkReference.FromObject(e.snappedObject);
-            photonView.RPC("SetPanoramaFromObject", PhotonTargets.AllBufferedViaServer, nref.parentHandleId, nref.pathFromParent);
+            photonView.RPC("SetPanoramaFromObject", RpcTarget.AllBufferedViaServer, nref.parentHandleId, nref.pathFromParent);
         }
 
         private void HandleUnsnappedFromDropZone(object sender, SnapDropZoneEventArgs e) {

@@ -2,8 +2,10 @@
     using UnityEngine;
     using VRTK;
     using NetBase;
+    using Photon.Pun;
 
-    public class AvatarHMDSyncAction : Photon.PunBehaviour {
+    public class AvatarHMDSyncAction : MonoBehaviourPunCallbacks
+    {
         [Tooltip("The avatar's head to sync with the HMD. If empty, a child named 'Head' will be used.")]
         public GameObject AvatarHead;
         [Tooltip("The avatar's left hand to sync with the left controller. If empty, a child named 'Left Hand' will be used.")]
@@ -26,7 +28,8 @@
             VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
         }
 
-        protected virtual void OnEnable() {
+        public override void OnEnable() {
+            base.OnEnable();
             AvatarTop = AvatarTop != null ? AvatarTop : NetUtils.Find(gameObject, "Top");
             AvatarHead = AvatarHead != null ? AvatarHead : NetUtils.Find(gameObject, "Head");
             LeftHand = LeftHand != null ? LeftHand : NetUtils.Find(gameObject, "Left Hand");
@@ -38,10 +41,11 @@
             Camera.onPreRender += OnCamPreRender;
         }
 
-        protected virtual void OnDisable() {
+        public override void OnDisable() {
+            base.OnDisable();
             Camera.onPreRender -= OnCamPreRender;
         }
-
+        
         protected virtual void OnCamPreRender(Camera cam) {
             if (cam.gameObject.transform == VRTK_SDK_Bridge.GetHeadsetCamera()) {
                 Action();
@@ -49,7 +53,7 @@
         }
 
         protected virtual void Action() {
-            if (photonView.isMine) {
+            if (photonView.IsMine) {
                 // The avatar follows the position of the HMD projected down to the play area floor
                 FollowTransform(gameObject, headsetTransform, playAreaTransform, playAreaTransform);
                 // The avatar's head exactly follows the position and rotation of the HMD

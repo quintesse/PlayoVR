@@ -1,4 +1,5 @@
 ﻿namespace PlayoVR {
+    using Photon.Voice.Unity;
     using UnityEngine;
 
     public class SpeakerIconManager : MonoBehaviour {
@@ -11,7 +12,8 @@
         [Tooltip("The time in seconds to remove the icon completely. Set to -1 to always keep showing the icon")]
         public int InactiveDelay = 3;
         [Tooltip("The voice to listen to")]
-        public PhotonVoiceSpeaker Speaker;
+        //public PhotonVoiceSpeaker Speaker;
+        public Speaker speaker;
 
         private SpriteRenderer spriteRenderer;
         private float lastTimeTalking;
@@ -20,7 +22,7 @@
             if (Talking == null) {
                 Debug.LogError("SpeakerIconManager is missing a reference to the talking state sprite!");
             }
-            if (Speaker == null) {
+            if (speaker == null) {
                 Debug.LogError("SpeakerIconManager is missing a reference to the speaker to listen to!");
             }
             spriteRenderer = GetComponent<SpriteRenderer>();
@@ -33,7 +35,7 @@
         }
 
         void Update() {
-            if (Speaker.IsPlaying) {
+            if (speaker.IsPlaying) {
                 spriteRenderer.sprite = Talking;
                 lastTimeTalking = Time.time;
             } else {

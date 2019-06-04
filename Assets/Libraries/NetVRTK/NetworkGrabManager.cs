@@ -3,6 +3,7 @@
     using VRTK;
     using NetBase;
     using Hashtable = ExitGames.Client.Photon.Hashtable;
+    using Photon.Pun;
 
     [RequireComponent(typeof(VRTK_InteractableObject))]
     public class NetworkGrabManager : NetworkBehaviour {
@@ -30,7 +31,8 @@
             io.InteractableObjectGrabbed += HandleGrab;
             io.InteractableObjectUngrabbed += HandleUngrab;
             if (nref.IsPhotonView) {
-                InitState(nref.GetPhotonView().ownerId);
+                //InitState(nref.GetPhotonView().ownerId);
+                InitState(nref.GetPhotonView().ViewID / PhotonNetwork.MAX_VIEW_IDS);
             }
         }
 
@@ -41,12 +43,12 @@
 
         private void HandleGrab(object sender, InteractableObjectEventArgs e) {
             if (nref.IsPhotonView) {
-                nref.GetPhotonView().TransferOwnership(PhotonNetwork.player);
+                nref.GetPhotonView().TransferOwnership(PhotonNetwork.LocalPlayer);
             }
             foreach (PhotonView pv in ownAdditionalPhotonviews) {
-                pv.TransferOwnership(PhotonNetwork.player);
+                pv.TransferOwnership(PhotonNetwork.LocalPlayer);
             }
-            InitState(PhotonNetwork.player.ID);
+            InitState(PhotonNetwork.LocalPlayer.ActorNumber);
             SendState();
         }
 
